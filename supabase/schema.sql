@@ -309,6 +309,49 @@ end;
 $$;
 
 -- ------------------------------------------------------------
+-- 7. Vitrina pública de propiedades (gestionada desde Panel Admin)
+-- ------------------------------------------------------------
+create table if not exists public.vitrina_propiedades (
+  id              text primary key,
+  titulo          text        not null default '',
+  distrito        text        not null default '',
+  etiqueta        text        not null default 'EXCLUSIVIDAD',
+  precio          text        not null default '',
+  caracteristicas text        not null default '',
+  descripcion     text        not null default '',
+  imagenes        jsonb       not null default '[]'::jsonb,
+  usar_carrusel   boolean     not null default false,
+  orden           integer     not null default 0,
+  visible         boolean     not null default true,
+  actualizado     timestamptz not null default now()
+);
+
+drop trigger if exists vitrina_set_actualizado on public.vitrina_propiedades;
+create trigger vitrina_set_actualizado
+  before update on public.vitrina_propiedades
+  for each row execute function public.cw_set_actualizado();
+
+alter table public.vitrina_propiedades enable row level security;
+
+drop policy if exists "vitrina_lectura_publica" on public.vitrina_propiedades;
+create policy "vitrina_lectura_publica"
+  on public.vitrina_propiedades
+  for select
+  to anon, authenticated
+  using (visible = true or public.es_admin());
+
+drop policy if exists "vitrina_gestion_admin" on public.vitrina_propiedades;
+create policy "vitrina_gestion_admin"
+  on public.vitrina_propiedades
+  for all
+  to authenticated
+  using (public.es_admin())
+  with check (public.es_admin());
+
+grant select on public.vitrina_propiedades to anon, authenticated;
+grant insert, update, delete on public.vitrina_propiedades to authenticated;
+
+-- ------------------------------------------------------------
 -- 7. Correo del asesor
 -- ------------------------------------------------------------
 -- ⚠️ Debe coincidir con el correo del usuario que crearás en

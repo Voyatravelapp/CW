@@ -857,6 +857,55 @@
     border-radius: 4px;
     text-transform: uppercase;
   }
+  .prop-carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 0;
+    background: rgba(17, 27, 46, 0.72);
+    color: #fff;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    backdrop-filter: blur(4px);
+    z-index: 2;
+    transition: background 0.15s;
+  }
+  .prop-carousel-btn:hover { background: var(--cw-naranja); }
+  .prop-carousel-btn.prev { left: 8px; }
+  .prop-carousel-btn.next { right: 8px; }
+  .prop-dots {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    display: flex;
+    gap: 5px;
+    z-index: 2;
+  }
+  .prop-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    border: 0;
+    padding: 0;
+    background: rgba(255, 255, 255, 0.55);
+    cursor: pointer;
+  }
+  .prop-dot.active { background: #fff; transform: scale(1.25); }
+  .prop-meta-line {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    margin-top: 8px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--cw-naranja-osc);
+  }
   .prop-body {
     padding: 20px 18px;
     display: flex;
@@ -1204,6 +1253,9 @@
     .btn-portal-nav { display: inline-flex; align-items: center; }
     header .wrap { height: 60px; gap: 10px; }
     .logo img { height: 36px; width: auto; }
+    .zones .wrap { gap: 10px; padding-top: 16px; padding-bottom: 16px; }
+    .zones strong { flex: 1 0 100%; margin: 0 0 2px; font-size: 14px; }
+    .zones .chip { padding: 6px 12px; font-size: 13px; gap: 5px; }
     .hero-photo { width: 100%; opacity: 0.38; }
     .hero-grid, .case-grid, .final-grid, .excl-grid, .life-grid {
       grid-template-columns: 1fr;
@@ -1565,7 +1617,7 @@
       <p>Casos reales comercializados por nuestro equipo en distritos clave de la capital. La difusión dirigida y la fijación correcta del precio marcan la diferencia.</p>
     </div>
 
-    <div class="showcase-grid">
+    <div class="showcase-grid" id="showcase-grid">
       <!-- Card 1: La Molina -->
       <article class="prop-card reveal reveal-delay-1">
         <div class="prop-media">
@@ -1868,6 +1920,7 @@
 <!-- ==========================================================================
      SCRIPTS: EFECTOS, LAZY REVEAL, ANIMACIONES Y FORMULARIO
      ========================================================================== -->
+<script src="config.js"></script>
 <script>
   (function () {
     'use strict';
@@ -1987,6 +2040,73 @@
         var win = window.open(url, '_blank', 'noopener');
         if (!win) window.location.href = url;
       });
+    }
+
+    // 6. Vitrina dinámica gestionada desde el Panel Admin (con carrusel si hay múltiples imágenes)
+    var showcaseGrid = document.getElementById('showcase-grid');
+    var sbCfg = window.CW_SUPABASE_CONFIG;
+    if (showcaseGrid && sbCfg && sbCfg.url && sbCfg.anonKey) {
+      fetch(sbCfg.url.replace(/\/+$/, '') + '/rest/v1/vitrina_propiedades?visible=eq.true&order=orden.asc,actualizado.desc', {
+        headers: { apikey: sbCfg.anonKey, Authorization: 'Bearer ' + sbCfg.anonKey }
+      }).then(function (r) { return r.ok ? r.json() : []; }).then(function (rows) {
+        if (!Array.isArray(rows) || !rows.length) return;
+        function escHtml(s) {
+          return String(s || '').replace(/[&<>"']/g, function (c) {
+            return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+          });
+        }
+        showcaseGrid.innerHTML = rows.map(function (item, idx) {
+          var imgs = Array.isArray(item.imagenes) ? item.imagenes.filter(Boolean) : [];
+          if (!imgs.length) imgs = ['assets/propiedades/post-ig-casa-la-molina-jardin.jpg'];
+          var hasCarousel = (item.usar_carrusel && imgs.length > 1) || imgs.length > 1;
+          var metaParts = [];
+          if (item.precio) metaParts.push('<span>' + escHtml(item.precio) + '</span>');
+          if (item.caracteristicas) metaParts.push('<span style="color:var(--cw-gris);font-weight:600">' + escHtml(item.caracteristicas) + '</span>');
+          return '<article class="prop-card" data-vitrina-idx="' + idx + '">' +
+            '<div class="prop-media">' +
+              '<img src="' + escHtml(imgs[0]) + '" alt="' + escHtml(item.titulo || 'Propiedad CW') + '" loading="lazy" decoding="async" data-imgs="' + escHtml(JSON.stringify(imgs)) + '" data-cur="0">' +
+              (item.distrito ? '<span class="prop-badge">' + escHtml(item.distrito) + '</span>' : '') +
+              (item.etiqueta ? '<span class="prop-status">' + escHtml(item.etiqueta) + '</span>' : '') +
+              (hasCarousel
+                ? '<button type="button" class="prop-carousel-btn prev" aria-label="Imagen anterior">‹</button>' +
+                  '<button type="button" class="prop-carousel-btn next" aria-label="Siguiente imagen">›</button>' +
+                  '<div class="prop-dots">' + imgs.map(function (_, di) {
+                    return '<button type="button" class="prop-dot' + (di === 0 ? ' active' : '') + '" data-dot="' + di + '" aria-label="Foto ' + (di + 1) + '"></button>';
+                  }).join('') + '</div>'
+                : '') +
+            '</div>' +
+            '<div class="prop-body">' +
+              '<h3>' + escHtml(item.titulo || 'Propiedad CW') + '</h3>' +
+              (item.descripcion ? '<p>' + escHtml(item.descripcion) + '</p>' : '') +
+              (metaParts.length ? '<div class="prop-meta-line">' + metaParts.join('') + '</div>' : '') +
+            '</div>' +
+          '</article>';
+        }).join('');
+
+        showcaseGrid.querySelectorAll('.prop-card').forEach(function (card) {
+          var imgEl = card.querySelector('.prop-media img');
+          if (!imgEl) return;
+          var imgs = [];
+          try { imgs = JSON.parse(imgEl.dataset.imgs || '[]'); } catch (e) {}
+          if (imgs.length <= 1) return;
+          var setIdx = function (nextIdx) {
+            var total = imgs.length;
+            var cur = ((nextIdx % total) + total) % total;
+            imgEl.dataset.cur = String(cur);
+            imgEl.src = imgs[cur];
+            card.querySelectorAll('.prop-dot').forEach(function (d, di) {
+              d.classList.toggle('active', di === cur);
+            });
+          };
+          var prevBtn = card.querySelector('.prop-carousel-btn.prev');
+          var nextBtn = card.querySelector('.prop-carousel-btn.next');
+          if (prevBtn) prevBtn.addEventListener('click', function () { setIdx((parseInt(imgEl.dataset.cur, 10) || 0) - 1); });
+          if (nextBtn) nextBtn.addEventListener('click', function () { setIdx((parseInt(imgEl.dataset.cur, 10) || 0) + 1); });
+          card.querySelectorAll('.prop-dot').forEach(function (d) {
+            d.addEventListener('click', function () { setIdx(parseInt(d.dataset.dot, 10) || 0); });
+          });
+        });
+      }).catch(function () {});
     }
   })();
 </script>

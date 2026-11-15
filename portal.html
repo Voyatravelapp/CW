@@ -549,7 +549,7 @@ button.step:hover .dot{ border-color:var(--orange); }
   const OWNER_ENTRY = location.hash.indexOf("#propietario-") === 0;
   const STAGES = ["Evaluación","Preparación","Publicación","Visitas","Negociación","Cierre"];
   const app = document.getElementById("app");
-  const state = { db:null, sb:null, mode:null, user:null, role:null, canWrite:null, isAdmin:null, isSuperAdmin:false, asesores:[], props:[], loaded:false, error:null, errorDetail:"", selected:null, view:"asesor", page:null, chatOpen:false, clientId:null, messages:[], msgUnsub:null, msgFor:null, draft:null, dirty:false, saving:false, status:"", authChecked:false };
+  const state = { db:null, sb:null, mode:null, user:null, role:null, canWrite:null, isAdmin:null, isSuperAdmin:false, asesores:[], vitrina:[], vitrinaError:"", vitrinaDraft:null, props:[], loaded:false, error:null, errorDetail:"", selected:null, view:"asesor", page:null, chatOpen:false, clientId:null, messages:[], msgUnsub:null, msgPoll:null, msgFor:null, draft:null, dirty:false, saving:false, status:"", authChecked:false };
 
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const fmtDate = (d) => { if(!d) return ""; const t = new Date(d + (d.length===10 ? "T12:00:00" : "")); return isNaN(t) ? d : t.toLocaleDateString("es-PE",{day:"2-digit",month:"short",year:"numeric"}); };
@@ -861,7 +861,7 @@ button.step:hover .dot{ border-color:var(--orange); }
             }
             state.isSuperAdmin = (state.role === "admin");
             state.isAdmin = (state.role === "admin" || state.role === "asesor");
-            if (state.isSuperAdmin) loadAsesores();
+            if (state.isSuperAdmin) { loadAsesores(); loadVitrina(); }
             if (state.isAdmin && !location.hash.startsWith("#propietario-") && location.hash !== "#admin") {
               state.view = "asesor";
               if (location.hash !== "#asesor") history.replaceState(null, "", "#asesor");
@@ -894,6 +894,26 @@ button.step:hover .dot{ border-color:var(--orange); }
       state.asesores = data;
       if (state.view === "admin") render();
     }
+  }
+  async function loadVitrina(){
+    if (!state.isSuperAdmin) return;
+    if (state.mode === "local") {
+      try { state.vitrina = JSON.parse(localStorage.getItem("cw_vitrina_demo") || "[]"); } catch(e){ state.vitrina = []; }
+      state.vitrinaError = "";
+      if (state.page === "admin-vitrina") render();
+      return;
+    }
+    if (!state.sb) return;
+    const { data, error } = await state.sb.from("vitrina_propiedades").select("*").order("orden", { ascending: true }).order("actualizado", { ascending: false });
+    if (error) {
+      state.vitrinaError = /does not exist|schema cache|PGRST205/i.test(error.message || "")
+        ? "Falta crear la tabla vitrina_propiedades en Supabase. Ejecuta el bloque 7 de supabase/schema.sql en el SQL Editor."
+        : (error.message || "No se pudo cargar la vitrina.");
+    } else {
+      state.vitrinaError = "";
+      state.vitrina = Array.isArray(data) ? data : [];
+    }
+    if (state.page === "admin-vitrina" || state.view === "admin") render();
   }
 
   async function login(email, pass){
@@ -1275,11 +1295,12 @@ button.step:hover .dot{ border-color:var(--orange); }
         const adminItems = [
           { id:"admin-accesos", label:"Accesos por inmueble", icon:ICONS.shield },
           { id:"admin-crear", label:"Crear usuario", icon:ICONS.userPlus },
-          { id:"admin-equipo", label:"Equipo Asesor / Admin", icon:ICONS.users }
+          { id:"admin-equipo", label:"Equipo Asesor / Admin", icon:ICONS.users },
+          { id:"admin-vitrina", label:"Vitrina Web", icon:ICONS.home, badge:state.vitrina.length }
         ];
         html += '<div class="sb-group">Administración</div>' +
           adminItems.map(it => '<button type="button" class="sb-link" title="' + it.label + '" data-page="' + it.id + '" aria-current="' + (state.page === it.id ? "page" : "false") + '">' +
-            it.icon + '<span>' + it.label + '</span></button>').join("");
+            it.icon + '<span>' + it.label + '</span>' + (it.badge !== undefined ? '<span class="sb-badge">' + it.badge + '</span>' : '') + '</button>').join("");
       }
       const asesorItems = [
         { id:"asesor-lista", label:"Propiedades", icon:ICONS.list, badge:state.props.length },
@@ -1563,6 +1584,200 @@ button.step:hover .dot{ border-color:var(--orange); }
           const { error } = await state.sb.from("asesores").delete().eq("email", email);
           if (error) alert(error.message); else loadAsesores();
         };
+      });
+      return;
+    }
+
+    if (state.page === "admin-vitrina") {
+      setPageHeader("Vitrina Web", "Propiedades gestionadas con la estrategia CW");
+      if (!state.vitrinaDraft) {
+        state.vitrinaDraft = { id:"", titulo:"", distrito:"La Molina", etiqueta:"EXCLUSIVIDAD", precio:"", caracteristicas:"", descripcion:"", imagenes:[], usar_carrusel:true, orden:state.vitrina.length + 1, visible:true };
+      }
+      const vd = state.vitrinaDraft;
+      const isEditing = !!vd.id;
+      const visibleCount = state.vitrina.filter(v => v.visible !== false).length;
+      const carouselCount = state.vitrina.filter(v => v.usar_carrusel || (Array.isArray(v.imagenes) && v.imagenes.length > 1)).length;
+
+      app.innerHTML =
+        '<div class="page-head"><div><p class="page-kicker">Administración · Landing & Catálogo</p><h1>Vitrina Web y Carrusel</h1></div>' +
+          '<a class="btn btn-ghost" href="index.html#propiedades-cw" target="_blank" rel="noopener">Ver en la web ↗</a>' +
+        '</div>' +
+        (state.vitrinaError ? '<p class="notice" style="margin-bottom:16px">' + esc(state.vitrinaError) + '</p>' : '') +
+        '<div class="admin-kpis">' +
+          '<div class="card admin-kpi"><div><b>' + state.vitrina.length + '</b><span>En vitrina</span></div><span class="stat-ico navy">' + ICONS.home + '</span></div>' +
+          '<div class="card admin-kpi"><div><b>' + visibleCount + '</b><span>Visibles en web</span></div><span class="stat-ico green">' + ICONS.shield + '</span></div>' +
+          '<div class="card admin-kpi"><div><b>' + carouselCount + '</b><span>Con carrusel</span></div><span class="stat-ico orange">' + ICONS.docs + '</span></div>' +
+        '</div>' +
+        '<div class="client-split">' +
+          '<div class="card sec">' +
+            '<h3>' + (isEditing ? 'Editar propiedad en vitrina' : 'Agregar propiedad a la vitrina') + '</h3>' +
+            '<p class="hint">Configura la información, imágenes y si la tarjeta usa carrusel de fotos en la web (y en el próximo catálogo).</p>' +
+            '<form id="vitrina-form" style="display:grid;gap:12px">' +
+              '<div class="grid2">' +
+                '<div><label for="v-titulo">Título de la propiedad</label><input id="v-titulo" value="' + esc(vd.titulo) + '" placeholder="Ej. Casa residencial con jardín" required></div>' +
+                '<div><label for="v-distrito">Distrito</label><input id="v-distrito" value="' + esc(vd.distrito) + '" placeholder="Ej. La Molina" required></div>' +
+              '</div>' +
+              '<div class="grid3">' +
+                '<div><label for="v-etiqueta">Etiqueta</label><select id="v-etiqueta">' +
+                  ["EXCLUSIVIDAD","DESTACADA","VENDIDA","OPORTUNIDAD","PRÓXIMAMENTE"].map(opt => '<option value="' + opt + '"' + (vd.etiqueta === opt ? ' selected' : '') + '>' + opt + '</option>').join("") +
+                '</select></div>' +
+                '<div><label for="v-precio">Precio (opcional)</label><input id="v-precio" value="' + esc(vd.precio) + '" placeholder="Ej. $550,000"></div>' +
+                '<div><label for="v-orden">Orden</label><input id="v-orden" type="number" min="0" max="999" value="' + (vd.orden || 0) + '"></div>' +
+              '</div>' +
+              '<div><label for="v-caract">Características (opcional)</label><input id="v-caract" value="' + esc(vd.caracteristicas) + '" placeholder="Ej. 4 dorm · 320 m² · 2 cocheras"></div>' +
+              '<div><label for="v-desc">Descripción breve</label><textarea id="v-desc" style="min-height:84px" maxlength="320" placeholder="Resume los diferenciales y la estrategia aplicada…">' + esc(vd.descripcion) + '</textarea></div>' +
+              '<div style="padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);display:grid;gap:10px">' +
+                '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">' +
+                  '<b style="font-size:13.5px;color:var(--navy)">Imágenes de la propiedad (' + (vd.imagenes || []).length + ')</b>' +
+                  '<label style="display:inline-flex;align-items:center;gap:7px;margin:0;font-size:13px;cursor:pointer"><input id="v-carrusel" type="checkbox"' + (vd.usar_carrusel ? ' checked' : '') + ' style="width:auto;min-height:auto"> Activar carrusel</label>' +
+                '</div>' +
+                '<div class="row-list" style="margin-bottom:0">' +
+                  ((vd.imagenes || []).length
+                    ? vd.imagenes.map((u, idx) =>
+                        '<div class="admin-row" style="grid-template-columns:52px 1fr auto auto auto;padding:8px 10px">' +
+                          '<img src="' + esc(u) + '" alt="" style="width:48px;height:36px;object-fit:cover;border-radius:6px;background:#eee">' +
+                          '<span style="font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(u) + '</span>' +
+                          '<button type="button" class="btn btn-ghost" style="padding:4px 8px;min-height:30px;font-size:12px" data-vimg-up="' + idx + '"' + (idx === 0 ? ' disabled' : '') + '>↑</button>' +
+                          '<button type="button" class="btn btn-ghost" style="padding:4px 8px;min-height:30px;font-size:12px" data-vimg-down="' + idx + '"' + (idx === vd.imagenes.length - 1 ? ' disabled' : '') + '>↓</button>' +
+                          '<button type="button" class="btn btn-danger" style="padding:4px 8px;min-height:30px;font-size:12px" data-vimg-del="' + idx + '">Quitar</button>' +
+                        '</div>'
+                      ).join("")
+                    : '<p class="muted" style="font-size:12.5px">Agrega una o varias imágenes (URL https:// o ruta assets/propiedades/...).</p>') +
+                '</div>' +
+                '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+                  '<input id="v-img-url" placeholder="assets/propiedades/casa-la-molina.jpg o https://..." style="flex:1;min-width:180px">' +
+                  '<button type="button" class="btn btn-ghost" id="v-add-img">+ Agregar foto</button>' +
+                '</div>' +
+              '</div>' +
+              '<label style="display:inline-flex;align-items:center;gap:8px;margin:0;font-size:13.5px;cursor:pointer"><input id="v-visible" type="checkbox"' + (vd.visible !== false ? ' checked' : '') + ' style="width:auto;min-height:auto"> Visible en la web principal</label>' +
+              '<div class="btn-pair">' +
+                '<button type="submit" class="btn btn-primary" id="v-save-btn">' + (isEditing ? 'Actualizar propiedad' : 'Publicar en vitrina') + '</button>' +
+                (isEditing ? '<button type="button" class="btn btn-ghost" id="v-cancel-edit">Cancelar edición</button>' : '<button type="button" class="btn btn-ghost" id="v-reset">Limpiar</button>') +
+              '</div>' +
+              '<p class="status" id="v-status"></p>' +
+            '</form>' +
+          '</div>' +
+          '<div class="card sec">' +
+            '<h3>Propiedades en Vitrina (' + state.vitrina.length + ')</h3>' +
+            '<p class="hint">Ordenadas según aparecerán en la web. Puedes editar sus fotos y activar el carrusel.</p>' +
+            '<div class="row-list">' +
+              (state.vitrina.length
+                ? state.vitrina.map(item => {
+                    const imgs = Array.isArray(item.imagenes) ? item.imagenes : [];
+                    const thumb = imgs[0] || "assets/propiedades/post-ig-casa-la-molina-jardin.jpg";
+                    return '<div class="admin-row" style="grid-template-columns:60px 1fr auto;align-items:center">' +
+                      '<img src="' + esc(thumb) + '" alt="" style="width:56px;height:44px;object-fit:cover;border-radius:8px;background:#eee">' +
+                      '<span>' +
+                        '<b>' + esc(item.titulo || "Sin título") + '</b><br>' +
+                        '<small class="muted">' + esc(item.distrito || "Sin distrito") + ' · ' + esc(item.etiqueta || "EXCLUSIVIDAD") + ' · ' + imgs.length + (imgs.length === 1 ? ' foto' : ' fotos') + (item.usar_carrusel ? ' · Carrusel ON' : '') + '</small>' +
+                      '</span>' +
+                      '<div style="display:flex;gap:6px;flex-wrap:wrap">' +
+                        '<span class="pill ' + (item.visible !== false ? 'ok' : '') + '">' + (item.visible !== false ? 'Visible' : 'Oculta') + '</span>' +
+                        '<button type="button" class="btn btn-ghost" style="padding:6px 10px;min-height:34px;font-size:12.5px" data-vedit="' + esc(item.id) + '">Editar</button>' +
+                        '<button type="button" class="btn btn-danger" style="padding:6px 10px;min-height:34px;font-size:12.5px" data-vdel="' + esc(item.id) + '">Eliminar</button>' +
+                      '</div>' +
+                    '</div>';
+                  }).join("")
+                : '<p class="muted" style="font-size:13.5px">Aún no hay propiedades cargadas en la vitrina desde Supabase (la web muestra las de respaldo hasta que agregues aquí).</p>') +
+            '</div>' +
+          '</div>' +
+        '</div>';
+
+      const syncDraftFields = () => {
+        vd.titulo = document.getElementById("v-titulo").value;
+        vd.distrito = document.getElementById("v-distrito").value;
+        vd.etiqueta = document.getElementById("v-etiqueta").value;
+        vd.precio = document.getElementById("v-precio").value;
+        vd.orden = parseInt(document.getElementById("v-orden").value || "0", 10) || 0;
+        vd.caracteristicas = document.getElementById("v-caract").value;
+        vd.descripcion = document.getElementById("v-desc").value;
+        vd.usar_carrusel = document.getElementById("v-carrusel").checked;
+        vd.visible = document.getElementById("v-visible").checked;
+      };
+      document.getElementById("v-add-img").onclick = () => {
+        syncDraftFields();
+        const urlInp = document.getElementById("v-img-url");
+        const u = urlInp.value.trim();
+        if (!u) { urlInp.focus(); return; }
+        vd.imagenes = (vd.imagenes || []).concat([u]);
+        urlInp.value = "";
+        render();
+      };
+      app.querySelectorAll("[data-vimg-up]").forEach(b => b.onclick = () => {
+        syncDraftFields();
+        const i = +b.dataset.vimgUp;
+        if (i > 0) { const arr = vd.imagenes.slice(); [arr[i-1], arr[i]] = [arr[i], arr[i-1]]; vd.imagenes = arr; render(); }
+      });
+      app.querySelectorAll("[data-vimg-down]").forEach(b => b.onclick = () => {
+        syncDraftFields();
+        const i = +b.dataset.vimgDown;
+        if (i < vd.imagenes.length - 1) { const arr = vd.imagenes.slice(); [arr[i+1], arr[i]] = [arr[i], arr[i+1]]; vd.imagenes = arr; render(); }
+      });
+      app.querySelectorAll("[data-vimg-del]").forEach(b => b.onclick = () => {
+        syncDraftFields();
+        const i = +b.dataset.vimgDel;
+        vd.imagenes = vd.imagenes.filter((_, idx) => idx !== i);
+        render();
+      });
+      const cancelBtn = document.getElementById("v-cancel-edit");
+      if (cancelBtn) cancelBtn.onclick = () => { state.vitrinaDraft = null; render(); };
+      const resetBtn = document.getElementById("v-reset");
+      if (resetBtn) resetBtn.onclick = () => { state.vitrinaDraft = null; render(); };
+
+      document.getElementById("vitrina-form").onsubmit = async (e) => {
+        e.preventDefault();
+        syncDraftFields();
+        const st = document.getElementById("v-status");
+        const btn = document.getElementById("v-save-btn");
+        const row = {
+          id: vd.id || newId("vit"),
+          titulo: vd.titulo.trim(),
+          distrito: vd.distrito.trim(),
+          etiqueta: vd.etiqueta || "EXCLUSIVIDAD",
+          precio: vd.precio.trim(),
+          caracteristicas: vd.caracteristicas.trim(),
+          descripcion: vd.descripcion.trim(),
+          imagenes: vd.imagenes || [],
+          usar_carrusel: !!vd.usar_carrusel,
+          orden: vd.orden || 0,
+          visible: vd.visible !== false,
+          actualizado: new Date().toISOString()
+        };
+        if (state.mode === "local") {
+          const list = state.vitrina.filter(x => x.id !== row.id).concat([row]).sort((a,b) => (a.orden||0) - (b.orden||0));
+          localStorage.setItem("cw_vitrina_demo", JSON.stringify(list));
+          state.vitrinaDraft = null;
+          loadVitrina();
+          return;
+        }
+        btn.disabled = true; st.textContent = "Guardando en vitrina…";
+        const { error } = await state.sb.from("vitrina_propiedades").upsert(row);
+        btn.disabled = false;
+        if (error) { st.textContent = "Error: " + error.message; return; }
+        state.vitrinaDraft = null;
+        await loadVitrina();
+      };
+
+      app.querySelectorAll("[data-vedit]").forEach(b => b.onclick = () => {
+        const found = state.vitrina.find(x => x.id === b.dataset.vedit);
+        if (found) { state.vitrinaDraft = clone(found); render(); }
+      });
+      app.querySelectorAll("[data-vdel]").forEach(b => b.onclick = async () => {
+        const found = state.vitrina.find(x => x.id === b.dataset.vdel);
+        const ok = await cwConfirm({
+          title: 'Eliminar de Vitrina Web',
+          message: '¿Quitar "' + ((found && found.titulo) || "esta propiedad") + '" de la vitrina pública de la web?',
+          confirmText: "Sí, eliminar"
+        });
+        if (!ok) return;
+        if (state.mode === "local") {
+          const list = state.vitrina.filter(x => x.id !== b.dataset.vdel);
+          localStorage.setItem("cw_vitrina_demo", JSON.stringify(list));
+          loadVitrina();
+          return;
+        }
+        const { error } = await state.sb.from("vitrina_propiedades").delete().eq("id", b.dataset.vdel);
+        if (error) alert(error.message); else loadVitrina();
       });
       return;
     }
