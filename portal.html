@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Portal del propietario · CW Inmobiliaria</title>
+<script src="config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F6F2EC; --surface:#FFFFFF; --surface-2:#FBF8F4; --line:#E6DED3;
+  --text:#14203A; --muted:#66708A; --navy:#111B2E; --navy-2:#1C2944;
+  --orange:#E0662A; --orange-soft:#FCE9DD; --green:#2F8F5B; --green-soft:#E1F2E8;
+  --shadow:0 8px 24px rgba(17,27,46,.07);
+  color-scheme: light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{ scroll-padding-top:env(safe-area-inset-top,0px); height:100%; }
+*,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+body{ font-family:'Manrope','Segoe UI',Arial,sans-serif; background:var(--bg); color:var(--text); font-size:15px; line-height:1.5; min-height:100%; }
+button,input,select,textarea{ font:inherit; color:inherit; }
+button{ cursor:pointer; }
+:focus-visible{ outline:3px solid var(--orange); outline-offset:2px; border-radius:6px; }
+
+/* top bar */
+.topbar{ position:sticky; top:env(safe-area-inset-top,0px); z-index:20; background:#FFFFFF; color:var(--text); border-bottom:1px solid var(--line); box-shadow:0 2px 10px rgba(17,27,46,.05); }
+body::before{ content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top,0px); z-index:30; background:#FFFFFF; }
+.topbar .in{ max-width:1240px; margin:0 auto; padding:12px 22px; display:flex; align-items:center; gap:18px; }
+.brand{ display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.04em; }
+.login{ max-width:420px; margin:40px auto; padding:30px; }
+.login h2{ font-size:22px; margin-bottom:6px; }
+.login form{ display:grid; gap:14px; margin-top:18px; }
+.brand-logo{ height:46px; width:auto; display:block; }
+.brand-mark{ width:36px; height:36px; border-radius:50%; background:#fff; color:#111B2E; display:grid; place-items:center; font-weight:800; font-size:14px; border:2px solid #E0662A; }
+.brand small{ display:block; font-weight:500; letter-spacing:0; opacity:.7; font-size:12px; }
+.back-link{ margin-left:auto; color:var(--muted); font-size:14px; font-weight:600; text-decoration:none; }
+.back-link:hover{ color:var(--orange); }
+.tabs{ display:flex; gap:6px; background:var(--surface-2); border:1px solid var(--line); padding:4px; border-radius:999px; }
+.tab{ border:0; background:transparent; color:var(--text); padding:8px 16px; border-radius:999px; font-weight:600; font-size:14px; opacity:.75; }
+.tab[aria-selected="true"]{ background:#E0662A; color:#fff; opacity:1; }
+.wrap{ max-width:1240px; margin:0 auto; padding:24px 22px 48px; }
+
+.card{ background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); }
+.btn{ border:0; border-radius:10px; padding:10px 16px; font-weight:700; font-size:14px; display:inline-flex; align-items:center; gap:8px; }
+.btn-primary{ background:var(--orange); color:#fff; }
+.btn-primary:hover{ filter:brightness(.95); }
+.btn-ghost{ background:var(--surface-2); border:1px solid var(--line); }
+.btn-danger{ background:transparent; color:#C2412D; padding:6px 8px; }
+.btn:disabled{ opacity:.5; cursor:not-allowed; }
+label{ font-size:12.5px; font-weight:700; color:var(--muted); display:block; margin-bottom:6px; }
+input,select,textarea{ width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:var(--surface-2); }
+textarea{ min-height:90px; resize:vertical; }
+.muted{ color:var(--muted); }
+.notice{ padding:14px 16px; border-radius:12px; background:var(--orange-soft); font-size:14px; }
+.empty{ text-align:center; padding:48px 24px; }
+.empty h2{ font-size:22px; margin-bottom:8px; }
+
+/* ===== Editor ===== */
+.editor{ display:grid; grid-template-columns:300px 1fr; gap:20px; align-items:start; }
+.side{ padding:16px; position:sticky; top:calc(84px + env(safe-area-inset-top,0px)); }
+.side h3{ font-size:15px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; }
+.prop-item{ width:100%; text-align:left; border:1px solid transparent; background:transparent; border-radius:12px; padding:10px 12px; margin-bottom:6px; }
+.prop-item:hover{ background:var(--surface-2); }
+.prop-item[aria-current="true"]{ background:var(--orange-soft); border-color:var(--orange); }
+.prop-item b{ display:block; font-size:14px; }
+.prop-item span{ font-size:12.5px; color:var(--muted); }
+.pill{ display:inline-block; font-size:11.5px; font-weight:700; padding:2px 9px; border-radius:999px; background:var(--surface-2); border:1px solid var(--line); }
+.sec{ padding:20px 22px; margin-bottom:18px; }
+.sec h3{ font-size:16px; margin-bottom:4px; }
+.sec .hint{ font-size:13px; color:var(--muted); margin-bottom:16px; }
+.grid2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.grid3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+.edit-head{ display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin-bottom:18px; }
+.edit-head h2{ font-size:22px; }
+.row-list{ display:grid; gap:8px; margin-bottom:12px; }
+.row{ display:grid; grid-template-columns:130px 90px 1fr auto; gap:10px; align-items:center; padding:10px 12px; border:1px solid var(--line); border-radius:12px; background:var(--surface-2); font-size:14px; }
+.row.doc{ grid-template-columns:1fr auto; }
+.add-row{ display:grid; grid-template-columns:150px 110px 1fr auto; gap:10px; align-items:end; }
+.add-row.doc{ grid-template-columns:1fr 1fr auto; }
+.save-bar{ display:flex; align-items:center; gap:12px; justify-content:flex-end; }
+.status{ font-size:13px; color:var(--muted); }
+
+/* stepper (shared) */
+.stepper{ display:flex; align-items:flex-start; overflow-x:auto; padding:6px 2px 4px; }
+.step{ flex:1; min-width:92px; display:flex; flex-direction:column; align-items:center; position:relative; text-align:center; background:none; border:0; padding:0; }
+.step::before{ content:""; position:absolute; top:15px; left:-50%; width:100%; height:3px; background:var(--line); z-index:0; }
+.step:first-child::before{ display:none; }
+.step.done::before,.step.now::before{ background:var(--green); }
+.dot{ width:32px; height:32px; border-radius:50%; border:3px solid var(--line); background:var(--surface); display:grid; place-items:center; font-weight:800; font-size:13px; z-index:1; position:relative; color:var(--muted); }
+.step.done .dot{ background:var(--green); border-color:var(--green); color:#fff; }
+.step.now .dot{ border-color:var(--orange); background:var(--orange); color:#fff; box-shadow:0 0 0 5px var(--orange-soft); }
+.step b{ font-size:12.5px; margin-top:8px; color:var(--muted); font-weight:600; }
+.step.now b{ color:var(--orange); font-weight:800; }
+.step.done b{ color:var(--text); }
+button.step:hover .dot{ border-color:var(--orange); }
+
+/* ===== Client ===== */
+.client{ display:grid; grid-template-columns:1fr 360px; gap:20px; align-items:start; }
+.hello{ padding:24px; display:flex; gap:20px; justify-content:space-between; align-items:center; flex-wrap:wrap; }
+.hello h1{ font-size:26px; line-height:1.2; }
+.hello p{ color:var(--muted); }
+.prop-badge{ display:flex; gap:12px; align-items:center; background:var(--surface-2); border:1px solid var(--line); border-radius:14px; padding:10px 14px; }
+.prop-badge .ico{ width:42px; height:42px; border-radius:10px; background:var(--navy); display:grid; place-items:center; }
+.prop-badge b{ display:block; font-size:14px; }
+.prop-badge span{ font-size:12.5px; color:var(--muted); }
+.block{ padding:20px 22px; margin-top:18px; }
+.block h3{ font-size:16px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:18px; }
+.stat{ padding:18px; }
+.stat .n{ font-size:34px; font-weight:800; line-height:1; }
+.stat .l{ color:var(--muted); font-size:13.5px; margin-top:6px; }
+.stat:nth-child(1) .n{ color:var(--orange); }
+.visit{ display:grid; grid-template-columns:120px 110px 1fr; gap:10px; padding:12px 0; border-top:1px solid var(--line); font-size:14px; }
+.visit:first-of-type{ border-top:0; }
+.summary{ background:var(--orange-soft); color:var(--text); border:1px solid #F4CDB4; }
+.summary h3{ color:var(--text); }
+.summary .date{ font-size:12.5px; color:var(--muted); font-weight:600; }
+.summary p{ white-space:pre-wrap; }
+.doc-link{ display:flex; gap:10px; align-items:center; padding:12px; border-radius:12px; border:1px solid var(--line); background:var(--surface-2); text-decoration:none; color:var(--text); margin-bottom:8px; font-weight:600; font-size:14px; }
+.doc-link:hover{ border-color:var(--orange); }
+.chat{ display:flex; flex-direction:column; gap:10px; max-height:360px; overflow-y:auto; padding-right:4px; margin-bottom:12px; }
+.msg{ max-width:85%; padding:10px 12px; border-radius:14px; font-size:14px; }
+.msg small{ display:block; font-size:11.5px; color:var(--muted); margin-top:4px; }
+.msg.asesor{ background:var(--surface-2); border:1px solid var(--line); align-self:flex-start; }
+.msg.propietario{ background:var(--orange-soft); align-self:flex-end; }
+.msg b{ font-size:12px; display:block; margin-bottom:2px; }
+.composer{ display:flex; gap:8px; }
+.composer input{ flex:1; }
+.footer{ text-align:center; color:var(--muted); font-size:12.5px; margin-top:28px; }
+
+@media (max-width:980px){
+  .editor,.client{ grid-template-columns:1fr; }
+  .side{ position:static; }
+}
+@media (max-width:620px){
+  .grid2,.grid3,.add-row,.add-row.doc{ grid-template-columns:1fr; }
+  .row{ grid-template-columns:1fr auto; }
+  .stats{ grid-template-columns:1fr; }
+  .visit{ grid-template-columns:1fr 1fr; }
+  .tab{ padding:8px 12px; font-size:13px; }
+  .brand small{ display:none; }
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="in">
+    <div class="brand"><img class="brand-logo" src="assets/logo-cw.png" alt="CW Inmobiliaria"><div>CW INMOBILIARIA<small>Portal del propietario</small></div></div>
+    <a href="index.html" class="back-link">Volver a la web</a>
+    <nav class="tabs" role="tablist" aria-label="Vistas">
+      <button class="tab" role="tab" id="tab-asesor" aria-selected="false" data-view="asesor">Panel del asesor</button>
+      <button class="tab" role="tab" id="tab-cliente" aria-selected="false" data-view="cliente">Vista del propietario</button>
+    </nav>
+  </div>
+</header>
+<main class="wrap" id="app"><div class="card empty"><h2>Cargando portal…</h2><p class="muted">Conectando con la información de las propiedades.</p></div></main>
+
+<script>
+(() => {
+  // Si la página se abrió desde el enlace de un propietario, se muestra solo su vista.
+  const OWNER_ENTRY = location.hash.indexOf("#propietario-") === 0;
+  const STAGES = ["Evaluación","Preparación","Publicación","Visitas","Negociación","Cierre"];
+  const app = document.getElementById("app");
+  const state = { db:null, user:null, canWrite:null, isAdmin:null, props:[], loaded:false, error:null, selected:null, view:"asesor", clientId:null, messages:[], msgUnsub:null, msgFor:null, draft:null, dirty:false, saving:false, status:"" };
+
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const fmtDate = (d) => { if(!d) return ""; const t = new Date(d + (d.length===10 ? "T12:00:00" : "")); return isNaN(t) ? d : t.toLocaleDateString("es-PE",{day:"2-digit",month:"short",year:"numeric"}); };
+  const fmtDT = (iso) => { const t = new Date(iso); return isNaN(t) ? "" : t.toLocaleString("es-PE",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}); };
+  const safeUrl = (u) => /^https?:\/\//i.test(u || "") ? u : "";
+  const newId = (p) => p + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+  const clone = (o) => JSON.parse(JSON.stringify(o));
+
+  // ---------- routing ----------
+  function readHash(){
+    const h = location.hash.replace("#","");
+    if (h.startsWith("propietario-")) { state.view = "cliente"; state.clientId = h.slice(12); }
+    else if (h === "cliente") { state.view = "cliente"; }
+    else { state.view = "asesor"; }
+  }
+  function go(view, id){
+    if (view === "cliente" && id) location.hash = "propietario-" + id;
+    else location.hash = view;
+  }
+  window.addEventListener("hashchange", () => {
+    const before = state.clientId; readHash();
+    if (state.db && !state.isAdmin && state.clientId !== before) startData(); else render();
+  });
+  document.querySelectorAll(".tab").forEach(b => b.addEventListener("click", () => {
+    if (b.dataset.view === "cliente") go("cliente", state.selected || state.clientId || (state.props[0] && state.props[0].id));
+    else go("asesor");
+  }));
+
+  // ---------- data ----------
+  // Two backends with the same interface:
+  //  - Firebase Firestore (production): asesor and propietarios see the same data from any device.
+  //  - localStorage (demo): works without configuration, but only inside this browser.
+  function makeLocalDb(){
+    const KEY = "cw_portal_db";
+    const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch(e){ return {}; } };
+    const save = (s) => localStorage.setItem(KEY, JSON.stringify(s));
+    const subs = new Set(); const emit = () => subs.forEach(f => f());
+    window.addEventListener("storage", e => { if (e.key === KEY) emit(); });
+    const snap = (path, data) => ({ id:path.split("/").pop(), exists:!!data, data:() => data });
+    function collection(path){
+      let order = null, lim = null;
+      const q = {
+        orderBy(f){ order = f; return q; }, limit(n){ lim = n; return q; },
+        onSnapshot(next){
+          const run = () => { const s = load(), depth = path.split("/").length + 1;
+            let docs = Object.keys(s).filter(k => k.startsWith(path + "/") && k.split("/").length === depth).map(k => snap(k, s[k]));
+            if (order) docs.sort((a,b) => String(a.data()[order]).localeCompare(String(b.data()[order])));
+            if (lim) docs = docs.slice(0, lim);
+            next({ docs }); };
+          subs.add(run); setTimeout(run, 0); return () => subs.delete(run);
+        }
+      };
+      return q;
+    }
+    function doc(path){
+      return {
+        set: async (d) => { const s = load(); s[path] = JSON.parse(JSON.stringify(d)); save(s); emit(); },
+        delete: async () => { const s = load(); delete s[path]; save(s); emit(); },
+        onSnapshot(next){ const run = () => next(snap(path, load()[path])); subs.add(run); setTimeout(run, 0); return () => subs.delete(run); }
+      };
+    }
+    return { collection, doc };
+  }
+  function makeFirebaseDb(){
+    const fs = firebase.firestore();
+    const wrap = (d) => ({ id:d.id, exists:d.exists, data:() => d.data() });
+    function collection(path){
+      let q = fs.collection(path);
+      const api = { orderBy(f){ q = q.orderBy(f); return api; }, limit(n){ q = q.limit(n); return api; },
+        onSnapshot(next, err){ return q.onSnapshot(s => next({ docs:s.docs.map(wrap) }), err); } };
+      return api;
+    }
+    function doc(path){
+      const r = fs.doc(path);
+      return { set:(d) => r.set(d), delete:() => r.delete(), onSnapshot:(next, err) => r.onSnapshot(s => next(wrap(s)), err) };
+    }
+    return { collection, doc };
+  }
+
+  let propsUnsub = null;
+  function startData(){
+    if (propsUnsub) { propsUnsub(); propsUnsub = null; }
+    state.loaded = false; state.error = null; render();
+    const timer = setTimeout(() => { if (!state.loaded) { state.error = "timeout"; render(); } }, 10000);
+    const fail = () => { clearTimeout(timer); state.error = "unavailable"; state.loaded = true; render(); };
+    if (state.isAdmin) {
+      propsUnsub = state.db.collection("propiedades").onSnapshot(snap => {
+        clearTimeout(timer);
+        state.props = snap.docs.map(d => ({ id:d.id, ...d.data() })).sort((a,b) => (b.actualizado||"").localeCompare(a.actualizado||""));
+        state.loaded = true; state.error = null;
+        if (!state.selected && state.props.length) state.selected = state.props[0].id;
+        if (state.selected && !state.props.find(p => p.id === state.selected)) state.selected = state.props[0] ? state.props[0].id : null;
+        if (!state.dirty) state.draft = null;
+        render();
+      }, fail);
+    } else if (state.clientId) {
+      propsUnsub = state.db.doc("propiedades/" + state.clientId).onSnapshot(d => {
+        clearTimeout(timer);
+        state.props = d.exists ? [{ id:d.id, ...d.data() }] : [];
+        state.loaded = true; state.error = null; render();
+      }, fail);
+    } else { clearTimeout(timer); state.props = []; state.loaded = true; render(); }
+  }
+
+  async function init(){
+    readHash();
+    const cfg = window.CW_FIREBASE_CONFIG;
+    const useFirebase = !!(cfg && cfg.apiKey && window.firebase);
+    state.mode = useFirebase ? "firebase" : "local";
+    state.canWrite = true;
+    if (useFirebase) {
+      firebase.initializeApp(cfg);
+      state.db = makeFirebaseDb();
+      firebase.auth().onAuthStateChanged(u => { state.isAdmin = !!u; state.authChecked = true; startData(); });
+    } else {
+      state.db = makeLocalDb(); state.isAdmin = true; state.authChecked = true; startData();
+    }
+  }
+
+  async function login(email, pass){
+    try { await firebase.auth().signInWithEmailAndPassword(email, pass); go("asesor"); }
+    catch(e){ const s = document.getElementById("login-status"); if (s) s.textContent = "Correo o contraseña incorrectos."; }
+  }
+
+  function subscribeMessages(propId){
+    if (state.msgFor === propId) return;
+    if (state.msgUnsub) state.msgUnsub();
+    state.msgFor = propId; state.messages = [];
+    if (!state.db || !propId) return;
+    state.msgUnsub = state.db.collection("mensajes/" + propId + "/items").orderBy("fecha").limit(200).onSnapshot(snap => {
+      state.messages = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+      renderChatOnly();
+    }, () => {});
+  }
+
+  const blankProp = () => ({ propietario:"", propiedad:"", direccion:"", etapa:0, interesados:0, propuestas:0, resumen:"", resumenFecha:"", visitas:[], documentos:[], actualizado:new Date().toISOString() });
+  const demoProp = () => ({
+    propietario:"Carlos", propiedad:"Departamento en San Borja", direccion:"Av. San Borja Norte", etapa:2,
+    interesados:3, propuestas:1, resumenFecha:new Date().toISOString().slice(0,10),
+    resumen:"Esta semana recibimos 3 nuevas consultas y realizamos 2 visitas. Los interesados destacaron la iluminación y la ubicación. Seguimos difundiendo la propiedad en TikTok, Instagram y Facebook.",
+    visitas:[
+      { id:newId("v"), fecha:new Date(Date.now()-2*864e5).toISOString().slice(0,10), personas:2, feedback:"Feedback positivo" },
+      { id:newId("v"), fecha:new Date(Date.now()-5*864e5).toISOString().slice(0,10), personas:1, feedback:"Interesado en el precio" },
+      { id:newId("v"), fecha:new Date(Date.now()-9*864e5).toISOString().slice(0,10), personas:3, feedback:"Evalúan financiamiento" }],
+    documentos:[], actualizado:new Date().toISOString()
+  });
+
+  async function createProp(demo){
+    if (!state.db) return;
+    const id = newId("p");
+    try { await state.db.doc("propiedades/" + id).set(demo ? demoProp() : blankProp()); state.selected = id; state.dirty = false; state.draft = null; render(); }
+    catch(e){ handleWriteError(e); }
+  }
+  async function saveDraft(){
+    if (!state.db || !state.draft || state.saving) return;
+    state.saving = true; state.status = "Guardando…"; renderStatus();
+    const body = clone(state.draft); body.actualizado = new Date().toISOString(); delete body.id;
+    try { await state.db.doc("propiedades/" + state.selected).set(body); state.dirty = false; state.status = "Cambios guardados. El propietario ya los ve en su portal."; }
+    catch(e){ handleWriteError(e); state.status = "No se pudo guardar."; }
+    state.saving = false; render();
+  }
+  async function deleteProp(id){
+    if (!state.db) return;
+    if (!confirm("¿Eliminar esta propiedad del portal? El propietario dejará de verla.")) return;
+    try { await state.db.doc("propiedades/" + id).delete(); state.selected = null; state.draft = null; state.dirty = false; }
+    catch(e){ handleWriteError(e); }
+  }
+  async function sendMessage(propId, de, texto){
+    if (!state.db || !texto.trim()) return;
+    const mid = newId("m");
+    try { await state.db.doc("mensajes/" + propId + "/items/" + mid).set({ de, texto:texto.trim().slice(0,1000), fecha:new Date().toISOString() }); }
+    catch(e){ handleWriteError(e); }
+  }
+  function handleWriteError(e){
+    if (e && (e.code === "invalid_argument" || e.code === "permission-denied")) { state.canWrite = false; alert("Tu acceso a este portal es de solo lectura."); render(); }
+    else if (e && e.code === "quota_exceeded") alert("Se alcanzó el límite de almacenamiento del portal.");
+    else alert("No se pudo completar la acción. Inténtalo nuevamente.");
+  }
+
+  // ---------- shared pieces ----------
+  function stepperHTML(stage, editable){
+    return '<div class="stepper" role="list">' + STAGES.map((s,i) => {
+      const cls = i < stage ? "done" : i === stage ? "now" : "";
+      const inner = '<span class="dot">' + (i < stage ? "✓" : i+1) + '</span><b>' + s + '</b>';
+      return editable
+        ? '<button type="button" class="step ' + cls + '" data-stage="' + i + '" role="listitem" aria-label="Marcar etapa ' + s + '">' + inner + '</button>'
+        : '<div class="step ' + cls + '" role="listitem"' + (i===stage ? ' aria-current="step"' : '') + '>' + inner + '</div>';
+    }).join("") + '</div>';
+  }
+  const houseIco = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg>';
+  const docIco = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>';
+
+  function statusScreen(){
+    const msgs = {
+      nodb:["El portal no está disponible aquí","Revisa la configuración del portal."],
+      timeout:["No pudimos conectar todavía","Revisa tu conexión. El portal seguirá intentando conectarse."],
+      unavailable:["No pudimos cargar la información","Recarga la página en unos minutos."],
+      revoked:["Este portal ya no está disponible para ti",""],
+    };
+    const m = msgs[state.error] || msgs.unavailable;
+    return '<div class="card empty"><h2>' + m[0] + '</h2><p class="muted">' + m[1] + '</p></div>';
+  }
+
+  // ---------- render ----------
+  function render(){
+    const ownerLink = location.hash.indexOf("#propietario-") === 0;
+    document.querySelector(".tabs").style.display = ((!state.isAdmin || OWNER_ENTRY) && ownerLink) ? "none" : "";
+    if (state.view === "asesor" && state.mode === "firebase" && !state.isAdmin) {
+      document.getElementById("tab-asesor").setAttribute("aria-selected", true);
+      document.getElementById("tab-cliente").setAttribute("aria-selected", false);
+      if (!state.authChecked) { app.innerHTML = '<div class="card empty"><h2>Cargando portal…</h2></div>'; return; }
+      app.innerHTML = '<div class="card login"><h2>Acceso asesores</h2><p class="muted">Ingresa con tu cuenta de CW para administrar las propiedades.</p>' +
+        '<form id="login-form"><div><label for="l-email">Correo</label><input id="l-email" type="email" autocomplete="username" required></div>' +
+        '<div><label for="l-pass">Contraseña</label><input id="l-pass" type="password" autocomplete="current-password" required></div>' +
+        '<button class="btn btn-primary" style="justify-content:center">Ingresar</button><p class="status" id="login-status" role="alert"></p></form></div>';
+      document.getElementById("login-form").onsubmit = (e) => { e.preventDefault(); login(document.getElementById("l-email").value.trim(), document.getElementById("l-pass").value); };
+      return;
+    }
+    document.getElementById("tab-asesor").setAttribute("aria-selected", state.view === "asesor");
+    document.getElementById("tab-cliente").setAttribute("aria-selected", state.view === "cliente");
+    if (state.error && !state.props.length) { app.innerHTML = statusScreen(); return; }
+    if (!state.loaded) { app.innerHTML = '<div class="card empty"><h2>Cargando portal…</h2><p class="muted">Conectando con la información de las propiedades.</p></div>'; return; }
+    if (state.view === "cliente") renderClient(); else renderEditor();
+  }
+
+  function renderEditor(){
+    const writable = !!state.isAdmin && state.canWrite !== false;
+    if (!state.props.length){
+      app.innerHTML = '<div class="card empty"><h2>Aún no hay propiedades en el portal</h2><p class="muted">Crea la primera propiedad para que su propietario pueda seguir el avance de la venta.</p>' +
+        (writable ? '<div style="display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap"><button class="btn btn-primary" id="new-blank">Nueva propiedad</button><button class="btn btn-ghost" id="new-demo">Crear propiedad de ejemplo</button></div>' : '<p class="notice" style="margin-top:16px">Tu acceso es de solo lectura.</p>') + '</div>';
+      const nb = document.getElementById("new-blank"); if (nb) nb.onclick = () => createProp(false);
+      const nd = document.getElementById("new-demo"); if (nd) nd.onclick = () => createProp(true);
+      return;
+    }
+    const current = state.props.find(p => p.id === state.selected) || state.props[0];
+    state.selected = current.id;
+    if (!state.draft || state.draft.id !== current.id) { state.draft = clone(current); state.dirty = false; }
+    const d = state.draft;
+    subscribeMessages(current.id);
+
+    const list = state.props.map(p => '<button class="prop-item" data-id="' + esc(p.id) + '" aria-current="' + (p.id===current.id) + '"><b>' + esc(p.propiedad || "Propiedad sin nombre") + '</b><span>' + esc(p.propietario || "Sin propietario") + ' · </span><span class="pill">' + STAGES[p.etapa||0] + '</span></button>').join("");
+
+    const visitas = (d.visitas||[]).slice().sort((a,b)=>(b.fecha||"").localeCompare(a.fecha||""));
+    app.innerHTML =
+    '<div class="editor">' +
+      '<aside class="card side"><h3>Propiedades <span class="pill">' + state.props.length + '</span></h3>' + list +
+        (writable ? '<button class="btn btn-ghost" id="new-blank" style="width:100%;justify-content:center;margin-top:6px">+ Nueva propiedad</button>' : '') + '</aside>' +
+      '<section>' +
+        (state.mode === "local" ? '<p class="notice" style="margin-bottom:16px">Modo demostración: los datos se guardan solo en este navegador. Configura Firebase en config.js para conectar al asesor con los propietarios.</p>' : '') +
+        '<div class="edit-head"><div><p class="muted" style="font-size:13px;font-weight:700">EDITANDO</p><h2>' + esc(d.propiedad || "Propiedad sin nombre") + '</h2></div>' +
+          '<div style="display:flex;gap:8px;flex-wrap:wrap">' + (state.mode === "firebase" ? '<button class="btn btn-ghost" id="logout">Cerrar sesión</button>' : '') + '<button class="btn btn-ghost" id="copy-link">Copiar enlace del propietario</button><button class="btn btn-ghost" id="preview">Ver como propietario</button></div></div>' +
+        (writable ? '' : '<p class="notice" style="margin-bottom:16px">Tu acceso es de solo lectura: puedes revisar la información, pero no modificarla.</p>') +
+        '<fieldset ' + (writable ? '' : 'disabled') + ' style="border:0">' +
+        '<div class="card sec"><h3>Datos de la propiedad</h3><p class="hint">Esta información aparece en el saludo y la cabecera del portal del propietario.</p>' +
+          '<div class="grid3"><div><label for="f-prop">Nombre del propietario</label><input id="f-prop" data-field="propietario" value="' + esc(d.propietario) + '" maxlength="80"></div>' +
+          '<div><label for="f-inm">Propiedad</label><input id="f-inm" data-field="propiedad" value="' + esc(d.propiedad) + '" maxlength="100"></div>' +
+          '<div><label for="f-dir">Dirección o zona</label><input id="f-dir" data-field="direccion" value="' + esc(d.direccion) + '" maxlength="120"></div></div></div>' +
+        '<div class="card sec"><h3>Etapa de la venta</h3><p class="hint">Haz clic en la etapa actual. El propietario verá su avance en la línea de tiempo.</p>' + stepperHTML(d.etapa||0, writable) + '</div>' +
+        '<div class="card sec"><h3>Indicadores</h3><p class="hint">Las visitas realizadas se cuentan automáticamente desde el registro de visitas.</p>' +
+          '<div class="grid3"><div><label>Visitas realizadas</label><input value="' + (d.visitas||[]).length + '" disabled></div>' +
+          '<div><label for="f-int">Interesados activos</label><input id="f-int" type="number" min="0" max="999" data-field="interesados" data-num="1" value="' + (d.interesados||0) + '"></div>' +
+          '<div><label for="f-pro">Propuestas recibidas</label><input id="f-pro" type="number" min="0" max="999" data-field="propuestas" data-num="1" value="' + (d.propuestas||0) + '"></div></div></div>' +
+        '<div class="card sec"><h3>Resumen semanal</h3><p class="hint">Cuenta en pocas líneas qué pasó esta semana con la venta.</p>' +
+          '<div style="max-width:220px;margin-bottom:12px"><label for="f-rf">Semana del</label><input id="f-rf" type="date" data-field="resumenFecha" value="' + esc(d.resumenFecha) + '"></div>' +
+          '<label for="f-res">Resumen</label><textarea id="f-res" data-field="resumen" maxlength="1500">' + esc(d.resumen) + '</textarea></div>' +
+        '<div class="card sec"><h3>Registro de visitas</h3><p class="hint">Agrega cada visita con la cantidad de personas y el comentario de los interesados.</p>' +
+          '<div class="row-list">' + (visitas.length ? visitas.map(v => '<div class="row"><span>' + fmtDate(v.fecha) + '</span><span>' + (v.personas||0) + (v.personas==1?" persona":" personas") + '</span><span>' + esc(v.feedback) + '</span><button class="btn btn-danger" data-delvisit="' + esc(v.id) + '" aria-label="Eliminar visita">Eliminar</button></div>').join("") : '<p class="muted" style="font-size:14px">Aún no hay visitas registradas.</p>') + '</div>' +
+          '<div class="add-row"><div><label for="v-f">Fecha</label><input id="v-f" type="date"></div><div><label for="v-p">Personas</label><input id="v-p" type="number" min="1" max="20" value="1"></div><div><label for="v-c">Comentario</label><input id="v-c" maxlength="140" placeholder="Ej. Interesado en el precio"></div><button class="btn btn-ghost" id="add-visit">Agregar</button></div></div>' +
+        '<div class="card sec"><h3>Documentos</h3><p class="hint">Pega el enlace de cada documento, por ejemplo de Google Drive, con permiso de lectura para el propietario.</p>' +
+          '<div class="row-list">' + ((d.documentos||[]).length ? d.documentos.map(x => '<div class="row doc"><span>' + docIco + ' ' + esc(x.nombre) + '</span><button class="btn btn-danger" data-deldoc="' + esc(x.id) + '">Eliminar</button></div>').join("") : '<p class="muted" style="font-size:14px">Aún no hay documentos.</p>') + '</div>' +
+          '<div class="add-row doc"><div><label for="d-n">Nombre del documento</label><input id="d-n" maxlength="80" placeholder="Ej. Contrato de exclusividad"></div><div><label for="d-u">Enlace</label><input id="d-u" type="url" placeholder="https://"></div><button class="btn btn-ghost" id="add-doc">Agregar</button></div></div>' +
+        '</fieldset>' +
+        '<div class="save-bar card sec" style="position:sticky;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:5">' +
+          (writable ? '<button class="btn btn-danger" id="del-prop" style="margin-right:auto">Eliminar propiedad</button>' : '') +
+          '<span class="status" id="status">' + esc(state.dirty ? "Tienes cambios sin guardar." : state.status) + '</span>' +
+          (writable ? '<button class="btn btn-primary" id="save" ' + (state.dirty ? "" : "disabled") + '>Guardar cambios</button>' : '') + '</div>' +
+        '<div class="card sec"><h3>Mensajes con el propietario</h3><p class="hint">Los mensajes se envían al instante y aparecen en el portal del propietario.</p><div class="chat" id="chat"></div>' +
+          '<form class="composer" id="composer"><input id="msg-in" maxlength="1000" placeholder="Escribe un mensaje para el propietario" ' + (writable ? '' : 'disabled') + ' aria-label="Mensaje"><button class="btn btn-primary" ' + (writable ? '' : 'disabled') + '>Enviar</button></form></div>' +
+      '</section></div>';
+
+    // events
+    app.querySelectorAll(".prop-item").forEach(b => b.onclick = () => {
+      if (state.dirty && !confirm("Tienes cambios sin guardar. ¿Deseas descartarlos?")) return;
+      state.selected = b.dataset.id; state.draft = null; state.dirty = false; state.status = ""; render();
+    });
+    const nb = document.getElementById("new-blank"); if (nb) nb.onclick = () => createProp(false);
+    app.querySelectorAll("[data-field]").forEach(inp => inp.addEventListener("input", () => {
+      d[inp.dataset.field] = inp.dataset.num ? Math.max(0, parseInt(inp.value||"0",10)||0) : inp.value; markDirty();
+      if (inp.dataset.field === "propiedad") app.querySelector(".edit-head h2").textContent = inp.value || "Propiedad sin nombre";
+    }));
+    app.querySelectorAll("button.step").forEach(b => b.onclick = () => { d.etapa = +b.dataset.stage; markDirty(); render(); });
+    const av = document.getElementById("add-visit"); if (av) av.onclick = () => {
+      const f = document.getElementById("v-f").value, p = parseInt(document.getElementById("v-p").value,10)||1, c = document.getElementById("v-c").value.trim();
+      if (!f) { document.getElementById("v-f").focus(); return; }
+      d.visitas = (d.visitas||[]).concat([{ id:newId("v"), fecha:f, personas:p, feedback:c }]); markDirty(); render();
+    };
+    app.querySelectorAll("[data-delvisit]").forEach(b => b.onclick = () => { d.visitas = d.visitas.filter(v => v.id !== b.dataset.delvisit); markDirty(); render(); });
+    const ad = document.getElementById("add-doc"); if (ad) ad.onclick = () => {
+      const n = document.getElementById("d-n").value.trim(), u = document.getElementById("d-u").value.trim();
+      if (!n) { document.getElementById("d-n").focus(); return; }
+      if (!safeUrl(u)) { alert("Ingresa un enlace válido que empiece con https://"); document.getElementById("d-u").focus(); return; }
+      d.documentos = (d.documentos||[]).concat([{ id:newId("d"), nombre:n, url:u }]); markDirty(); render();
+    };
+    app.querySelectorAll("[data-deldoc]").forEach(b => b.onclick = () => { d.documentos = d.documentos.filter(x => x.id !== b.dataset.deldoc); markDirty(); render(); });
+    const sv = document.getElementById("save"); if (sv) sv.onclick = saveDraft;
+    const dp = document.getElementById("del-prop"); if (dp) dp.onclick = () => deleteProp(current.id);
+    const lo = document.getElementById("logout"); if (lo) lo.onclick = () => firebase.auth().signOut();
+    document.getElementById("preview").onclick = () => { if (state.dirty && !confirm("Tienes cambios sin guardar. El propietario aún no los ve. ¿Continuar?")) return; go("cliente", current.id); };
+    document.getElementById("copy-link").onclick = async () => {
+      const url = location.origin + location.pathname + "#propietario-" + current.id;
+      let box = document.getElementById("link-box");
+      if (!box) {
+        box = document.createElement("div");
+        box.id = "link-box"; box.className = "card sec";
+        box.innerHTML = '<h3>Enlace personal del propietario</h3><p class="hint">Envíalo por WhatsApp. Al abrirlo, el propietario verá directamente el portal de esta propiedad.</p><div class="composer"><input id="link-input" readonly aria-label="Enlace del propietario"><button class="btn btn-primary" id="link-copy" type="button">Copiar</button></div><p class="status" id="link-status" style="margin-top:8px"></p>';
+        app.querySelector(".edit-head").after(box);
+      }
+      const inp = document.getElementById("link-input"), st = document.getElementById("link-status");
+      inp.value = url; inp.focus(); inp.select();
+      const doCopy = async () => {
+        try { await navigator.clipboard.writeText(url); st.textContent = "Enlace copiado."; }
+        catch(e){ inp.select(); st.textContent = "Selecciona el enlace y cópialo con Ctrl + C, o mantenlo presionado en el celular."; }
+      };
+      document.getElementById("link-copy").onclick = doCopy;
+      await doCopy();
+    };
+    document.getElementById("composer").onsubmit = (e) => { e.preventDefault(); const i = document.getElementById("msg-in"); const t = i.value; i.value = ""; sendMessage(current.id, "asesor", t); };
+    renderChatOnly();
+  }
+  function markDirty(){ state.dirty = true; state.status = ""; renderStatus(); const sv = document.getElementById("save"); if (sv) sv.disabled = false; }
+  function renderStatus(){ const s = document.getElementById("status"); if (s) s.textContent = state.dirty ? "Tienes cambios sin guardar." : state.status; }
+
+  function renderClient(){
+    const id = state.clientId || state.selected || (state.props[0] && state.props[0].id);
+    const p = state.props.find(x => x.id === id);
+    if (!p){
+      app.innerHTML = '<div class="card empty"><h2>No encontramos esta propiedad</h2><p class="muted">Pide a tu asesor de CW que te envíe nuevamente tu enlace personal.</p></div>';
+      return;
+    }
+    subscribeMessages(p.id);
+    const stage = p.etapa || 0;
+    const visitas = (p.visitas||[]).slice().sort((a,b)=>(b.fecha||"").localeCompare(a.fecha||""));
+    app.innerHTML =
+    '<div class="card hello"><div><h1>Hola, ' + esc(p.propietario || "propietario") + '</h1><p>Aquí puedes ver el avance de la venta de tu propiedad.</p></div>' +
+      '<div class="prop-badge"><span class="ico">' + houseIco + '</span><div><b>' + esc(p.propiedad || "Tu propiedad") + '</b><span>' + esc(p.direccion) + '</span></div></div></div>' +
+    '<div class="client">' +
+      '<section>' +
+        '<div class="card block"><h3>Estado de tu venta <span class="pill">Etapa ' + (stage+1) + ' de ' + STAGES.length + '</span></h3>' + stepperHTML(stage, false) + '</div>' +
+        '<div class="stats"><div class="card stat"><div class="n">' + visitas.length + '</div><div class="l">Visitas realizadas</div></div>' +
+          '<div class="card stat"><div class="n">' + (p.interesados||0) + '</div><div class="l">Interesados activos</div></div>' +
+          '<div class="card stat"><div class="n">' + (p.propuestas||0) + '</div><div class="l">Propuestas recibidas</div></div></div>' +
+        '<div class="card block"><h3>Últimas visitas</h3>' + (visitas.length ? visitas.slice(0,8).map(v => '<div class="visit"><span>' + fmtDate(v.fecha) + '</span><span class="muted">' + (v.personas||0) + (v.personas==1?" persona":" personas") + '</span><span>' + esc(v.feedback) + '</span></div>').join("") : '<p class="muted">Todavía no hay visitas registradas. Te avisaremos apenas se agende la primera.</p>') + '</div>' +
+      '</section>' +
+      '<aside>' +
+        '<div class="card block summary" style="margin-top:18px"><h3>Resumen semanal <span class="date">' + (p.resumenFecha ? "Semana del " + fmtDate(p.resumenFecha) : "") + '</span></h3><p>' + esc(p.resumen || "Tu asesor publicará aquí el resumen de la semana.") + '</p></div>' +
+        '<div class="card block"><h3>Tus documentos</h3>' + ((p.documentos||[]).filter(x => safeUrl(x.url)).length ? p.documentos.filter(x => safeUrl(x.url)).map(x => '<a class="doc-link" href="' + esc(x.url) + '" target="_blank" rel="noopener noreferrer">' + docIco + esc(x.nombre) + '</a>').join("") : '<p class="muted">Tu asesor compartirá aquí tus documentos.</p>') + '</div>' +
+        '<div class="card block"><h3>Mensajes con tu asesor</h3><div class="chat" id="chat"></div>' +
+          '<form class="composer" id="composer"><input id="msg-in" maxlength="1000" placeholder="Escribe tu consulta" aria-label="Mensaje" ' + (state.canWrite === false ? "disabled" : "") + '><button class="btn btn-primary" ' + (state.canWrite === false ? "disabled" : "") + '>Enviar</button></form></div>' +
+      '</aside>' +
+    '</div>' +
+    '<p class="footer">CW Inmobiliaria · Tu propiedad, nuestro compromiso · Última actualización: ' + fmtDT(p.actualizado) + '</p>';
+    document.getElementById("composer").onsubmit = (e) => { e.preventDefault(); const i = document.getElementById("msg-in"); const t = i.value; i.value = ""; sendMessage(p.id, "propietario", t); };
+    renderChatOnly();
+  }
+
+  function renderChatOnly(){
+    const box = document.getElementById("chat"); if (!box) return;
+    const ownerView = state.view === "cliente";
+    if (!state.messages.length) { box.innerHTML = '<p class="muted" style="font-size:14px">' + (ownerView ? "¿Tienes alguna duda? Escríbele a tu asesor." : "Aún no hay mensajes.") + '</p>'; return; }
+    box.innerHTML = state.messages.map(m => '<div class="msg ' + (m.de === "asesor" ? "asesor" : "propietario") + '"><b>' + (m.de === "asesor" ? "Asesor CW" : "Propietario") + '</b>' + esc(m.texto) + '<small>' + fmtDT(m.fecha) + '</small></div>').join("");
+    box.scrollTop = box.scrollHeight;
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>

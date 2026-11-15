@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vende tu propiedad con CW Inmobiliaria</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#111B2E; --navy-2:#1A2740; --ink-soft:#576174;
+    --orange:#D96A2B; --orange-deep:#B85221; --orange-soft:#F0B384;
+    --cream:#FBF9F5; --cream-2:#F2ECDF; --white:#FFFFFF;
+    --line:rgba(17,27,46,.13); --line-dark:rgba(251,249,245,.16);
+    --sans:'Manrope', 'Segoe UI', Arial, sans-serif;
+    --serif:'Fraunces', Georgia, 'Times New Roman', serif;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --cream:#FBF9F5; --cream-2:#F2ECDF; } }
+  :root[data-theme="dark"]{ --cream:#FBF9F5; --cream-2:#F2ECDF; }
+  html{scroll-behavior:smooth; scroll-padding-top:calc(84px + env(safe-area-inset-top,0px));}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:var(--sans);background:var(--cream);color:var(--navy);-webkit-font-smoothing:antialiased;line-height:1.6;}
+  img{max-width:100%;display:block;}
+  a{color:inherit;}
+  .wrap{max-width:1160px;margin:0 auto;padding:0 32px;}
+  :focus-visible{outline:3px solid var(--orange);outline-offset:3px;border-radius:4px;}
+
+  /* header */
+  header{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:rgba(251,249,245,.97);border-bottom:1px solid var(--line);backdrop-filter:blur(10px);}
+  header .wrap{display:flex;align-items:center;justify-content:space-between;gap:24px;height:76px;}
+  .logo img{height:50px;width:auto;}
+  nav{display:flex;gap:30px;}
+  nav a{text-decoration:none;font-size:14px;font-weight:500;color:var(--navy);opacity:.75;}
+  nav a:hover{opacity:1;}
+  .btn{display:inline-flex;align-items:center;justify-content:center;font-family:var(--sans);font-weight:600;font-size:15px;border-radius:4px;padding:14px 24px;text-decoration:none;border:0;cursor:pointer;transition:background .2s;}
+  .btn-orange{background:var(--orange);color:#fff;}
+  .btn-orange:hover{background:var(--orange-deep);}
+  .btn-sm{padding:10px 18px;font-size:14px;}
+  .link-line{color:inherit;font-size:15px;font-weight:500;text-decoration:none;border-bottom:1px solid currentColor;padding-bottom:3px;opacity:.85;}
+  .link-line:hover{opacity:1;}
+
+  /* hero */
+  .hero{background:var(--navy);color:#fff;padding:80px 0 72px;position:relative;overflow:hidden;}
+  .hero::after{content:"";position:absolute;right:-180px;top:-180px;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle, rgba(217,106,43,.22), transparent 65%);pointer-events:none;}
+  .hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:56px;align-items:center;position:relative;z-index:1;}
+  .hero-kicker{font-size:14px;color:var(--orange-soft);font-weight:600;margin-bottom:20px;}
+  .hero h1{font-family:var(--serif);font-weight:400;font-size:clamp(36px,4.6vw,58px);line-height:1.12;letter-spacing:-.01em;max-width:620px;}
+  .hero-sub{color:rgba(251,249,245,.72);font-size:17px;max-width:500px;margin-top:24px;font-weight:300;}
+  .hero-points{list-style:none;margin-top:32px;display:grid;gap:12px;max-width:500px;}
+  .hero-points li{display:flex;gap:12px;align-items:flex-start;font-size:15px;color:rgba(251,249,245,.88);}
+  .hero-points li::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--orange);margin-top:9px;}
+
+  /* form card */
+  .form-card{background:var(--cream);color:var(--navy);border-radius:10px;padding:32px 30px;box-shadow:0 24px 60px rgba(0,0,0,.28);}
+  .form-card h2{font-family:var(--serif);font-weight:600;font-size:26px;line-height:1.2;}
+  .form-card > p{color:var(--ink-soft);font-size:14px;margin:8px 0 22px;}
+  .field{margin-bottom:14px;}
+  .field label, .field legend{display:block;font-size:13px;font-weight:600;margin-bottom:6px;}
+  .field input, .field select{width:100%;font-family:var(--sans);font-size:15px;color:var(--navy);background:#fff;border:1px solid rgba(17,27,46,.22);border-radius:4px;padding:11px 12px;}
+  .field input:focus, .field select:focus{outline:2px solid var(--orange);outline-offset:1px;border-color:var(--orange);}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  fieldset.field{border:0;}
+  .radio-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .radio-row label{display:flex;align-items:center;justify-content:flex-start;text-align:left;gap:8px;line-height:1.3;font-weight:500;font-size:14px;background:#fff;border:1px solid rgba(17,27,46,.22);border-radius:4px;padding:9px 12px;cursor:pointer;margin:0;}
+  .radio-row input{accent-color:var(--orange);width:auto;flex:none;padding:0;margin:0;}
+  .form-card .btn{width:100%;margin-top:6px;padding:15px;}
+  .form-note{font-size:12.5px;color:var(--ink-soft);margin-top:12px;text-align:center;}
+  .form-error{display:none;background:#FCE8DC;color:#8A3410;font-size:13.5px;border-radius:4px;padding:10px 12px;margin-bottom:12px;}
+  .form-error.show{display:block;}
+
+  /* zones */
+  .zones{background:var(--cream-2);border-bottom:1px solid var(--line);}
+  .zones .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:10px 28px;padding-top:20px;padding-bottom:20px;font-size:14px;}
+  .zones strong{font-weight:600;margin-right:4px;}
+  .zones span{color:var(--ink-soft);}
+
+  /* sections */
+  section{padding:104px 0;}
+  .head{max-width:640px;margin-bottom:56px;}
+  .head h2{font-family:var(--serif);font-weight:400;font-size:clamp(28px,3vw,40px);line-height:1.2;}
+  .head p{color:var(--ink-soft);font-size:16.5px;margin-top:14px;max-width:560px;}
+  .on-navy{background:var(--navy);color:#fff;}
+  .on-navy .head p{color:rgba(251,249,245,.66);}
+
+  /* steps */
+  .steps{list-style:none;display:grid;grid-template-columns:repeat(5,1fr);gap:0;border-top:2px solid var(--navy);}
+  .steps li{padding:26px 22px 0 0;position:relative;}
+  .steps li + li{padding-left:22px;border-left:1px solid var(--line);}
+  .step-n{font-family:var(--serif);font-size:44px;line-height:1;color:var(--orange);font-weight:600;}
+  .steps h3{font-size:17px;font-weight:700;margin:16px 0 8px;line-height:1.3;}
+  .steps p{font-size:14.5px;color:var(--ink-soft);}
+
+  /* case */
+  .case{background:var(--orange);color:#fff;padding:96px 0;}
+  .case-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:64px;align-items:center;}
+  .case-compare{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid rgba(255,255,255,.4);}
+  .case-compare div{padding:24px 24px 0 0;}
+  .case-compare div + div{padding-left:24px;border-left:1px solid rgba(255,255,255,.4);}
+  .case-num{font-family:var(--serif);font-weight:600;font-size:clamp(64px,8vw,112px);line-height:.95;color:var(--navy);}
+  .case-lbl{font-size:15px;margin-top:10px;color:rgba(255,255,255,.92);max-width:220px;}
+  .case h2{font-family:var(--serif);font-weight:400;font-size:clamp(26px,2.8vw,36px);line-height:1.25;margin-bottom:28px;max-width:560px;}
+  .case-copy p{font-size:16.5px;line-height:1.7;color:rgba(255,255,255,.94);margin-bottom:16px;}
+  .case-copy .btn{background:var(--navy);color:#fff;margin-top:8px;}
+  .case-copy .btn:hover{background:var(--navy-2);}
+
+  /* why */
+  .why-list{display:grid;grid-template-columns:1fr 1fr;gap:0 64px;}
+  .why-item{padding:28px 0;border-top:1px solid var(--line-dark);}
+  .why-item h3{font-size:18px;font-weight:600;margin-bottom:8px;color:#fff;}
+  .why-item p{font-size:15px;color:rgba(251,249,245,.66);max-width:440px;}
+
+  /* exclusivity */
+  .excl{background:var(--cream-2);}
+  .excl-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;}
+  .excl-col{background:var(--cream);border-radius:8px;padding:34px 32px;}
+  .excl-col.dark{background:var(--navy);color:#fff;}
+  .excl-col h3{font-family:var(--serif);font-weight:600;font-size:24px;margin-bottom:18px;}
+  .excl-col ul{list-style:none;display:grid;gap:14px;}
+  .excl-col li{font-size:15.5px;padding-left:22px;position:relative;}
+  .excl-col li::before{content:"";position:absolute;left:0;top:10px;width:10px;height:2px;background:var(--orange);}
+  .excl-col.dark li{color:rgba(251,249,245,.85);}
+
+  /* faq */
+  .faq-list{max-width:820px;border-top:1px solid var(--line);}
+  details{border-bottom:1px solid var(--line);}
+  summary{list-style:none;cursor:pointer;padding:22px 40px 22px 0;font-size:17px;font-weight:600;position:relative;}
+  summary::-webkit-details-marker{display:none;}
+  summary::after{content:"+";position:absolute;right:4px;top:16px;font-size:26px;font-weight:300;color:var(--orange);transition:transform .2s;}
+  details[open] summary::after{transform:rotate(45deg);}
+  details p{padding:0 40px 24px 0;color:var(--ink-soft);font-size:15.5px;max-width:700px;}
+
+  /* final cta */
+  .final{padding:96px 0;}
+  .final-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:48px;align-items:end;}
+  .final h2{font-family:var(--serif);font-weight:400;font-size:clamp(30px,3.6vw,46px);line-height:1.2;max-width:620px;}
+  .final p{color:rgba(251,249,245,.68);margin-top:16px;max-width:480px;}
+  .final-actions{display:flex;flex-direction:column;gap:18px;align-items:flex-start;}
+  .buyer{margin-top:56px;padding-top:24px;border-top:1px solid var(--line-dark);font-size:15px;color:rgba(251,249,245,.68);}
+  .buyer a{color:#fff;}
+
+  footer{background:#0B1220;color:rgba(251,249,245,.6);padding:56px 0 28px;}
+  .foot{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr 1fr;gap:40px;padding-bottom:40px;border-bottom:1px solid var(--line-dark);}
+  .foot img{height:58px;width:auto;margin-bottom:14px;background:var(--cream);border-radius:50%;padding:4px;}
+  .foot h4{color:#fff;font-size:14px;font-weight:600;margin-bottom:14px;}
+  .foot a, .foot span{display:block;font-size:14px;margin-bottom:9px;text-decoration:none;color:rgba(251,249,245,.62);}
+  .foot a:hover{color:var(--orange-soft);}
+  .foot p{font-size:14px;max-width:260px;}
+  .foot-bottom{padding-top:22px;font-size:12.5px;color:rgba(251,249,245,.4);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+
+
+  /* visual layer */
+  .hero{padding:96px 0 88px;}
+  .hero-photo{position:absolute;inset:0 0 0 auto;width:60%;z-index:0;}
+  .hero-photo img{width:100%;height:100%;object-fit:cover;}
+  .hero-photo::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--navy) 0%,rgba(17,27,46,.7) 25%,rgba(17,27,46,.15) 100%);}
+  .hero::after{display:none;}
+  .zones .chip{display:inline-flex;align-items:center;gap:6px;background:var(--cream);border:1px solid var(--line);border-radius:999px;padding:6px 14px;color:var(--navy);font-weight:500;}
+  .zones .chip svg{color:var(--orange);}
+  .life{background:var(--cream);padding:104px 0;}
+  .life-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;}
+  .life-photo{position:relative;}
+  .life-photo img{width:100%;border-radius:10px;aspect-ratio:4/3;object-fit:cover;}
+  .life-photo .tag{position:absolute;left:-18px;bottom:-22px;background:var(--orange);color:#fff;border-radius:8px;padding:16px 20px;max-width:260px;font-family:var(--serif);font-size:19px;line-height:1.3;box-shadow:0 14px 30px rgba(17,27,46,.2);}
+  .life h2{font-family:var(--serif);font-weight:400;font-size:clamp(28px,3vw,40px);line-height:1.2;margin-bottom:16px;}
+  .life > .wrap p.lead{color:var(--ink-soft);}
+  .situations{display:grid;gap:12px;margin-top:26px;}
+  .situation{display:flex;gap:14px;align-items:center;background:var(--cream-2);border-radius:8px;padding:16px 18px;font-size:15.5px;}
+  .situation .ic{flex:none;width:44px;height:44px;border-radius:50%;background:var(--navy);color:var(--orange-soft);display:grid;place-items:center;}
+  .step-ic{width:56px;height:56px;border-radius:50%;background:var(--cream-2);color:var(--orange-deep);display:grid;place-items:center;margin-bottom:14px;}
+  .step-n{font-size:15px;font-family:var(--sans);font-weight:700;color:var(--orange);letter-spacing:.02em;}
+  .steps h3{margin-top:6px;}
+  .bars{display:grid;gap:26px;}
+  .bar-row .bar-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:10px;}
+  .bar-row .bar-lbl{font-size:15px;color:rgba(255,255,255,.95);}
+  .bar-row .bar-val{font-family:var(--serif);font-weight:600;font-size:clamp(34px,4vw,54px);line-height:1;color:var(--navy);white-space:nowrap;}
+  .bar-track{height:18px;background:rgba(255,255,255,.25);border-radius:999px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:999px;background:var(--navy);}
+  .bar-fill.long{width:100%;}
+  .bar-fill.short{width:1.4%;min-width:18px;background:#fff;}
+  .bar-note{font-size:13px;color:rgba(255,255,255,.85);margin-top:4px;}
+  .why-item{display:grid;grid-template-columns:52px 1fr;gap:18px;align-items:start;}
+  .why-ic{width:52px;height:52px;border-radius:50%;background:var(--navy-2);color:var(--orange-soft);display:grid;place-items:center;border:1px solid var(--line-dark);}
+  .excl-banner{position:relative;border-radius:10px;overflow:hidden;margin-bottom:28px;height:260px;}
+  .excl-banner img{width:100%;height:100%;object-fit:cover;}
+  .excl-banner::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(17,27,46,.9) 0%,rgba(17,27,46,.4) 60%,rgba(17,27,46,.1) 100%);}
+  .excl-banner p{position:absolute;left:36px;top:50%;transform:translateY(-50%);z-index:1;color:#fff;font-family:var(--serif);font-size:clamp(22px,2.4vw,30px);line-height:1.3;max-width:440px;}
+  @media (max-width:960px){
+    .hero-photo{width:100%;opacity:.45;}
+    .life-grid{grid-template-columns:1fr;}
+    .life-photo .tag{left:12px;}
+  }
+
+  @media (max-width:960px){
+    nav{display:none;}
+    .hero-grid,.case-grid,.final-grid,.excl-grid,.why-list{grid-template-columns:1fr;}
+    .steps{grid-template-columns:1fr;border-top:0;}
+    .steps li, .steps li + li{padding:22px 0;border-left:0;border-top:1px solid var(--line);}
+    .foot{grid-template-columns:1fr 1fr;}
+    section{padding:72px 0;}
+  }
+  @media (max-width:560px){
+    .wrap{padding:0 20px;}
+    .two{grid-template-columns:1fr;}
+    .header-cta{display:none;}
+    .foot{grid-template-columns:1fr;}
+    .form-card{padding:26px 20px;}
+  }
+  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto;} *{transition:none !important;} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a class="logo" href="#inicio" aria-label="CW Inmobiliaria, inicio"><img src="assets/logo-cw.png" alt="CW Inmobiliaria"></a>
+    <nav aria-label="Secciones">
+      <a href="#proceso">Cómo vendemos</a>
+      <a href="#resultados">Resultados</a>
+      <a href="#exclusividad">Exclusividad</a>
+      <a href="#preguntas">Preguntas</a>
+      <a href="#mi-portal">Mi portal</a>
+    </nav>
+    <a class="btn btn-orange btn-sm header-cta" href="#tasacion">Solicita tu tasación</a>
+  </div>
+</header>
+
+<main id="inicio">
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero-photo"><img src="assets/hero-propiedad.jpg" alt=""></div>
+  <div class="wrap hero-grid">
+    <div>
+      <p class="hero-kicker">Para propietarios en Lima</p>
+      <h1 id="hero-title">Vende tu propiedad con quien conoce tu barrio y te acompaña hasta la notaría.</h1>
+      <p class="hero-sub">Hacemos el estudio de mercado, la tasación, la difusión y todo el trámite legal. Tú solo decides y firmas.</p>
+      <ul class="hero-points">
+        <li>Un precio de salida basado en lo que realmente paga el mercado de tu zona.</li>
+        <li>Solo llevamos a tu casa compradores verificados, con DNI y crédito revisados.</li>
+        <li>Te mantenemos informado en cada etapa, sin presiones.</li>
+      </ul>
+    </div>
+
+    <div class="form-card" id="tasacion">
+      <h2>Solicita la tasación de tu propiedad</h2>
+      <p>Completa estos datos y continuamos la conversación por WhatsApp.</p>
+      <form id="tasacion-form" novalidate>
+        <div class="form-error" id="form-error" role="alert"></div>
+        <div class="field">
+          <label for="f-nombre">Tu nombre</label>
+          <input id="f-nombre" name="nombre" type="text" autocomplete="name" required>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="f-distrito">Distrito del inmueble</label>
+            <select id="f-distrito" name="distrito" required>
+              <option value="">Elige un distrito</option>
+              <option>La Molina</option><option>San Borja</option><option>Surco</option>
+              <option>Pueblo Libre</option><option>Breña</option><option>Otro distrito</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="f-tipo">Tipo de inmueble</label>
+            <select id="f-tipo" name="tipo" required>
+              <option value="">Elige el tipo</option>
+              <option>Casa</option><option>Departamento</option><option>Terreno</option><option>Local u oficina</option>
+            </select>
+          </div>
+        </div>
+        <fieldset class="field">
+          <legend>¿Quién escribe?</legend>
+          <div class="radio-row">
+            <label><input type="radio" name="rol" value="Soy el propietario" checked> Propietario</label>
+            <label><input type="radio" name="rol" value="Soy familiar del propietario"> Familiar del propietario</label>
+          </div>
+        </fieldset>
+        <div class="field">
+          <label for="f-origen">¿Cómo nos conociste?</label>
+          <select id="f-origen" name="origen">
+            <option value="">Elige una opción</option>
+            <option>Facebook</option><option>Instagram</option><option>TikTok</option>
+            <option>Recomendación de un familiar o conocido</option><option>Otro</option>
+          </select>
+        </div>
+        <button class="btn btn-orange" type="submit">Solicitar tasación por WhatsApp</button>
+        <p class="form-note">Se abrirá WhatsApp con tu mensaje listo para enviar.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<div class="zones" aria-label="Zonas donde trabajamos">
+  <div class="wrap">
+    <strong>Captamos propiedades en</strong>
+    <span class="chip"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 1 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>La Molina</span><span class="chip"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 1 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>San Borja</span><span class="chip"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 1 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Surco</span><span class="chip"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 1 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Pueblo Libre</span><span class="chip"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 1 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Breña</span>
+  </div>
+</div>
+
+
+<section class="life" aria-labelledby="life-title">
+  <div class="wrap life-grid">
+    <div class="life-photo">
+      <img src="assets/entrega-llaves.jpg" alt="Entrega de llaves de una vivienda tras la firma del contrato">
+      <p class="tag">Una casa con historia merece un proceso con cuidado.</p>
+    </div>
+    <div>
+      <h2 id="life-title">¿Tu casa ya no se ajusta a esta etapa de tu vida?</h2>
+      <p class="lead" style="color:var(--ink-soft)">Muchos propietarios que nos escriben están en una de estas situaciones. Si te identificas, conversemos sin compromiso.</p>
+      <div class="situations">
+        <div class="situation"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>Los hijos ya se independizaron y hay espacios que nadie usa.</div>
+        <div class="situation"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></svg></span>Mantener la casa se volvió costoso y cansado.</div>
+        <div class="situation"><span class="ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></svg></span>Quieres pasar a algo más manejable o invertir de otra forma.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="proceso" aria-labelledby="proceso-title">
+  <div class="wrap">
+    <div class="head">
+      <h2 id="proceso-title">Así vendemos tu propiedad</h2>
+      <p>Un mismo equipo se encarga de todo el proceso, desde la primera conversación hasta la firma en notaría.</p>
+    </div>
+    <ol class="steps">
+      <li><span class="step-ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span><span class="step-n">Paso 1</span><h3>Conversamos</h3><p>Conocemos tu propiedad, tu situación y lo que esperas de la venta.</p></li>
+      <li><span class="step-ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/><path d="M8 11h6M11 8v6"/></svg></span><span class="step-n">Paso 2</span><h3>Estudio de mercado y tasación</h3><p>Comparamos propiedades similares de tu zona y coordinamos la tasación para definir un precio real.</p></li>
+      <li><span class="step-ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M8 17c1.5-1.5 2.5-1.5 3.5 0s2 1.5 3.5 0"/></svg></span><span class="step-n">Paso 3</span><h3>Firmamos exclusividad</h3><p>Acordamos por escrito las condiciones y la estrategia de venta.</p></li>
+      <li><span class="step-ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 11 15-6v14L3 13z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg></span><span class="step-n">Paso 4</span><h3>Difundimos y filtramos</h3><p>Publicamos en Instagram, TikTok y Facebook, y verificamos a cada comprador antes de una visita.</p></li>
+      <li><span class="step-ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></svg></span><span class="step-n">Paso 5</span><h3>Cerramos en notaría</h3><p>Nuestro respaldo legal te acompaña en la negociación y la firma.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section class="case" id="resultados" aria-labelledby="case-title">
+  <div class="wrap case-grid">
+    <div class="bars" aria-label="Comparación de tiempos de venta">
+      <div class="bar-row">
+        <div class="bar-top"><span class="bar-lbl">Con otra inmobiliaria</span><span class="bar-val">3 años</span></div>
+        <div class="bar-track"><div class="bar-fill long"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-top"><span class="bar-lbl">Con CW Inmobiliaria</span><span class="bar-val">15 días</span></div>
+        <div class="bar-track"><div class="bar-fill short"></div></div>
+        <p class="bar-note">La misma propiedad, con un precio basado en el mercado y una estrategia de difusión para su zona.</p>
+      </div>
+    </div>
+    <div class="case-copy">
+      <h2 id="case-title">Cuando el precio y la estrategia son correctos, una propiedad se mueve.</h2>
+      <p>Esa propiedad no necesitaba más tiempo publicada, necesitaba un precio basado en el mercado real y una difusión pensada para su zona.</p>
+      <a class="btn" href="#tasacion">Quiero evaluar mi propiedad</a>
+    </div>
+  </div>
+</section>
+
+<section class="on-navy" aria-labelledby="why-title">
+  <div class="wrap">
+    <div class="head">
+      <h2 id="why-title">POR QUÉ CW INMOBILIARIA</h2>
+      <p>Sabemos que vender una casa con historia no es solo una operación. Por eso trabajamos así.</p>
+    </div>
+    <div class="why-list">
+      <div class="why-item"><span class="why-ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><div><h3>Escuchamos antes de tasar</h3><p>Muchos propietarios venden una casa que ya les quedó grande. Partimos de tu situación, no solo del precio.</p></div></div>
+      <div class="why-item"><span class="why-ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></svg></span><div><h3>Un precio que el mercado sí paga</h3><p>El estudio de mercado evita que tu propiedad pase meses publicada con un precio que nadie va a pagar.</p></div></div>
+      <div class="why-item"><span class="why-ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span><div><h3>Respaldo legal en cada paso</h3><p>Te acompañamos con contratos claros, revisión de documentos y el trámite hasta la notaría.</p></div></div>
+      <div class="why-item"><span class="why-ic"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M15 8h3M15 12h3M6 16h12"/></svg></span><div><h3>Compradores verificados</h3><p>Antes de cada visita revisamos el DNI y el crédito del comprador, para que tu casa solo reciba interesados reales.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="excl" id="exclusividad" aria-labelledby="excl-title">
+  <div class="wrap">
+    <div class="head">
+      <h2 id="excl-title">¿Qué significa vender en exclusividad con CW?</h2>
+      <p>Firmar exclusividad no es amarrarte: es tener un solo equipo responsable de vender tu propiedad, con compromisos claros.</p>
+    </div>
+    <div class="excl-banner"><img src="assets/casa-manos.jpg" alt=""><p>Un solo equipo responsable de tu propiedad, de principio a fin.</p></div>
+    <div class="excl-grid">
+      <div class="excl-col">
+        <h3>Lo que acordamos contigo</h3>
+        <ul>
+          <li>CW es la única encargada de comercializar tu propiedad durante el tiempo pactado.</li>
+          <li>El precio de salida se define con el estudio de mercado y tu aprobación.</li>
+          <li>Todas las condiciones quedan por escrito antes de empezar.</li>
+        </ul>
+      </div>
+      <div class="excl-col dark">
+        <h3>Lo que hace CW por ti</h3>
+        <ul>
+          <li>Una estrategia de difusión en redes y con nuestra red de agentes.</li>
+          <li>Filtro de compradores antes de cada visita.</li>
+          <li>Seguimiento constante para que sepas cómo avanza tu venta.</li>
+          <li>Acompañamiento legal hasta la firma en notaría.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="preguntas" aria-labelledby="faq-title">
+  <div class="wrap">
+    <div class="head">
+      <h2 id="faq-title">Preguntas frecuentes de propietarios</h2>
+    </div>
+    <div class="faq-list">
+      <details><summary>¿Cómo saben cuánto vale mi propiedad?</summary><p>Hacemos un estudio de mercado comparando propiedades similares en tu zona y coordinamos la tasación. Te mostramos los datos para que el precio de salida sea real y lo decidas con información.</p></details>
+      <details><summary>¿Qué implica firmar exclusividad?</summary><p>Que CW es la única encargada de vender tu propiedad durante el tiempo acordado. A cambio, nos comprometemos con una estrategia de difusión, el filtro de compradores y el seguimiento de cada etapa.</p></details>
+      <details><summary>¿Qué documentos necesito para vender?</summary><p>Te indicamos cuáles en la primera reunión y nuestro respaldo legal te acompaña a reunirlos y revisarlos.</p></details>
+      <details><summary>¿Tengo que estar presente en cada visita?</summary><p>Coordinamos las visitas contigo según tu disponibilidad, y solo llevamos compradores que ya fueron verificados.</p></details>
+      <details><summary>Soy hijo o familiar del propietario, ¿puedo escribirles?</summary><p>Sí. Puedes solicitar la tasación en nombre de tu familia y coordinamos una llamada o reunión con ellos.</p></details>
+      <details><summary>Mi propiedad está en otro distrito, ¿trabajan ahí?</summary><p>Trabajamos principalmente en La Molina, San Borja, Surco, Pueblo Libre y Breña. Si tu propiedad está en otra zona, escríbenos y lo evaluamos contigo.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="excl" id="mi-portal" aria-labelledby="portal-title">
+  <div class="wrap">
+    <div class="head">
+      <h2 id="portal-title">Sigue la venta de tu propiedad en tiempo real</h2>
+      <p>Cuando firmas con CW recibes un enlace personal a tu Portal del propietario. Ahí ves en qué etapa está tu venta, las visitas realizadas, el resumen de cada semana y tus documentos.</p>
+    </div>
+    <div class="excl-grid">
+      <div class="excl-col">
+        <h3>Lo que verás en tu portal</h3>
+        <ul>
+          <li>La etapa actual de la venta, desde la evaluación hasta la notaría.</li>
+          <li>Las visitas realizadas y lo que opinaron los interesados.</li>
+          <li>Un resumen semanal escrito por tu asesor.</li>
+          <li>Tus documentos y un chat directo con tu asesor.</li>
+        </ul>
+      </div>
+      <div class="excl-col dark">
+        <h3>¿Ya trabajas con CW?</h3>
+        <ul>
+          <li>Abre el enlace personal que te envió tu asesor por WhatsApp.</li>
+          <li>Si no lo encuentras, pídeselo de nuevo y te lo reenviamos.</li>
+        </ul>
+        <p style="margin-top:22px;display:flex;gap:18px;flex-wrap:wrap;align-items:center">
+          <a class="btn btn-orange" href="portal.html">Ir a mi portal</a>
+          <a class="link-line" href="https://wa.me/51910818357?text=Hola%20CW%2C%20necesito%20el%20enlace%20de%20mi%20portal" target="_blank" rel="noopener">Pedir mi enlace</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="on-navy final" aria-labelledby="final-title">
+  <div class="wrap">
+    <div class="final-grid">
+      <div>
+        <h2 id="final-title">¿Estás pensando en vender? Empecemos por saber cuánto vale tu propiedad.</h2>
+        <p>Cuéntanos de tu inmueble y coordinamos la evaluación por WhatsApp.</p>
+      </div>
+      <div class="final-actions">
+        <a class="btn btn-orange" href="#tasacion">Solicita tu tasación</a>
+        <a class="link-line" href="https://wa.me/51910818357" target="_blank" rel="noopener">Escribir directo al +51 910 818 357</a>
+      </div>
+    </div>
+    <p class="buyer">¿Buscas comprar una propiedad? <a href="https://wa.me/51910818357?text=Hola%20CW%2C%20estoy%20buscando%20comprar%20una%20propiedad" target="_blank" rel="noopener">Pregúntanos por las propiedades disponibles</a>.</p>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div><img src="assets/logo-cw.png" alt="CW Inmobiliaria"><p>Ayudamos a propietarios de Lima a vender su propiedad con un precio real y acompañamiento de principio a fin.</p></div>
+      <div><h4>Zonas</h4><span>La Molina</span><span>San Borja</span><span>Surco</span><span>Pueblo Libre y Breña</span></div>
+      <div><h4>Portal</h4><a href="portal.html">Portal del propietario</a><a href="portal.html#asesor">Acceso asesores</a></div>
+      <div><h4>Contacto</h4><a href="https://wa.me/51910818357" target="_blank" rel="noopener">+51 910 818 357</a><a href="mailto:cwinmobiliariasac@gmail.com">cwinmobiliariasac@gmail.com</a></div>
+      <div><h4>Síguenos</h4><a href="https://www.instagram.com/cw.inmobiliariaperu" target="_blank" rel="noopener">Instagram</a><a href="#" aria-disabled="true">TikTok</a><a href="#" aria-disabled="true">Facebook</a></div>
+    </div>
+    <div class="foot-bottom"><span>© 2026 CW Inmobiliaria</span><span>Lima, Perú</span></div>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var form = document.getElementById('tasacion-form');
+    var err = document.getElementById('form-error');
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var nombre = form.nombre.value.trim();
+      var distrito = form.distrito.value;
+      var tipo = form.tipo.value;
+      var faltan = [];
+      if (!nombre) faltan.push('tu nombre');
+      if (!distrito) faltan.push('el distrito');
+      if (!tipo) faltan.push('el tipo de inmueble');
+      if (faltan.length) {
+        err.textContent = 'Completa ' + faltan.join(', ') + ' para enviar la solicitud.';
+        err.classList.add('show');
+        (!nombre ? form.nombre : !distrito ? form.distrito : form.tipo).focus();
+        return;
+      }
+      err.classList.remove('show');
+      var rol = form.querySelector('input[name="rol"]:checked').value;
+      var origen = form.origen.value || 'No indicado';
+      var msg = 'Hola CW, quiero solicitar la tasación de una propiedad.\n' +
+        'Nombre: ' + nombre + '\n' + rol + '\n' +
+        'Inmueble: ' + tipo + ' en ' + distrito + '\n' +
+        'Cómo los conocí: ' + origen;
+      var url = 'https://wa.me/51910818357?text=' + encodeURIComponent(msg);
+      var w = window.open(url, '_blank', 'noopener');
+      if (!w) window.location.href = url;
+    });
+  })();
+</script>
+</body>
+</html>
