@@ -607,15 +607,32 @@ button.step:hover .dot{ border-color:var(--orange); }
   const chatWidgetEl = document.getElementById("chat-widget");
   const chatFabEl = document.getElementById("chat-fab");
   const chatCloseEl = document.getElementById("chat-close");
+  function getChatSeen(propId){
+    if (!propId) return "";
+    try { return localStorage.getItem("cw_chat_seen_" + propId) || ""; } catch(e){ return ""; }
+  }
+  function markChatSeen(propId){
+    if (!propId) return;
+    const last = state.messages.length ? state.messages[state.messages.length - 1].fecha : "";
+    const ts = last || new Date().toISOString();
+    try { localStorage.setItem("cw_chat_seen_" + propId, ts); } catch(e){}
+  }
+
   function setChatOpen(open){
     state.chatOpen = !!open;
     if (chatWidgetEl) chatWidgetEl.classList.toggle("open", state.chatOpen);
-    if (chatFabEl) chatFabEl.setAttribute("aria-expanded", String(state.chatOpen));
+    if (chatFabEl) chatWidgetEl.setAttribute("aria-expanded", String(state.chatOpen));
     if (state.chatOpen) {
+      markChatSeen(state.msgFor);
+      if (state.msgFor) refreshMessagesNow(state.msgFor);
+      const countEl = document.getElementById("chat-count");
+      if (countEl) countEl.style.display = "none";
       const box = document.getElementById("chat");
       if (box) box.scrollTop = box.scrollHeight;
       const inp = document.getElementById("msg-in");
       if (inp && !inp.disabled) setTimeout(() => inp.focus(), 60);
+    } else {
+      renderChatOnly();
     }
   }
   if (chatFabEl) chatFabEl.onclick = () => setChatOpen(!state.chatOpen);
@@ -2138,11 +2155,18 @@ button.step:hover .dot{ border-color:var(--orange); }
 
     const countEl = document.getElementById("chat-count");
     if (countEl) {
-      if (state.messages.length > 0 && !state.chatOpen) {
-        countEl.style.display = "grid";
-        countEl.textContent = String(state.messages.length);
-      } else {
+      if (state.chatOpen) {
+        markChatSeen(state.msgFor);
         countEl.style.display = "none";
+      } else {
+        const seenAt = getChatSeen(state.msgFor);
+        const unread = state.messages.filter(m => m.de === "asesor" && (!seenAt || (m.fecha || "") > seenAt)).length;
+        if (unread > 0) {
+          countEl.style.display = "grid";
+          countEl.textContent = String(unread);
+        } else {
+          countEl.style.display = "none";
+        }
       }
     }
     const ownerView = state.view === "cliente";
