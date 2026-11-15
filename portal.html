@@ -548,6 +548,14 @@ button.step:hover .dot{ border-color:var(--orange); }
   // Si la página se abrió desde el enlace de un propietario, se muestra solo su vista.
   const OWNER_ENTRY = location.hash.indexOf("#propietario-") === 0;
   const STAGES = ["Evaluación","Preparación","Publicación","Visitas","Negociación","Cierre"];
+  const STAGE_INFO = [
+    "Estamos realizando el análisis comparativo de mercado y definiendo el precio óptimo de salida.",
+    "Preparamos la documentación legal, sesión fotográfica y material comercial de tu inmueble.",
+    "Tu propiedad ya está publicada y promocionada en portales aliados y redes sociales de CW.",
+    "Coordinamos y filtramos interesados calificados para realizar visitas presenciales.",
+    "Evaluamos ofertas formales, condiciones de pago y términos de cierre contigo.",
+    "Firma de minuta/escritura pública en notaría y entrega final de la propiedad."
+  ];
   const app = document.getElementById("app");
   const state = { db:null, sb:null, mode:null, user:null, role:null, canWrite:null, isAdmin:null, isSuperAdmin:false, asesores:[], vitrina:[], vitrinaError:"", vitrinaDraft:null, props:[], loaded:false, error:null, errorDetail:"", selected:null, view:"asesor", page:null, chatOpen:false, clientId:null, messages:[], msgUnsub:null, msgPoll:null, msgFor:null, draft:null, dirty:false, saving:false, status:"", authChecked:false };
 
@@ -1415,9 +1423,14 @@ button.step:hover .dot{ border-color:var(--orange); }
     if (state.error && !state.props.length) { renderSidebar(null); setupChatWidget(null); app.innerHTML = statusScreen(); return; }
     if (!state.loaded) { renderSidebar(null); setupChatWidget(null); app.innerHTML = '<div class="card empty"><h2>Cargando portal…</h2><p class="muted">Conectando con la información de las propiedades.</p></div>'; return; }
 
-    if (state.view === "admin") renderAdmin();
-    else if (state.view === "cliente") renderClient();
-    else renderEditor();
+    try {
+      if (state.view === "admin") renderAdmin();
+      else if (state.view === "cliente") renderClient();
+      else renderEditor();
+    } catch (err) {
+      console.error("Error renderizando vista:", err);
+      app.innerHTML = '<div class="card empty"><h2>Ocurrió un error al mostrar esta sección</h2><p class="muted">' + esc((err && err.message) || "Intenta recargar la página.") + '</p></div>';
+    }
   }
 
   function renderAdmin(){
@@ -2225,14 +2238,6 @@ button.step:hover .dot{ border-color:var(--orange); }
 
     const stage = p.etapa || 0;
     const pct = Math.round(((stage + 1) / STAGES.length) * 100);
-    const STAGE_INFO = [
-      "Estamos realizando el análisis comparativo de mercado y definiendo el precio óptimo de salida.",
-      "Preparamos la documentación legal, sesión fotográfica y material comercial de tu inmueble.",
-      "Tu propiedad ya está publicada y promocionada en portales aliados y redes sociales de CW.",
-      "Coordinamos y filtramos interesados calificados para realizar visitas presenciales.",
-      "Evaluamos ofertas formales, condiciones de pago y términos de cierre contigo.",
-      "Firma de minuta/escritura pública en notaría y entrega final de la propiedad."
-    ];
     const visitas = (p.visitas||[]).slice().sort((a,b)=>(b.fecha||"").localeCompare(a.fecha||""));
     const totalAsistentes = visitas.reduce((acc, v) => acc + (parseInt(v.personas, 10) || 0), 0);
     const docs = (p.documentos||[]).filter(x => safeUrl(x.url));
