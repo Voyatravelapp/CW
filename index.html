@@ -1188,6 +1188,11 @@
   /* ==========================================================================
      ADAPTABILIDAD RESPONSIVE
      ========================================================================== */
+  .header-actions { display: flex; align-items: center; gap: 8px; flex: none; }
+  .btn-portal-nav { display: none; padding: 8px 12px; font-size: 13px; font-weight: 700; border-radius: 999px; border: 1px solid var(--line); background: #fff; color: var(--cw-azul); text-decoration: none; white-space: nowrap; }
+  .btn-portal-nav:hover { border-color: var(--cw-naranja); color: var(--cw-naranja-osc); }
+  .cta-short { display: none; }
+
   @media (max-width: 1120px) {
     .steps-grid { grid-template-columns: repeat(3, 1fr); }
     .showcase-grid { grid-template-columns: repeat(2, 1fr); }
@@ -1196,22 +1201,64 @@
 
   @media (max-width: 960px) {
     nav { display: none; }
+    .btn-portal-nav { display: inline-flex; align-items: center; }
+    header .wrap { height: 60px; gap: 10px; }
+    .logo img { height: 36px; width: auto; }
     .hero-photo { width: 100%; opacity: 0.38; }
-    .hero-grid, .case-grid, .final-grid, .excl-grid, .why-list, .life-grid {
+    .hero-grid, .case-grid, .final-grid, .excl-grid, .life-grid {
       grid-template-columns: 1fr;
     }
-    .steps-grid { grid-template-columns: 1fr; }
+    .steps-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .why-list { grid-template-columns: 1fr 1fr; gap: 14px; }
+    .why-item { padding: 20px 18px; gap: 14px; grid-template-columns: 44px 1fr; }
+    .why-ic { width: 44px; height: 44px; }
     .life-photo .tag { left: 12px; }
     .foot { grid-template-columns: 1fr 1fr; }
   }
 
   @media (max-width: 640px) {
-    .wrap { padding: 0 20px; }
-    .two { grid-template-columns: 1fr; }
-    .header-cta { display: none; }
+    .wrap { padding: 0 16px; }
+    .hero { padding: 24px 0 32px; }
+    .hero h1 { font-size: 28px; }
+    .hero-sub { font-size: 15px; margin-bottom: 14px; }
+    .hero-points { gap: 8px; }
+    .two { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .header-cta { display: inline-flex; padding: 8px 13px; font-size: 13px; }
     .showcase-grid { grid-template-columns: 1fr; }
     .foot { grid-template-columns: 1fr; }
-    .form-card { padding: 26px 20px; }
+    .form-card { padding: 18px 15px; }
+    .form-card h2 { font-size: 21px; margin-bottom: 4px; }
+    .form-card > p { font-size: 13.5px; margin-bottom: 12px; }
+    #tasacion-form { gap: 10px; }
+    .field label, fieldset.field legend { font-size: 12.5px; margin-bottom: 4px; }
+    .field input, .field select { min-height: 40px; padding: 8px 10px; font-size: 14px; }
+    .radio-row label { min-height: 40px; padding: 8px 10px; font-size: 13.5px; }
+    .steps-grid { grid-template-columns: 1fr; gap: 10px; }
+    .step-card {
+      display: grid;
+      grid-template-columns: 42px 1fr auto;
+      grid-template-rows: auto auto;
+      align-items: center;
+      gap: 4px 12px;
+      padding: 14px 15px;
+      text-align: left;
+    }
+    .step-card .step-ic { grid-column: 1; grid-row: 1 / span 2; width: 42px; height: 42px; margin: 0; }
+    .step-card h3 { grid-column: 2; grid-row: 1; font-size: 15.5px; margin: 0; }
+    .step-card .step-badge { grid-column: 3; grid-row: 1; margin: 0; font-size: 10.5px; padding: 3px 8px; }
+    .step-card p { grid-column: 2 / 4; grid-row: 2; font-size: 13.5px; line-height: 1.45; margin: 0; }
+    .why-list { grid-template-columns: 1fr; gap: 10px; }
+    .why-item { padding: 15px 14px; gap: 12px; grid-template-columns: 40px 1fr; }
+    .why-ic { width: 40px; height: 40px; }
+    .why-item h3 { font-size: 16px; margin-bottom: 4px; }
+    .why-item p { font-size: 13.5px; line-height: 1.5; }
+  }
+  @media (max-width: 480px) {
+    .cta-full { display: none; }
+    .cta-short { display: inline; }
+  }
+  @media (max-width: 360px) {
+    .two { grid-template-columns: 1fr; }
   }
 
   /* Respeto estricto a usuarios con reducción de movimiento */
@@ -1244,7 +1291,10 @@
       <a href="#preguntas">Preguntas</a>
       <a href="#mi-portal">Mi portal</a>
     </nav>
-    <a class="btn btn-orange btn-sm header-cta" href="#tasacion">Solicita tu tasación</a>
+    <div class="header-actions">
+      <a class="btn-portal-nav" href="portal.html">Mi portal</a>
+      <a class="btn btn-orange btn-sm header-cta" href="#tasacion"><span class="cta-full">Solicita tu tasación</span><span class="cta-short">Tasación</span></a>
+    </div>
   </div>
 </header>
 
