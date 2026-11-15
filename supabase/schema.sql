@@ -354,7 +354,7 @@ grant insert, update, delete on public.vitrina_propiedades to authenticated;
 insert into public.vitrina_propiedades (id, titulo, distrito, etiqueta, descripcion, imagenes, usar_carrusel, orden, visible)
 values
   ('vit_la_molina', 'Casa residencial con jardín', 'La Molina', 'EXCLUSIVIDAD', 'Amplios ambientes, jardín interior y seguridad integral. Tasada bajo estudio comparativo de mercado.', '["assets/propiedades/casa-la-molina.jpg"]'::jsonb, false, 1, true),
-  ('vit_san_borja', 'Departamento familiar iluminado', 'San Borja', 'CAPTACIÓN', 'Ubicación estratégica cerca a parques, acabados modernos y compradores previamente verificados.', '["assets/propiedades/depa-san-borja.jpg"]'::jsonb, false, 2, true),
+  ('vit_san_borja', 'Departamento familiar iluminado', 'San Borja', 'CAPTACIÓN', 'Ubicación estratégica cerca a parques, acabados modernos y compradores previamente verificados.', '["assets/propiedades/post-ig-depa-san-borja.jpg"]'::jsonb, false, 2, true),
   ('vit_surco', 'Tríplex exclusivo con terraza', 'Surco', 'EN VENTA', 'Área social con vista panorámica y zona de parrillas. Comercializado mediante pauta digital en redes.', '["assets/propiedades/triplex-surco.jpg"]'::jsonb, false, 3, true),
   ('vit_pueblo_libre', 'Departamento céntrico y moderno', 'Pueblo Libre', 'EN GESTIÓN', 'Conectividad inmediata, edificio seguro y documentación completamente saneada por nuestros abogados.', '["assets/propiedades/depa-pueblo-libre.jpg"]'::jsonb, false, 4, true)
 on conflict (id) do nothing;
