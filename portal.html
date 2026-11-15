@@ -153,6 +153,9 @@ body.is-auth-screen .wrap{ max-width:none; padding:0; }
 .eye-btn{ position:absolute; right:8px; border:0; background:transparent; color:var(--muted); width:32px; height:32px; border-radius:8px; display:grid; place-items:center; }
 .eye-btn:hover{ color:var(--navy); background:var(--surface-2); }
 .login-switch{ margin-top:20px; padding-top:16px; border-top:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; font-size:13px; color:var(--muted); }
+.auth-mobile-back{ display:none; }
+.btn-pair{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.btn-pair .btn{ width:100%; }
 .login-switch a{ color:var(--orange); font-weight:700; text-decoration:none; }
 .login-switch a:hover{ text-decoration:underline; }
 
@@ -361,9 +364,10 @@ button.step:hover .dot{ border-color:var(--orange); }
   .grid3{ grid-template-columns:1fr 1fr; }
 }
 @media (max-width:860px){
-  .auth-split{ grid-template-columns:1fr; min-height:auto; }
-  .auth-photo{ min-height:200px; padding:20px; }
-  .auth-panel{ padding:24px 16px; }
+  .auth-split{ grid-template-columns:1fr; min-height:100dvh; background:linear-gradient(180deg, rgba(17,27,46,.70) 0%, rgba(17,27,46,.86) 100%), url("assets/entrega-llaves.jpg") center/cover no-repeat; }
+  .auth-photo{ display:none; }
+  .auth-panel{ background:transparent; min-height:100dvh; justify-content:center; padding:20px 16px calc(24px + env(safe-area-inset-bottom,0px)); gap:16px; }
+  .auth-mobile-back{ display:inline-flex; align-items:center; gap:6px; color:rgba(255,255,255,.94); font-size:13.5px; font-weight:700; text-decoration:none; padding:9px 18px; border-radius:999px; background:rgba(17,27,46,.58); border:1px solid rgba(255,255,255,.24); backdrop-filter:blur(6px); }
 }
 @media (max-width:640px){
   .topbar-app{ padding:0 14px; gap:10px; }
@@ -379,8 +383,11 @@ button.step:hover .dot{ border-color:var(--orange); }
   .stat-ico{ width:36px; height:36px; border-radius:10px; }
   .stats:not(.stats-2):not(.stats-4) > .stat:last-child:nth-child(odd),
   .admin-kpis > .admin-kpi:last-child:nth-child(odd){ grid-column:1 / -1; }
-  .visit{ grid-template-columns:36px 1fr; gap:6px 10px; align-items:center; }
-  .visit .pill,.visit > span:not(.visit-date),.visit .muted{ grid-column:2; justify-self:start; }
+  .visit{ display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; padding:12px 0; }
+  .visit-num{ order:1; width:30px; height:30px; font-size:12px; border-radius:8px; }
+  .visit-date{ order:2; flex:1 1 auto; white-space:nowrap; font-size:13.5px; }
+  .visit > .pill{ order:3; flex:none; }
+  .visit > span:not(.visit-date):not(.pill){ order:4; flex:1 0 100%; font-size:13.5px; color:var(--navy); line-height:1.45; }
   .user-meta{ display:none; }
   .user-btn{ padding:3px 8px 3px 3px; }
   .hello{ padding:20px 18px; gap:14px; }
@@ -400,7 +407,10 @@ button.step:hover .dot{ border-color:var(--orange); }
   .inbox-head{ padding:14px 16px; }
   .inbox-msgs{ padding:14px 14px; }
   .inbox-compose{ padding:12px; gap:8px; }
-  .chat-popover{ width:calc(100vw - 24px); height:min(500px, calc(100dvh - 96px)); }
+  .chat-widget.open{ inset:0; right:0; bottom:0; width:100vw; height:100dvh; z-index:85; }
+  .chat-popover{ position:fixed; inset:0; width:100vw; height:100dvh; max-width:none; max-height:none; border-radius:0; border:0; }
+  .chat-pop-head{ padding-top:calc(14px + env(safe-area-inset-top,0px)); }
+  .chat-pop-foot{ padding-bottom:calc(12px + env(safe-area-inset-bottom,0px)); }
   .save-bar{ display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:12px 14px !important; }
   .save-bar .status{ grid-column:1 / -1; margin-right:0; }
   .save-bar .btn{ width:100%; }
@@ -408,11 +418,10 @@ button.step:hover .dot{ border-color:var(--orange); }
 @media (max-width:480px){
   .auth-card{ padding:22px 18px; border-radius:16px; }
   .page-head{ gap:10px; }
-  .page-head .btn{ width:100%; }
   .cw-modal{ padding:20px 18px; }
 }
 @media (max-width:360px){
-  .stats,.stats-2,.stats-4,.admin-kpis,.advisor-actions,.save-bar,.hello > div:last-child,.cw-modal-actions{ grid-template-columns:1fr; }
+  .stats,.stats-2,.stats-4,.admin-kpis,.advisor-actions,.save-bar,.hello > div:last-child,.cw-modal-actions,.btn-pair{ grid-template-columns:1fr; }
 }
 </style>
 </head>
@@ -687,20 +696,24 @@ button.step:hover .dot{ border-color:var(--orange); }
         onSnapshot(next, err){
           let active = true;
           const fetchRows = async () => {
-            let q = sb.from(table).select("*");
-            if (isMensajes) q = q.eq("propiedad_id", propId);
-            if (order) q = q.order(order === "resumenFecha" ? "resumen_fecha" : order, { ascending: true });
-            if (lim) q = q.limit(lim);
-            const { data, error } = await q;
-            if (!active) return;
-            if (error) { if (err) err(error); return; }
-            const docs = (data || []).map(row => {
-              const mapped = isMensajes
-                ? { de: row.de, texto: row.texto, fecha: row.fecha }
-                : toProp(row);
-              return { id: row.id, exists: true, data: () => mapped };
-            });
-            next({ docs });
+            try {
+              let q = sb.from(table).select("*");
+              if (isMensajes) q = q.eq("propiedad_id", propId);
+              if (order) q = q.order(order === "resumenFecha" ? "resumen_fecha" : order, { ascending: true });
+              if (lim) q = q.limit(lim);
+              const { data, error } = await q;
+              if (!active) return;
+              if (error) { if (err) err(error); return; }
+              const docs = (data || []).map(row => {
+                const mapped = isMensajes
+                  ? { de: row.de, texto: row.texto, fecha: row.fecha }
+                  : toProp(row);
+                return { id: row.id, exists: true, data: () => mapped };
+              });
+              next({ docs });
+            } catch (e) {
+              if (active && err) err(e);
+            }
           };
           fetchRows();
           const unsub = subscribeTable(table, fetchRows);
@@ -759,16 +772,18 @@ button.step:hover .dot{ border-color:var(--orange); }
   }
 
   let propsUnsub = null;
+  let lastAuthUid = null;
   function startData(){
     if (propsUnsub) { propsUnsub(); propsUnsub = null; }
     if (!state.user && state.mode === "supabase") {
       if (state.msgUnsub) { state.msgUnsub(); state.msgUnsub = null; }
+      if (state.msgPoll) { clearInterval(state.msgPoll); state.msgPoll = null; }
       state.msgFor = null; state.messages = [];
       state.props = []; state.loaded = true; state.error = null; render();
       return;
     }
-    state.loaded = false; state.error = null; render();
-    const timer = setTimeout(() => { if (!state.loaded) { state.error = "timeout"; render(); } }, 10000);
+    if (!state.props.length) { state.loaded = false; state.error = null; render(); }
+    const timer = setTimeout(() => { if (!state.loaded) { state.error = "timeout"; state.loaded = true; render(); } }, 10000);
     const fail = (e) => { clearTimeout(timer); state.error = "unavailable"; state.errorDetail = (e && (e.message || e.error_description)) || ""; state.loaded = true; render(); };
     if (state.isAdmin || state.user || state.mode === "local") {
       propsUnsub = state.db.collection("propiedades").onSnapshot(snap => {
@@ -795,8 +810,12 @@ button.step:hover .dot{ border-color:var(--orange); }
         auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
       });
       state.db = makeSupabaseDb(state.sb);
-      state.sb.auth.onAuthStateChange((_event, session) => {
-        state.user = session ? session.user : null;
+      state.sb.auth.onAuthStateChange((event, session) => {
+        const nextUser = session ? session.user : null;
+        const sameLoadedUser = !!(nextUser && lastAuthUid === nextUser.id && state.loaded && state.authChecked);
+        state.user = nextUser;
+        lastAuthUid = nextUser ? nextUser.id : null;
+        if (sameLoadedUser && (event === "TOKEN_REFRESHED" || event === "SIGNED_IN")) return;
         setTimeout(async () => {
           if (state.user) {
             try {
@@ -874,15 +893,38 @@ button.step:hover .dot{ border-color:var(--orange); }
     }
   }
 
+  async function refreshMessagesNow(propId){
+    if (!propId || state.msgFor !== propId) return;
+    if (state.mode === "supabase" && state.sb) {
+      const { data, error } = await state.sb.from("mensajes").select("*").eq("propiedad_id", propId).order("fecha", { ascending: true }).limit(200);
+      if (!error && Array.isArray(data) && state.msgFor === propId) {
+        const next = data.map(r => ({ id: r.id, de: r.de, texto: r.texto, fecha: r.fecha }));
+        const prevSig = state.messages.map(m => m.id).join(",");
+        const nextSig = next.map(m => m.id).join(",");
+        if (prevSig !== nextSig) {
+          state.messages = next;
+          renderChatOnly();
+        }
+      }
+    }
+  }
+
   function subscribeMessages(propId){
     if (state.msgFor === propId) return;
-    if (state.msgUnsub) state.msgUnsub();
+    if (state.msgUnsub) { state.msgUnsub(); state.msgUnsub = null; }
+    if (state.msgPoll) { clearInterval(state.msgPoll); state.msgPoll = null; }
     state.msgFor = propId; state.messages = [];
     if (!state.db || !propId) return;
     state.msgUnsub = state.db.collection("mensajes/" + propId + "/items").orderBy("fecha").limit(200).onSnapshot(snap => {
+      if (state.msgFor !== propId) return;
       state.messages = snap.docs.map(d => ({ id:d.id, ...d.data() }));
       renderChatOnly();
-    }, () => {});
+    }, (err) => { console.warn("Error cargando mensajes:", err); });
+    if (state.mode === "supabase") {
+      state.msgPoll = setInterval(() => {
+        if (document.visibilityState === "visible") refreshMessagesNow(propId);
+      }, 3500);
+    }
   }
 
   const blankProp = () => ({ propietario:"", propietarioEmail:"", asesorWhatsapp:"", propiedad:"", direccion:"", etapa:0, interesados:0, propuestas:0, resumen:"", resumenFecha:"", visitas:[], documentos:[], actualizado:new Date().toISOString() });
@@ -970,10 +1012,20 @@ button.step:hover .dot{ border-color:var(--orange); }
     } catch(e){ handleWriteError(e); }
   }
   async function sendMessage(propId, de, texto){
-    if (!state.db || !texto.trim()) return;
+    const clean = String(texto || "").trim().slice(0, 1000);
+    if (!state.db || !propId || !clean) return;
     const mid = newId("m");
-    try { await state.db.doc("mensajes/" + propId + "/items/" + mid).set({ de, texto:texto.trim().slice(0,1000), fecha:new Date().toISOString() }); }
-    catch(e){ handleWriteError(e); }
+    const msgObj = { id: mid, de, texto: clean, fecha: new Date().toISOString() };
+    state.messages = state.messages.concat([msgObj]);
+    renderChatOnly();
+    try {
+      await state.db.doc("mensajes/" + propId + "/items/" + mid).set({ de, texto: clean, fecha: msgObj.fecha });
+      refreshMessagesNow(propId);
+    } catch(e){
+      state.messages = state.messages.filter(m => m.id !== mid);
+      renderChatOnly();
+      handleWriteError(e);
+    }
   }
   function handleWriteError(e){
     const msg = (e && (e.message || e.error_description)) || "";
@@ -1277,6 +1329,7 @@ button.step:hover .dot{ border-color:var(--orange); }
                   : '<span>¿No tienes clave? <a href="https://wa.me/51910818357?text=Hola%20CW%2C%20necesito%20mi%20acceso%20al%20portal%20del%20propietario" target="_blank" rel="noopener">Solicítala por WhatsApp</a></span><a href="#asesor">Soy asesor</a>') +
               '</div>' +
             '</div>' +
+            '<a class="auth-mobile-back" href="index.html">← Volver a la web</a>' +
           '</div>' +
         '</div>';
       const tp = document.getElementById("toggle-pass");
@@ -1794,8 +1847,8 @@ button.step:hover .dot{ border-color:var(--orange); }
           '<div class="card sec"><h3>Enlace personal del propietario</h3><p class="hint">Compártelo por WhatsApp o correo. Al iniciar sesión con su correo autorizado verá su propiedad de inmediato.</p>' +
             '<div class="composer"><input id="link-input" readonly value="' + esc(url) + '" aria-label="Enlace del propietario"><button class="btn btn-primary" id="link-copy" type="button">Copiar enlace</button></div>' +
             '<p class="status" id="link-status" style="margin-top:10px"></p>' +
-            '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">' +
-              '<a class="btn wsp-btn" style="width:auto" href="https://wa.me/?text=' + wspShare + '" target="_blank" rel="noopener">Compartir por WhatsApp</a>' +
+            '<div class="btn-pair" style="margin-top:14px">' +
+              '<a class="btn wsp-btn" href="https://wa.me/?text=' + wspShare + '" target="_blank" rel="noopener">Compartir por WhatsApp</a>' +
               '<a class="btn btn-ghost" href="' + esc(url) + '" target="_blank" rel="noopener">Abrir enlace ↗</a>' +
             '</div>' +
             '<div class="link-steps">' +
