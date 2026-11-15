@@ -2079,6 +2079,7 @@
               '<h3>' + escHtml(item.titulo || 'Propiedad CW') + '</h3>' +
               (item.descripcion ? '<p>' + escHtml(item.descripcion) + '</p>' : '') +
               (metaParts.length ? '<div class="prop-meta-line">' + metaParts.join('') + '</div>' : '') +
+              '<a class="prop-link" href="https://wa.me/51910818357?text=' + encodeURIComponent('Hola CW, quisiera información sobre ' + (item.titulo || 'esta propiedad') + (item.distrito ? ' en ' + item.distrito : '')) + '" target="_blank" rel="noopener"><span>Consultar por esta zona</span> →</a>' +
             '</div>' +
           '</article>';
         }).join('');

@@ -203,7 +203,7 @@ textarea{ min-height:110px; resize:vertical; }
 .admin-kpis{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:18px; }
 .admin-kpi{ padding:16px 18px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
 .admin-kpi b{ font-family:var(--serif); font-size:28px; color:var(--navy); line-height:1; }
-.admin-kpi span{ font-size:13px; color:var(--muted); font-weight:600; display:block; margin-top:4px; }
+.admin-kpi > div span{ font-size:13px; color:var(--muted); font-weight:600; display:block; margin-top:4px; }
 .admin-row{ display:grid; grid-template-columns:1fr auto auto auto; gap:10px; align-items:center; padding:11px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-2); font-size:13.5px; }
 .admin-prop-row{ display:grid; grid-template-columns:1.2fr 1fr auto; gap:10px; align-items:center; padding:11px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-2); font-size:13.5px; }
 .admin-inline-form{ display:flex; gap:8px; margin-top:14px; }
@@ -903,10 +903,20 @@ button.step:hover .dot{ border-color:var(--orange); }
       if (state.view === "admin") render();
     }
   }
+  const DEFAULT_VITRINA = [
+    { id:"vit_la_molina", titulo:"Casa residencial con jardín", distrito:"La Molina", etiqueta:"EXCLUSIVIDAD", precio:"", caracteristicas:"", descripcion:"Amplios ambientes, jardín interior y seguridad integral. Tasada bajo estudio comparativo de mercado.", imagenes:["assets/propiedades/casa-la-molina.jpg"], usar_carrusel:false, orden:1, visible:true },
+    { id:"vit_san_borja", titulo:"Departamento familiar iluminado", distrito:"San Borja", etiqueta:"CAPTACIÓN", precio:"", caracteristicas:"", descripcion:"Ubicación estratégica cerca a parques, acabados modernos y compradores previamente verificados.", imagenes:["assets/propiedades/depa-san-borja.jpg"], usar_carrusel:false, orden:2, visible:true },
+    { id:"vit_surco", titulo:"Tríplex exclusivo con terraza", distrito:"Surco", etiqueta:"EN VENTA", precio:"", caracteristicas:"", descripcion:"Área social con vista panorámica y zona de parrillas. Comercializado mediante pauta digital en redes.", imagenes:["assets/propiedades/triplex-surco.jpg"], usar_carrusel:false, orden:3, visible:true },
+    { id:"vit_pueblo_libre", titulo:"Departamento céntrico y moderno", distrito:"Pueblo Libre", etiqueta:"EN GESTIÓN", precio:"", caracteristicas:"", descripcion:"Conectividad inmediata, edificio seguro y documentación completamente saneada por nuestros abogados.", imagenes:["assets/propiedades/depa-pueblo-libre.jpg"], usar_carrusel:false, orden:4, visible:true }
+  ];
+
   async function loadVitrina(){
     if (!state.isSuperAdmin) return;
     if (state.mode === "local") {
-      try { state.vitrina = JSON.parse(localStorage.getItem("cw_vitrina_demo") || "[]"); } catch(e){ state.vitrina = []; }
+      try {
+        const raw = localStorage.getItem("cw_vitrina_demo");
+        state.vitrina = raw ? JSON.parse(raw) : clone(DEFAULT_VITRINA);
+      } catch(e){ state.vitrina = clone(DEFAULT_VITRINA); }
       state.vitrinaError = "";
       if (state.page === "admin-vitrina") render();
       return;
@@ -1691,7 +1701,8 @@ button.step:hover .dot{ border-color:var(--orange); }
                       '</div>' +
                     '</div>';
                   }).join("")
-                : '<p class="muted" style="font-size:13.5px">Aún no hay propiedades cargadas en la vitrina desde Supabase (la web muestra las de respaldo hasta que agregues aquí).</p>') +
+                : '<div style="display:grid;gap:12px"><p class="muted" style="font-size:13.5px">Aún no hay propiedades cargadas en Supabase (la web muestra las 4 propiedades de respaldo).</p>' +
+                  (!state.vitrinaError ? '<button type="button" class="btn btn-primary" id="v-seed-btn">Importar las 4 propiedades actuales de la web</button>' : '') + '</div>') +
             '</div>' +
           '</div>' +
         '</div>';
@@ -1768,6 +1779,15 @@ button.step:hover .dot{ border-color:var(--orange); }
         btn.disabled = false;
         if (error) { st.textContent = "Error: " + error.message; return; }
         state.vitrinaDraft = null;
+        await loadVitrina();
+      };
+
+      const seedBtn = document.getElementById("v-seed-btn");
+      if (seedBtn) seedBtn.onclick = async () => {
+        seedBtn.disabled = true; seedBtn.textContent = "Importando…";
+        const rows = DEFAULT_VITRINA.map(x => ({ ...x, actualizado: new Date().toISOString() }));
+        const { error } = await state.sb.from("vitrina_propiedades").upsert(rows);
+        if (error) { alert("Error al importar: " + error.message); seedBtn.disabled = false; seedBtn.textContent = "Importar las 4 propiedades actuales de la web"; return; }
         await loadVitrina();
       };
 
