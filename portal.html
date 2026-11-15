@@ -4,163 +4,522 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Portal del propietario · CW Inmobiliaria</title>
+<link rel="icon" href="assets/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon-180.png">
+<meta name="theme-color" content="#111B2E">
 <script src="config.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#F6F2EC; --surface:#FFFFFF; --surface-2:#FBF8F4; --line:#E6DED3;
-  --text:#14203A; --muted:#66708A; --navy:#111B2E; --navy-2:#1C2944;
-  --orange:#E0662A; --orange-soft:#FCE9DD; --green:#2F8F5B; --green-soft:#E1F2E8;
-  --shadow:0 8px 24px rgba(17,27,46,.07);
+  --cw-azul:#111B2E; --cw-azul-2:#1A2740;
+  --cw-naranja:#D96A2B; --cw-naranja-osc:#B85221; --cw-naranja-sua:#F0B384;
+  --cw-crema:#FBF9F5; --cw-crema-2:#F2ECDF; --cw-gris:#576174;
+  --bg:var(--cw-crema); --surface:#FFFFFF; --surface-2:#FAF7F2; --line:rgba(17,27,46,.10);
+  --text:var(--cw-azul); --muted:var(--cw-gris); --navy:var(--cw-azul); --navy-2:var(--cw-azul-2);
+  --orange:var(--cw-naranja); --orange-soft:#FCE9DD; --green:#237A4B; --green-soft:#E3F3EA;
+  --shadow-sm:0 2px 10px rgba(17,27,46,.04);
+  --shadow:0 10px 30px rgba(17,27,46,.07);
+  --shadow-lg:0 20px 50px rgba(17,27,46,.14);
+  --sans:'Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
+  --serif:'Fraunces',Georgia,serif;
   color-scheme: light;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px);
   padding-bottom:env(safe-area-inset-bottom,0px);
 }
-html{ scroll-padding-top:env(safe-area-inset-top,0px); height:100%; }
+html{ scroll-padding-top:env(safe-area-inset-top,0px); height:100%; overflow-x:hidden; max-width:100%; }
 *,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
-body{ font-family:'Manrope','Segoe UI',Arial,sans-serif; background:var(--bg); color:var(--text); font-size:15px; line-height:1.5; min-height:100%; }
+body{ overflow-x:hidden; max-width:100%; }
+body{ font-family:var(--sans); background:var(--bg); color:var(--text); font-size:15px; line-height:1.55; min-height:100%; -webkit-font-smoothing:antialiased; }
 button,input,select,textarea{ font:inherit; color:inherit; }
 button{ cursor:pointer; }
-:focus-visible{ outline:3px solid var(--orange); outline-offset:2px; border-radius:6px; }
+:focus-visible{ outline:3px solid var(--orange); outline-offset:2px; border-radius:8px; }
 
-/* top bar */
-.topbar{ position:sticky; top:env(safe-area-inset-top,0px); z-index:20; background:#FFFFFF; color:var(--text); border-bottom:1px solid var(--line); box-shadow:0 2px 10px rgba(17,27,46,.05); }
-body::before{ content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top,0px); z-index:30; background:#FFFFFF; }
-.topbar .in{ max-width:1240px; margin:0 auto; padding:12px 22px; display:flex; align-items:center; gap:18px; }
-.brand{ display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.04em; }
-.login{ max-width:420px; margin:40px auto; padding:30px; }
-.login h2{ font-size:22px; margin-bottom:6px; }
-.login form{ display:grid; gap:14px; margin-top:18px; }
-.brand-logo{ height:46px; width:auto; display:block; }
-.brand-mark{ width:36px; height:36px; border-radius:50%; background:#fff; color:#111B2E; display:grid; place-items:center; font-weight:800; font-size:14px; border:2px solid #E0662A; }
-.brand small{ display:block; font-weight:500; letter-spacing:0; opacity:.7; font-size:12px; }
-.back-link{ margin-left:auto; color:var(--muted); font-size:14px; font-weight:600; text-decoration:none; }
-.back-link:hover{ color:var(--orange); }
-.tabs{ display:flex; gap:6px; background:var(--surface-2); border:1px solid var(--line); padding:4px; border-radius:999px; }
-.tab{ border:0; background:transparent; color:var(--text); padding:8px 16px; border-radius:999px; font-weight:600; font-size:14px; opacity:.75; }
-.tab[aria-selected="true"]{ background:#E0662A; color:#fff; opacity:1; }
-.wrap{ max-width:1240px; margin:0 auto; padding:24px 22px 48px; }
+/* ===== App Shell (Sidebar + Topbar + Content) ===== */
+body::before{ content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top,0px); z-index:40; background:#FFFFFF; }
+.shell{ display:flex; min-height:100vh; }
+body.is-auth-screen .shell{ display:block; }
+body.is-auth-screen .sidebar,
+body.is-auth-screen .topbar-app,
+body.is-auth-screen .chat-widget{ display:none !important; }
+body.is-auth-screen .main-area{ width:100%; min-width:0; }
+body.is-auth-screen .wrap{ max-width:none; padding:0; }
 
-.card{ background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); }
-.btn{ border:0; border-radius:10px; padding:10px 16px; font-weight:700; font-size:14px; display:inline-flex; align-items:center; gap:8px; }
-.btn-primary{ background:var(--orange); color:#fff; }
-.btn-primary:hover{ filter:brightness(.95); }
-.btn-ghost{ background:var(--surface-2); border:1px solid var(--line); }
-.btn-danger{ background:transparent; color:#C2412D; padding:6px 8px; }
-.btn:disabled{ opacity:.5; cursor:not-allowed; }
-label{ font-size:12.5px; font-weight:700; color:var(--muted); display:block; margin-bottom:6px; }
-input,select,textarea{ width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:var(--surface-2); }
-textarea{ min-height:90px; resize:vertical; }
+/* Sidebar izquierdo */
+.sidebar{ width:264px; flex:none; background:#fff; border-right:1px solid var(--line); display:flex; flex-direction:column; position:sticky; top:env(safe-area-inset-top,0px); height:calc(100vh - env(safe-area-inset-top,0px)); z-index:45; transition:width .22s ease, transform .24s ease; }
+.sb-brand{ padding:16px 18px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:11px; min-height:70px; }
+.sb-brand img{ height:36px; width:auto; display:block; flex:none; }
+.sb-brand-txt{ min-width:0; flex:1; }
+.sb-brand-txt b{ display:block; font-size:13.5px; font-weight:800; letter-spacing:.03em; color:var(--navy); line-height:1.2; white-space:nowrap; overflow:hidden; }
+.sb-brand-txt small{ display:block; font-size:11.5px; font-weight:600; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; }
+.sb-collapse-btn{ border:1px solid var(--line); background:var(--surface-2); color:var(--navy); width:30px; height:30px; border-radius:8px; display:grid; place-items:center; flex:none; transition:background .15s, transform .2s; }
+.sb-collapse-btn:hover{ background:var(--cw-crema-2); }
+.sb-close{ display:none; margin-left:auto; border:0; background:var(--surface-2); color:var(--navy); width:32px; height:32px; border-radius:8px; font-size:18px; line-height:1; }
+
+.sb-prop-picker{ padding:14px 16px 6px; }
+.sb-prop-picker label{ font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:6px; }
+.sb-prop-picker select{ min-height:38px; font-size:13px; font-weight:600; background:var(--surface-2); padding:7px 10px; }
+
+.sb-nav{ flex:1; overflow-y:auto; padding:12px 10px; display:flex; flex-direction:column; gap:4px; }
+.sb-group{ font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); padding:10px 12px 4px; white-space:nowrap; overflow:hidden; }
+.sb-link{ width:100%; display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:11px; border:0; background:transparent; color:var(--text); font-size:13.5px; font-weight:600; text-align:left; text-decoration:none; transition:background .15s, color .15s; white-space:nowrap; }
+.sb-link svg{ flex:none; opacity:.75; }
+.sb-link:hover{ background:var(--surface-2); color:var(--navy); }
+.sb-link[aria-current="page"]{ background:var(--orange-soft); color:var(--cw-naranja-osc); font-weight:700; }
+.sb-link[aria-current="page"] svg{ opacity:1; color:var(--orange); }
+.sb-badge{ margin-left:auto; font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px; background:var(--surface-2); color:var(--muted); }
+.sb-link[aria-current="page"] .sb-badge{ background:#fff; color:var(--cw-naranja-osc); }
+
+.sb-foot{ padding:12px; border-top:1px solid var(--line); display:grid; gap:8px; }
+.sb-foot .btn{ width:100%; padding:10px 12px; }
+.sb-backdrop{ display:none; position:fixed; inset:0; background:rgba(17,27,46,.45); z-index:42; backdrop-filter:blur(2px); }
+.sb-backdrop.open{ display:block; }
+
+/* Estado comprimido (solo iconos en desktop) */
+@media (min-width:961px){
+  body.sb-collapsed .sidebar{ width:76px; }
+  body.sb-collapsed .sb-brand{ padding:14px 10px; flex-direction:column; gap:8px; }
+  body.sb-collapsed .sb-brand-txt,
+  body.sb-collapsed .sb-group,
+  body.sb-collapsed .sb-prop-picker,
+  body.sb-collapsed .sb-link span,
+  body.sb-collapsed .sb-badge,
+  body.sb-collapsed .sb-foot .sb-btn-lbl{ display:none !important; }
+  body.sb-collapsed .sb-collapse-btn svg{ transform:rotate(180deg); }
+  body.sb-collapsed .sb-link{ justify-content:center; padding:11px; }
+  body.sb-collapsed .sb-foot .btn{ padding:10px; justify-content:center; }
+}
+
+/* Main area + Topbar limpia sin logo + Ancho completo */
+.main-area{ flex:1; min-width:0; display:flex; flex-direction:column; }
+.topbar-app{ position:sticky; top:env(safe-area-inset-top,0px); z-index:30; height:64px; background:rgba(251,249,245,.94); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom:1px solid var(--line); padding:0 clamp(16px,2.2vw,30px); display:flex; align-items:center; gap:14px; }
+.menu-toggle{ display:none; border:1px solid var(--line); background:#fff; color:var(--navy); width:40px; height:40px; border-radius:10px; place-items:center; flex:none; }
+.page-head-title{ margin-right:auto; min-width:0; }
+.page-head-title h2{ font-size:16px; font-weight:800; color:var(--navy); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.page-head-title span{ display:block; font-size:12px; color:var(--muted); font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.wrap{ width:100%; max-width:none; padding:clamp(18px,2.2vw,26px) clamp(16px,2.5vw,32px) 64px; }
+
+/* user profile menu */
+.user-menu{ position:relative; flex:none; }
+.user-btn{ display:flex; align-items:center; gap:10px; background:#fff; border:1px solid var(--line); border-radius:999px; padding:4px 12px 4px 4px; text-align:left; transition:border-color .2s, box-shadow .2s; }
+.user-btn:hover{ border-color:rgba(17,27,46,.22); box-shadow:var(--shadow-sm); }
+.avatar{ width:34px; height:34px; border-radius:50%; background:var(--navy); color:#fff; display:grid; place-items:center; font-weight:800; font-size:12px; letter-spacing:.03em; flex:none; }
+.user-meta{ line-height:1.2; }
+.user-meta b{ display:block; font-size:13px; color:var(--navy); max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.user-meta small{ display:block; font-size:11px; color:var(--muted); font-weight:600; }
+.user-chev{ color:var(--muted); transition:transform .2s; flex:none; }
+.user-menu.open .user-chev{ transform:rotate(180deg); }
+.user-drop{ display:none; position:absolute; right:0; top:calc(100% + 8px); min-width:245px; background:#fff; border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow-lg); padding:8px; z-index:60; }
+.user-menu.open .user-drop{ display:block; }
+.user-drop-head{ padding:10px 12px; border-bottom:1px solid var(--line); margin-bottom:6px; }
+.user-drop-head b{ display:block; font-size:14px; color:var(--navy); word-break:break-word; }
+.user-drop-head span{ display:block; font-size:12px; color:var(--muted); margin-top:2px; }
+.drop-item{ width:100%; display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; border:0; background:transparent; font-size:13.5px; font-weight:600; color:var(--text); text-decoration:none; text-align:left; transition:background .15s; }
+.drop-item:hover{ background:var(--surface-2); }
+.drop-item.danger{ color:#C2412D; }
+.drop-item.danger:hover{ background:#FCE8E5; }
+
+/* split login 50/50 */
+.auth-split{ display:grid; grid-template-columns:1fr 1fr; min-height:100vh; }
+.auth-photo{ position:relative; overflow:hidden; background:var(--cw-azul); min-height:360px; }
+.auth-photo img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.auth-photo::after{ content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(17,27,46,.32) 0%, rgba(17,27,46,.88) 100%); }
+.auth-caption{ position:relative; z-index:1; height:100%; display:flex; flex-direction:column; justify-content:space-between; padding:clamp(24px,4vw,48px); color:#fff; }
+.auth-photo-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.auth-photo-top span{ font-weight:800; letter-spacing:.04em; font-size:14px; }
+.auth-photo-top a{ color:rgba(255,255,255,.85); font-size:13px; font-weight:600; text-decoration:none; }
+.auth-photo-top a:hover{ color:#fff; text-decoration:underline; }
+.auth-caption h1{ font-family:var(--serif); font-weight:500; font-size:clamp(28px,3.2vw,42px); line-height:1.12; max-width:480px; }
+.auth-caption p{ color:rgba(251,249,245,.86); margin-top:12px; font-size:15px; max-width:440px; }
+.auth-bullets{ list-style:none; margin-top:18px; display:grid; gap:8px; font-size:14px; color:rgba(251,249,245,.9); }
+.auth-bullets li{ display:flex; align-items:center; gap:9px; }
+.auth-bullets li::before{ content:""; width:7px; height:7px; border-radius:50%; background:var(--orange); flex:none; }
+.auth-photo-foot{ font-size:12px; color:rgba(251,249,245,.62); }
+.auth-panel{ display:flex; flex-direction:column; align-items:center; justify-content:center; padding:clamp(24px,4vw,48px) clamp(20px,4vw,48px); background:var(--cw-crema); }
+.login-box{ width:100%; max-width:420px; background:#fff; border:1px solid var(--line); border-radius:20px; padding:clamp(26px,4vw,38px); box-shadow:var(--shadow); }
+.login-logo{ display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:14px; }
+.login-logo img{ height:40px; width:auto; }
+.login-logo b{ font-size:14px; font-weight:800; letter-spacing:.04em; color:var(--navy); }
+.login-box h2{ font-family:var(--serif); font-size:clamp(24px,2.5vw,29px); font-weight:600; color:var(--navy); margin-bottom:6px; text-align:center; }
+.login-box .muted{ font-size:14px; text-align:center; }
+.login-box form{ display:grid; gap:16px; margin-top:22px; }
+.input-ico-wrap{ position:relative; display:flex; align-items:center; }
+.input-ico-wrap > svg{ position:absolute; left:13px; color:var(--muted); pointer-events:none; }
+.input-ico-wrap input{ padding-left:40px; padding-right:40px; }
+.eye-btn{ position:absolute; right:8px; border:0; background:transparent; color:var(--muted); width:32px; height:32px; border-radius:8px; display:grid; place-items:center; }
+.eye-btn:hover{ color:var(--navy); background:var(--surface-2); }
+.login-switch{ margin-top:20px; padding-top:16px; border-top:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; font-size:13px; color:var(--muted); }
+.login-switch a{ color:var(--orange); font-weight:700; text-decoration:none; }
+.login-switch a:hover{ text-decoration:underline; }
+
+/* shared UI */
+.card{ background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow-sm); }
+.btn{ border:0; border-radius:10px; padding:10px 18px; min-height:42px; font-weight:700; font-size:13.5px; display:inline-flex; align-items:center; justify-content:center; gap:8px; transition:transform .16s, background .2s, box-shadow .2s, border-color .2s; white-space:nowrap; }
+.btn-primary{ background:var(--orange); color:#fff; box-shadow:0 4px 12px rgba(217,106,43,.22); }
+.btn-primary:hover:not(:disabled){ background:var(--cw-naranja-osc); transform:translateY(-1px); }
+.btn-ghost{ background:#fff; border:1px solid var(--line); color:var(--navy); text-decoration:none; }
+.btn-ghost:hover:not(:disabled){ background:var(--surface-2); border-color:rgba(17,27,46,.24); }
+.btn-danger{ background:transparent; color:#C2412D; padding:8px 12px; min-height:36px; border-radius:8px; }
+.btn-danger:hover{ background:#FCE8E5; }
+.btn:disabled{ opacity:.48; cursor:not-allowed; }
+label{ font-size:12px; font-weight:700; color:var(--muted); display:block; margin-bottom:6px; letter-spacing:.01em; }
+input,select,textarea{ width:100%; min-height:42px; padding:10px 13px; border-radius:10px; border:1px solid rgba(17,27,46,.16); background:#fff; font-size:14px; transition:border-color .2s, box-shadow .2s; }
+input:focus,select:focus,textarea:focus{ outline:none; border-color:var(--orange); box-shadow:0 0 0 3px rgba(217,106,43,.12); }
+input:disabled,select:disabled{ background:var(--surface-2); color:var(--muted); }
+textarea{ min-height:110px; resize:vertical; }
 .muted{ color:var(--muted); }
-.notice{ padding:14px 16px; border-radius:12px; background:var(--orange-soft); font-size:14px; }
-.empty{ text-align:center; padding:48px 24px; }
-.empty h2{ font-size:22px; margin-bottom:8px; }
+.notice{ padding:14px 16px; border-radius:12px; background:var(--orange-soft); border:1px solid #F4CDB4; font-size:13.5px; }
+.empty{ text-align:center; padding:clamp(36px,6vw,64px) 24px; max-width:560px; margin:24px auto; }
+.empty h2{ font-family:var(--serif); font-size:24px; margin-bottom:8px; color:var(--navy); }
+.pill{ display:inline-flex; align-items:center; font-size:11.5px; font-weight:700; padding:3px 10px; border-radius:999px; background:var(--surface-2); border:1px solid var(--line); color:var(--navy); white-space:nowrap; }
+.pill.ok{ background:var(--green-soft); border-color:rgba(35,122,75,.22); color:var(--green); }
+.pill.accent{ background:var(--orange-soft); border-color:rgba(217,106,43,.25); color:var(--cw-naranja-osc); }
 
-/* ===== Editor ===== */
-.editor{ display:grid; grid-template-columns:300px 1fr; gap:20px; align-items:start; }
-.side{ padding:16px; position:sticky; top:calc(84px + env(safe-area-inset-top,0px)); }
-.side h3{ font-size:15px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; }
-.prop-item{ width:100%; text-align:left; border:1px solid transparent; background:transparent; border-radius:12px; padding:10px 12px; margin-bottom:6px; }
-.prop-item:hover{ background:var(--surface-2); }
-.prop-item[aria-current="true"]{ background:var(--orange-soft); border-color:var(--orange); }
-.prop-item b{ display:block; font-size:14px; }
-.prop-item span{ font-size:12.5px; color:var(--muted); }
-.pill{ display:inline-block; font-size:11.5px; font-weight:700; padding:2px 9px; border-radius:999px; background:var(--surface-2); border:1px solid var(--line); }
-.sec{ padding:20px 22px; margin-bottom:18px; }
-.sec h3{ font-size:16px; margin-bottom:4px; }
+/* ===== Editor, Admin & Client Pages ===== */
+.sec{ padding:clamp(18px,2.4vw,24px); margin-bottom:18px; }
+.sec h3{ font-size:15.5px; font-weight:800; margin-bottom:4px; color:var(--navy); }
 .sec .hint{ font-size:13px; color:var(--muted); margin-bottom:16px; }
 .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
 .grid3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
-.edit-head{ display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin-bottom:18px; }
-.edit-head h2{ font-size:22px; }
-.row-list{ display:grid; gap:8px; margin-bottom:12px; }
-.row{ display:grid; grid-template-columns:130px 90px 1fr auto; gap:10px; align-items:center; padding:10px 12px; border:1px solid var(--line); border-radius:12px; background:var(--surface-2); font-size:14px; }
+.page-head{ display:flex; gap:16px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin-bottom:18px; }
+.page-kicker{ font-size:11.5px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--orange); margin-bottom:3px; }
+.page-head h1{ font-family:var(--serif); font-size:clamp(22px,2.4vw,28px); font-weight:600; line-height:1.18; color:var(--navy); }
+.row-list{ display:grid; gap:8px; margin-bottom:14px; }
+.row{ display:grid; grid-template-columns:115px 100px 1fr auto; gap:10px; align-items:center; padding:11px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-2); font-size:13.5px; }
 .row.doc{ grid-template-columns:1fr auto; }
-.add-row{ display:grid; grid-template-columns:150px 110px 1fr auto; gap:10px; align-items:end; }
+.prop-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap:14px; }
+.prop-card{ text-align:left; padding:18px; border:1px solid var(--line); border-radius:16px; background:#fff; transition:border-color .16s, transform .16s, box-shadow .16s; display:grid; gap:8px; }
+.prop-card:hover{ border-color:var(--orange); transform:translateY(-2px); box-shadow:var(--shadow); }
+.prop-card[aria-current="true"]{ border-color:var(--orange); background:linear-gradient(180deg,#FFF8F3 0%,#FFFFFF 100%); box-shadow:0 0 0 2px rgba(217,106,43,.15); }
+.prop-card b{ font-size:15.5px; color:var(--navy); line-height:1.25; }
+.prop-card .prop-meta{ font-size:13px; color:var(--muted); display:flex; justify-content:space-between; align-items:center; gap:8px; }
+.admin-kpis{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:18px; }
+.admin-kpi{ padding:16px 18px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.admin-kpi b{ font-family:var(--serif); font-size:28px; color:var(--navy); line-height:1; }
+.admin-kpi span{ font-size:13px; color:var(--muted); font-weight:600; display:block; margin-top:4px; }
+.admin-row{ display:grid; grid-template-columns:1fr auto auto auto; gap:10px; align-items:center; padding:11px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-2); font-size:13.5px; }
+.admin-prop-row{ display:grid; grid-template-columns:1.2fr 1fr auto; gap:10px; align-items:center; padding:11px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-2); font-size:13.5px; }
+.admin-inline-form{ display:flex; gap:8px; margin-top:14px; }
+.add-row{ display:grid; grid-template-columns:150px 96px 1fr auto; gap:10px; align-items:end; }
 .add-row.doc{ grid-template-columns:1fr 1fr auto; }
-.save-bar{ display:flex; align-items:center; gap:12px; justify-content:flex-end; }
-.status{ font-size:13px; color:var(--muted); }
+.save-bar{ display:flex; align-items:center; gap:12px; justify-content:flex-end; flex-wrap:wrap; padding:14px 20px !important; background:#fff; border:1px solid rgba(17,27,46,.14); box-shadow:0 6px 20px rgba(17,27,46,.06); }
+.status{ font-size:13px; color:var(--muted); font-weight:600; }
 
-/* stepper (shared) */
-.stepper{ display:flex; align-items:flex-start; overflow-x:auto; padding:6px 2px 4px; }
-.step{ flex:1; min-width:92px; display:flex; flex-direction:column; align-items:center; position:relative; text-align:center; background:none; border:0; padding:0; }
-.step::before{ content:""; position:absolute; top:15px; left:-50%; width:100%; height:3px; background:var(--line); z-index:0; }
+/* stepper */
+.stepper{ display:flex; align-items:flex-start; overflow-x:auto; padding:8px 4px 4px; scrollbar-width:thin; scroll-snap-type:x proximity; }
+.step{ flex:1; min-width:90px; display:flex; flex-direction:column; align-items:center; position:relative; text-align:center; background:none; border:0; padding:0 4px; scroll-snap-align:start; }
+.step::before{ content:""; position:absolute; top:16px; left:-50%; width:100%; height:2px; background:var(--line); z-index:0; }
 .step:first-child::before{ display:none; }
 .step.done::before,.step.now::before{ background:var(--green); }
-.dot{ width:32px; height:32px; border-radius:50%; border:3px solid var(--line); background:var(--surface); display:grid; place-items:center; font-weight:800; font-size:13px; z-index:1; position:relative; color:var(--muted); }
+.dot{ width:34px; height:34px; border-radius:50%; border:2px solid rgba(17,27,46,.16); background:var(--surface); display:grid; place-items:center; font-weight:800; font-size:12.5px; z-index:1; position:relative; color:var(--muted); transition:all .2s; }
 .step.done .dot{ background:var(--green); border-color:var(--green); color:#fff; }
 .step.now .dot{ border-color:var(--orange); background:var(--orange); color:#fff; box-shadow:0 0 0 5px var(--orange-soft); }
-.step b{ font-size:12.5px; margin-top:8px; color:var(--muted); font-weight:600; }
+.step b{ font-size:12px; margin-top:8px; color:var(--muted); font-weight:600; line-height:1.25; }
 .step.now b{ color:var(--orange); font-weight:800; }
-.step.done b{ color:var(--text); }
+.step.done b{ color:var(--navy); }
 button.step:hover .dot{ border-color:var(--orange); }
 
-/* ===== Client ===== */
-.client{ display:grid; grid-template-columns:1fr 360px; gap:20px; align-items:start; }
-.hello{ padding:24px; display:flex; gap:20px; justify-content:space-between; align-items:center; flex-wrap:wrap; }
-.hello h1{ font-size:26px; line-height:1.2; }
-.hello p{ color:var(--muted); }
-.prop-badge{ display:flex; gap:12px; align-items:center; background:var(--surface-2); border:1px solid var(--line); border-radius:14px; padding:10px 14px; }
-.prop-badge .ico{ width:42px; height:42px; border-radius:10px; background:var(--navy); display:grid; place-items:center; }
-.prop-badge b{ display:block; font-size:14px; }
-.prop-badge span{ font-size:12.5px; color:var(--muted); }
-.block{ padding:20px 22px; margin-top:18px; }
-.block h3{ font-size:16px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
-.stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:18px; }
-.stat{ padding:18px; }
-.stat .n{ font-size:34px; font-weight:800; line-height:1; }
-.stat .l{ color:var(--muted); font-size:13.5px; margin-top:6px; }
-.stat:nth-child(1) .n{ color:var(--orange); }
-.visit{ display:grid; grid-template-columns:120px 110px 1fr; gap:10px; padding:12px 0; border-top:1px solid var(--line); font-size:14px; }
-.visit:first-of-type{ border-top:0; }
-.summary{ background:var(--orange-soft); color:var(--text); border:1px solid #F4CDB4; }
-.summary h3{ color:var(--text); }
-.summary .date{ font-size:12.5px; color:var(--muted); font-weight:600; }
-.summary p{ white-space:pre-wrap; }
-.doc-link{ display:flex; gap:10px; align-items:center; padding:12px; border-radius:12px; border:1px solid var(--line); background:var(--surface-2); text-decoration:none; color:var(--text); margin-bottom:8px; font-weight:600; font-size:14px; }
-.doc-link:hover{ border-color:var(--orange); }
-.chat{ display:flex; flex-direction:column; gap:10px; max-height:360px; overflow-y:auto; padding-right:4px; margin-bottom:12px; }
-.msg{ max-width:85%; padding:10px 12px; border-radius:14px; font-size:14px; }
-.msg small{ display:block; font-size:11.5px; color:var(--muted); margin-top:4px; }
-.msg.asesor{ background:var(--surface-2); border:1px solid var(--line); align-self:flex-start; }
-.msg.propietario{ background:var(--orange-soft); align-self:flex-end; }
-.msg b{ font-size:12px; display:block; margin-bottom:2px; }
-.composer{ display:flex; gap:8px; }
-.composer input{ flex:1; }
+/* Client summary */
+.hello{ position:relative; overflow:hidden; background:radial-gradient(900px 320px at 95% -10%, rgba(217,106,43,.22), transparent 60%), linear-gradient(135deg, var(--cw-azul) 0%, #1C2B47 100%); color:#fff; border:0; padding:clamp(22px,3.2vw,32px); display:flex; gap:20px; justify-content:space-between; align-items:center; flex-wrap:wrap; box-shadow:var(--shadow); margin-bottom:18px; }
+.hello-kicker{ font-size:11.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--cw-naranja-sua); margin-bottom:6px; }
+.hello h1{ font-family:var(--serif); font-weight:500; font-size:clamp(24px,3vw,34px); line-height:1.15; }
+.hello p{ color:rgba(251,249,245,.78); margin-top:6px; font-size:14.5px; }
+.prop-badge{ display:flex; gap:12px; align-items:center; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.16); border-radius:14px; padding:12px 16px; backdrop-filter:blur(8px); }
+.prop-badge .ico{ width:42px; height:42px; border-radius:11px; background:var(--orange); display:grid; place-items:center; flex:none; }
+.prop-badge b{ display:block; font-size:14.5px; color:#fff; line-height:1.25; }
+.prop-badge span{ font-size:12.5px; color:rgba(251,249,245,.75); }
+.stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:18px; }
+.stats-2{ grid-template-columns:repeat(2,1fr); }
+.stats-4{ grid-template-columns:repeat(4,1fr); }
+.stat{ padding:18px 20px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.stat .n{ font-family:var(--serif); font-size:clamp(26px,2.8vw,32px); font-weight:600; line-height:1; color:var(--navy); }
+.stat .l{ color:var(--muted); font-size:13px; font-weight:600; margin-top:6px; }
+.stat-ico{ width:42px; height:42px; border-radius:12px; display:grid; place-items:center; flex:none; }
+.stat-ico.orange{ background:var(--orange-soft); color:var(--orange); }
+.stat-ico.navy{ background:#EEF1F6; color:var(--navy); }
+.stat-ico.green{ background:var(--green-soft); color:var(--green); }
+.progress-pill{ display:inline-flex; align-items:center; gap:8px; margin-top:12px; font-size:12.5px; font-weight:700; color:rgba(251,249,245,.9); }
+.progress-track{ width:140px; height:6px; border-radius:999px; background:rgba(255,255,255,.18); overflow:hidden; }
+.progress-fill{ height:100%; background:var(--orange); border-radius:999px; }
+.stage-desc{ margin-top:16px; padding:12px 16px; border-radius:12px; background:var(--surface-2); border:1px solid var(--line); font-size:13.5px; color:var(--navy); display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.client-split{ display:grid; grid-template-columns:1.55fr 1fr; gap:18px; align-items:start; }
+.advisor-card{ display:grid; gap:14px; }
+.advisor-head{ display:flex; align-items:center; gap:12px; }
+.advisor-ava{ width:46px; height:46px; border-radius:50%; background:var(--navy); color:#fff; display:grid; place-items:center; font-weight:800; font-size:14px; flex:none; }
+.advisor-actions{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.toolbar-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
+.toolbar-row input{ max-width:360px; }
+.visit{ display:grid; grid-template-columns:44px 130px auto 1fr auto; gap:12px; padding:14px 0; border-top:1px solid var(--line); font-size:14px; align-items:center; }
+.visit:first-of-type{ border-top:0; padding-top:4px; }
+.visit-num{ width:34px; height:34px; border-radius:10px; background:var(--surface-2); border:1px solid var(--line); display:grid; place-items:center; font-weight:800; font-size:12.5px; color:var(--navy); }
+.visit-date{ font-weight:700; color:var(--navy); font-size:13.5px; }
+.doc-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(min(290px, 100%), 1fr)); gap:14px; }
+.doc-card{ padding:18px; border:1px solid var(--line); border-radius:14px; background:var(--surface-2); display:grid; gap:12px; transition:border-color .18s, background .18s, transform .18s; }
+.doc-card:hover{ border-color:var(--orange); background:#fff; transform:translateY(-2px); box-shadow:var(--shadow-sm); }
+.doc-card-top{ display:flex; align-items:flex-start; gap:12px; }
+.doc-card-ico{ width:40px; height:40px; border-radius:10px; background:var(--orange-soft); color:var(--orange); display:grid; place-items:center; flex:none; }
+.doc-card b{ display:block; font-size:14.5px; color:var(--navy); line-height:1.3; }
+.doc-card small{ display:block; font-size:12px; color:var(--muted); margin-top:2px; }
+.summary{ background:linear-gradient(180deg, #FFFDF9 0%, var(--cw-crema-2) 100%); border:1px solid rgba(17,27,46,.1); border-left:4px solid var(--orange); }
+.summary .date{ font-size:12px; color:var(--muted); font-weight:700; }
+.summary p{ white-space:pre-wrap; font-size:14.5px; line-height:1.65; color:var(--navy); }
+.doc-link{ display:flex; gap:12px; align-items:center; justify-content:space-between; padding:12px 14px; border-radius:12px; border:1px solid var(--line); background:var(--surface-2); text-decoration:none; color:var(--navy); margin-bottom:10px; font-weight:600; font-size:14px; transition:border-color .2s, background .2s, transform .15s; }
+.doc-link:last-child{ margin-bottom:0; }
+.doc-link:hover{ border-color:var(--orange); background:#fff; transform:translateX(2px); }
+.doc-link-l{ display:flex; align-items:center; gap:10px; min-width:0; }
+.doc-link-l span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.wsp-btn{ background:#1F9D55; color:#fff; text-decoration:none; width:100%; }
+.wsp-btn:hover{ background:#198548; transform:translateY(-1px); }
 .footer{ text-align:center; color:var(--muted); font-size:12.5px; margin-top:28px; }
+.inbox-grid{ display:grid; grid-template-columns:320px 1fr; gap:18px; align-items:start; }
+.inbox-list{ padding:14px; display:grid; gap:8px; }
+.inbox-item{ width:100%; text-align:left; padding:12px 14px; border-radius:12px; border:1px solid var(--line); background:var(--surface-2); display:grid; gap:4px; transition:border-color .15s, background .15s; }
+.inbox-item:hover{ border-color:var(--orange); background:#fff; }
+.inbox-item[aria-current="true"]{ border-color:var(--orange); background:var(--orange-soft); }
+.inbox-item b{ font-size:14px; color:var(--navy); line-height:1.25; }
+.inbox-item small{ font-size:12px; color:var(--muted); }
+.inbox-thread{ display:flex; flex-direction:column; min-height:520px; max-height:70vh; overflow:hidden; }
+.inbox-head{ padding:16px 20px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; background:#fff; }
+.inbox-msgs{ flex:1; overflow-y:auto; padding:18px 20px; background:var(--cw-crema); display:flex; flex-direction:column; gap:10px; }
+.inbox-compose{ padding:14px 18px; border-top:1px solid var(--line); background:#fff; display:flex; gap:10px; align-items:center; }
+.inbox-compose input{ flex:1; }
+.checklist{ display:grid; gap:10px; }
+.check-item{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; border-radius:10px; background:var(--surface-2); border:1px solid var(--line); font-size:13px; color:var(--navy); }
+.prop-mini-bar{ height:5px; border-radius:999px; background:var(--surface-2); overflow:hidden; margin-top:4px; }
+.prop-mini-bar span{ display:block; height:100%; background:var(--orange); border-radius:999px; }
+.prop-card-stats{ display:flex; gap:8px; flex-wrap:wrap; margin-top:4px; }
+.prop-card-stats span{ font-size:12px; font-weight:600; color:var(--muted); background:var(--surface-2); padding:3px 9px; border-radius:8px; border:1px solid var(--line); }
+.link-steps{ display:grid; gap:10px; margin-top:14px; }
+.link-step{ display:flex; gap:12px; align-items:flex-start; padding:12px 14px; border-radius:12px; background:var(--surface-2); border:1px solid var(--line); font-size:13.5px; }
+.link-step-num{ width:26px; height:26px; border-radius:50%; background:var(--orange-soft); color:var(--orange); font-weight:800; font-size:12px; display:grid; place-items:center; flex:none; }
+@media (max-width:1100px){ .stats-4{ grid-template-columns:repeat(2,1fr); } .client-split,.inbox-grid{ grid-template-columns:1fr; } .inbox-thread{ max-height:none; min-height:420px; } }
 
-@media (max-width:980px){
-  .editor,.client{ grid-template-columns:1fr; }
-  .side{ position:static; }
+/* ===== Floating Chat Bubble + Popover (estilo Messenger / Venty) ===== */
+.chat-widget{ position:fixed; right:clamp(14px,2.5vw,26px); bottom:calc(18px + env(safe-area-inset-bottom,0px)); z-index:55; }
+.chat-fab{ width:60px; height:60px; border-radius:50%; border:0; background:linear-gradient(135deg, var(--cw-azul) 0%, #1F3254 100%); color:#fff; box-shadow:0 12px 28px rgba(17,27,46,.28); display:grid; place-items:center; position:relative; transition:transform .2s, box-shadow .2s; }
+.chat-fab:hover{ transform:translateY(-2px) scale(1.03); box-shadow:0 16px 34px rgba(17,27,46,.34); }
+.chat-fab-dot{ position:absolute; top:3px; right:3px; width:14px; height:14px; border-radius:50%; background:#22C55E; border:2.5px solid #fff; }
+.chat-fab-count{ position:absolute; top:-4px; left:-4px; min-width:22px; height:22px; padding:0 6px; border-radius:999px; background:var(--orange); color:#fff; font-size:11px; font-weight:800; display:grid; place-items:center; border:2px solid #fff; }
+.chat-popover{ display:none; position:absolute; right:0; bottom:0; width:min(380px, calc(100vw - 24px)); height:min(520px, calc(100vh - 90px)); background:#fff; border:1px solid var(--line); border-radius:20px; box-shadow:0 24px 60px rgba(17,27,46,.24); overflow:hidden; flex-direction:column; }
+.chat-widget.open .chat-fab{ display:none; }
+.chat-widget.open .chat-popover{ display:flex; }
+.chat-pop-head{ background:linear-gradient(135deg, var(--cw-azul) 0%, #1D2D4B 100%); color:#fff; padding:14px 16px; display:flex; align-items:center; gap:12px; }
+.chat-pop-ava{ width:38px; height:38px; border-radius:50%; background:var(--orange); color:#fff; display:grid; place-items:center; font-weight:800; font-size:13px; flex:none; position:relative; }
+.chat-pop-ava::after{ content:""; position:absolute; right:0; bottom:0; width:10px; height:10px; border-radius:50%; background:#22C55E; border:2px solid var(--cw-azul); }
+.chat-pop-info{ flex:1; min-width:0; }
+.chat-pop-info b{ display:block; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.chat-pop-info small{ display:block; font-size:11.5px; color:rgba(251,249,245,.75); }
+.chat-pop-actions{ display:flex; align-items:center; gap:6px; }
+.chat-pop-icon{ width:32px; height:32px; border-radius:8px; border:0; background:rgba(255,255,255,.12); color:#fff; display:grid; place-items:center; text-decoration:none; font-size:16px; }
+.chat-pop-icon:hover{ background:rgba(255,255,255,.22); }
+.chat-pop-body{ flex:1; overflow-y:auto; padding:14px; background:var(--cw-crema); display:flex; flex-direction:column; gap:10px; }
+.msg{ max-width:85%; padding:10px 13px; border-radius:14px; font-size:13.5px; line-height:1.45; }
+.msg small{ display:block; font-size:11px; color:var(--muted); margin-top:4px; }
+.msg.asesor{ background:#fff; border:1px solid var(--line); align-self:flex-start; border-bottom-left-radius:4px; }
+.msg.propietario{ background:var(--orange-soft); border:1px solid #F4CDB4; align-self:flex-end; border-bottom-right-radius:4px; }
+.msg b{ font-size:11.5px; display:block; margin-bottom:2px; color:var(--navy); }
+.chat-pop-foot{ padding:12px; background:#fff; border-top:1px solid var(--line); display:flex; gap:8px; }
+.chat-pop-foot input{ flex:1; min-height:40px; padding:8px 12px; }
+.chat-pop-foot .btn{ min-height:40px; padding:8px 14px; }
+
+.row,.admin-row,.admin-prop-row,.doc-card,.prop-card,.check-item,.visit{ min-width:0; overflow-wrap:anywhere; }
+
+/* ===== Custom Confirm Modal ===== */
+.cw-modal-backdrop{ position:fixed; inset:0; background:rgba(17,27,46,.52); backdrop-filter:blur(4px); z-index:90; display:none; place-items:center; padding:18px; }
+.cw-modal-backdrop.open{ display:grid; }
+.cw-modal{ width:min(440px, 100%); background:#fff; border:1px solid var(--line); border-radius:20px; box-shadow:0 24px 60px rgba(17,27,46,.26); padding:24px; display:grid; gap:14px; animation:cwPop .16s ease-out; }
+@keyframes cwPop{ from{ opacity:0; transform:scale(.96) translateY(6px); } to{ opacity:1; transform:scale(1) translateY(0); } }
+.cw-modal-head{ display:flex; align-items:flex-start; gap:14px; }
+.cw-modal-ico{ width:44px; height:44px; border-radius:12px; background:#FEEAEA; color:#C2412D; display:grid; place-items:center; flex:none; }
+.cw-modal-head h3{ font-family:var(--serif); font-size:20px; font-weight:600; color:var(--navy); line-height:1.2; margin-bottom:4px; }
+.cw-modal-head p{ font-size:13.5px; color:var(--muted); line-height:1.5; }
+.cw-modal-warn{ padding:12px 14px; border-radius:12px; background:#FFF4EE; border:1px solid #F5CBB2; color:#9A3E12; font-size:13.5px; line-height:1.45; font-weight:600; }
+.cw-modal-actions{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:4px; }
+.btn-danger-solid{ background:#C2412D; color:#fff; }
+.btn-danger-solid:hover{ background:#A63523; transform:translateY(-1px); }
+
+/* ===== Tablet & Mobile Responsive ===== */
+@media (max-width:960px){
+  .main-area,.wrap,.card{ min-width:0; max-width:100%; }
+  .sidebar{ position:fixed; left:0; top:env(safe-area-inset-top,0px); bottom:0; height:auto; width:min(288px, 85vw); transform:translateX(-100%); box-shadow:var(--shadow-lg); }
+  .sidebar.open{ transform:translateX(0); }
+  body.sb-collapsed .sidebar{ width:min(288px, 85vw); }
+  body.sb-collapsed .sb-brand-txt,body.sb-collapsed .sb-group,body.sb-collapsed .sb-prop-picker,body.sb-collapsed .sb-link span,body.sb-collapsed .sb-btn-lbl{ display:block; }
+  body.sb-collapsed .sb-link{ justify-content:flex-start; padding:10px 12px; }
+  body.sb-collapsed .sb-brand{ justify-content:flex-start; padding:18px 16px; }
+  .sb-collapse-btn{ display:none; }
+  .sb-close{ display:grid; place-items:center; }
+  .menu-toggle{ display:grid; }
+  .admin-kpis{ grid-template-columns:repeat(2,1fr); }
+  .admin-kpis > .admin-kpi:last-child:nth-child(odd){ grid-column:1 / -1; }
+  .stats{ grid-template-columns:repeat(2,1fr); }
+  .stats:not(.stats-2):not(.stats-4) > .stat:last-child:nth-child(odd){ grid-column:1 / -1; }
+  .grid3{ grid-template-columns:1fr 1fr; }
 }
-@media (max-width:620px){
+@media (max-width:860px){
+  .auth-split{ grid-template-columns:1fr; min-height:auto; }
+  .auth-photo{ min-height:200px; padding:20px; }
+  .auth-panel{ padding:24px 16px; }
+}
+@media (max-width:640px){
+  .topbar-app{ padding:0 14px; gap:10px; }
+  .wrap{ padding:14px 14px calc(88px + env(safe-area-inset-bottom,0px)); }
   .grid2,.grid3,.add-row,.add-row.doc{ grid-template-columns:1fr; }
-  .row{ grid-template-columns:1fr auto; }
-  .stats{ grid-template-columns:1fr; }
-  .visit{ grid-template-columns:1fr 1fr; }
-  .tab{ padding:8px 12px; font-size:13px; }
-  .brand small{ display:none; }
+  .row,.admin-row,.admin-prop-row{ grid-template-columns:1fr; gap:8px; align-items:start; }
+  .admin-row{ display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; }
+  .admin-row > span:first-child{ flex:1 1 100%; }
+  .admin-inline-form{ flex-direction:column; }
+  .stats,.stats-2,.stats-4,.admin-kpis{ grid-template-columns:repeat(2,1fr); gap:10px; }
+  .stat,.admin-kpi{ padding:14px; gap:8px; }
+  .stat .n,.admin-kpi b{ font-size:24px; }
+  .stat-ico{ width:36px; height:36px; border-radius:10px; }
+  .stats:not(.stats-2):not(.stats-4) > .stat:last-child:nth-child(odd),
+  .admin-kpis > .admin-kpi:last-child:nth-child(odd){ grid-column:1 / -1; }
+  .visit{ grid-template-columns:36px 1fr; gap:6px 10px; align-items:center; }
+  .visit .pill,.visit > span:not(.visit-date),.visit .muted{ grid-column:2; justify-self:start; }
+  .user-meta{ display:none; }
+  .user-btn{ padding:3px 8px 3px 3px; }
+  .hello{ padding:20px 18px; gap:14px; }
+  .hello > div:last-child{ width:100%; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .hello > div:last-child .btn:last-child:nth-child(odd){ grid-column:1 / -1; }
+  .prop-badge{ width:100%; }
+  .progress-track{ width:100px; }
+  .toolbar-row{ flex-direction:column; align-items:stretch; }
+  .toolbar-row input,.toolbar-row select{ max-width:none !important; width:100%; }
+  .composer{ flex-direction:column; align-items:stretch; }
+  .composer .btn{ width:100%; }
+  .stepper{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px 6px; overflow-x:visible; padding:6px 0 2px; }
+  .step{ min-width:0; }
+  .step::before{ display:none; }
+  .step b{ font-size:11px; }
+  .inbox-thread{ min-height:380px; }
+  .inbox-head{ padding:14px 16px; }
+  .inbox-msgs{ padding:14px 14px; }
+  .inbox-compose{ padding:12px; gap:8px; }
+  .chat-popover{ width:calc(100vw - 24px); height:min(500px, calc(100dvh - 96px)); }
+  .save-bar{ display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:12px 14px !important; }
+  .save-bar .status{ grid-column:1 / -1; margin-right:0; }
+  .save-bar .btn{ width:100%; }
+}
+@media (max-width:480px){
+  .auth-card{ padding:22px 18px; border-radius:16px; }
+  .page-head{ gap:10px; }
+  .page-head .btn{ width:100%; }
+  .cw-modal{ padding:20px 18px; }
+}
+@media (max-width:360px){
+  .stats,.stats-2,.stats-4,.admin-kpis,.advisor-actions,.save-bar,.hello > div:last-child,.cw-modal-actions{ grid-template-columns:1fr; }
 }
 </style>
 </head>
 <body>
-<header class="topbar">
-  <div class="in">
-    <div class="brand"><img class="brand-logo" src="assets/logo-cw.png" alt="CW Inmobiliaria"><div>CW INMOBILIARIA<small>Portal del propietario</small></div></div>
-    <a href="index.html" class="back-link">Volver a la web</a>
-    <nav class="tabs" role="tablist" aria-label="Vistas">
-      <button class="tab" role="tab" id="tab-asesor" aria-selected="false" data-view="asesor">Panel del asesor</button>
-      <button class="tab" role="tab" id="tab-cliente" aria-selected="false" data-view="cliente">Vista del propietario</button>
-    </nav>
+<div class="shell">
+  <div class="sb-backdrop" id="sb-backdrop"></div>
+  <aside class="sidebar" id="sidebar" aria-label="Menú principal">
+    <div class="sb-brand">
+      <img src="assets/logo-cw-transparente-512.png" alt="CW Inmobiliaria">
+      <div class="sb-brand-txt">
+        <b>CW INMOBILIARIA</b>
+        <small id="brand-sub">Portal</small>
+      </div>
+      <button type="button" class="sb-collapse-btn" id="sb-collapse" title="Comprimir o expandir menú" aria-label="Comprimir menú">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <button type="button" class="sb-close" id="sb-close" aria-label="Cerrar menú">✕</button>
+    </div>
+    <div class="sb-prop-picker" id="sb-prop-picker" style="display:none"></div>
+    <nav class="sb-nav" id="sb-nav"></nav>
+    <div class="sb-foot" id="sb-foot"></div>
+  </aside>
+
+  <div class="main-area">
+    <header class="topbar-app">
+      <button type="button" class="menu-toggle" id="menu-toggle" aria-label="Abrir menú">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="page-head-title">
+        <h2 id="page-title">Portal CW</h2>
+        <span id="page-sub">CW Inmobiliaria</span>
+      </div>
+      <div class="user-menu" id="user-menu" style="display:none">
+        <button type="button" class="user-btn" id="user-btn" aria-expanded="false" aria-haspopup="true">
+          <span class="avatar" id="user-avatar">CW</span>
+          <span class="user-meta">
+            <b id="user-name">Usuario</b>
+            <small id="user-role">Portal CW</small>
+          </span>
+          <svg class="user-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="user-drop" id="user-drop" role="menu">
+          <div class="user-drop-head">
+            <b id="drop-name">Usuario</b>
+            <span id="drop-role">CW Inmobiliaria</span>
+          </div>
+          <a href="index.html" class="drop-item" role="menuitem">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>
+            Ir a la web principal
+          </a>
+          <button type="button" class="drop-item danger" id="menu-logout" role="menuitem">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Salir (Cerrar sesión)
+          </button>
+        </div>
+      </div>
+    </header>
+    <main class="wrap" id="app"><div class="card empty"><h2>Cargando portal…</h2><p class="muted">Conectando con la información de las propiedades.</p></div></main>
   </div>
-</header>
-<main class="wrap" id="app"><div class="card empty"><h2>Cargando portal…</h2><p class="muted">Conectando con la información de las propiedades.</p></div></main>
+</div>
+
+<div class="chat-widget" id="chat-widget" style="display:none">
+  <div class="chat-popover" id="chat-popover" role="dialog" aria-label="Mensajes">
+    <div class="chat-pop-head">
+      <div class="chat-pop-ava" id="chat-ava">CW</div>
+      <div class="chat-pop-info">
+        <b id="chat-title">Asesor CW</b>
+        <small id="chat-sub">En línea · Mensajes en tiempo real</small>
+      </div>
+      <div class="chat-pop-actions">
+        <a class="chat-pop-icon" id="chat-wsp" href="#" target="_blank" rel="noopener" title="Abrir WhatsApp" style="display:none">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm5.76 14.12c-.24.68-1.41 1.3-1.95 1.38-.5.07-1.13.1-1.82-.12-.42-.13-.96-.31-1.65-.61-2.9-1.25-4.79-4.17-4.94-4.36-.14-.19-1.18-1.57-1.18-3 0-1.43.75-2.13 1.02-2.42.27-.29.59-.36.79-.36h.57c.18 0 .43-.07.67.51.25.6.84 2.06.91 2.21.07.15.12.33.02.52-.1.19-.15.31-.3.48-.15.17-.31.38-.44.51-.15.15-.3.31-.13.61.17.3.76 1.25 1.63 2.03 1.12 1 2.07 1.31 2.37 1.46.3.15.47.12.65-.07.18-.19.74-.86.94-1.16.2-.3.4-.25.67-.15.27.1 1.73.82 2.03.97.3.15.5.22.57.34.07.12.07.7-.17 1.38Z"/></svg>
+        </a>
+        <button type="button" class="chat-pop-icon" id="chat-close" aria-label="Cerrar chat">✕</button>
+      </div>
+    </div>
+    <div class="chat-pop-body" id="chat"></div>
+    <form class="chat-pop-foot" id="chat-form">
+      <input id="msg-in" maxlength="1000" placeholder="Escribe un mensaje…" aria-label="Mensaje">
+      <button class="btn btn-primary" type="submit">Enviar</button>
+    </form>
+  </div>
+  <button type="button" class="chat-fab" id="chat-fab" aria-label="Atención al cliente" aria-expanded="false" title="Hablar con tu asesor">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+    <span class="chat-fab-dot"></span>
+    <span class="chat-fab-count" id="chat-count" style="display:none">0</span>
+  </button>
+</div>
+
+<div class="cw-modal-backdrop" id="cw-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="cw-modal-title">
+  <div class="cw-modal">
+    <div class="cw-modal-head">
+      <div class="cw-modal-ico" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <div>
+        <h3 id="cw-modal-title">Confirmar acción</h3>
+        <p id="cw-modal-desc"></p>
+      </div>
+    </div>
+    <div class="cw-modal-warn" id="cw-modal-warn" style="display:none"></div>
+    <div class="cw-modal-actions">
+      <button type="button" class="btn btn-ghost" id="cw-modal-cancel">Cancelar</button>
+      <button type="button" class="btn btn-danger-solid" id="cw-modal-confirm">Eliminar</button>
+    </div>
+  </div>
+</div>
 
 <script>
 (() => {
@@ -168,21 +527,27 @@ button.step:hover .dot{ border-color:var(--orange); }
   const OWNER_ENTRY = location.hash.indexOf("#propietario-") === 0;
   const STAGES = ["Evaluación","Preparación","Publicación","Visitas","Negociación","Cierre"];
   const app = document.getElementById("app");
-  const state = { db:null, user:null, canWrite:null, isAdmin:null, props:[], loaded:false, error:null, selected:null, view:"asesor", clientId:null, messages:[], msgUnsub:null, msgFor:null, draft:null, dirty:false, saving:false, status:"" };
+  const state = { db:null, sb:null, mode:null, user:null, role:null, canWrite:null, isAdmin:null, isSuperAdmin:false, asesores:[], props:[], loaded:false, error:null, errorDetail:"", selected:null, view:"asesor", page:null, chatOpen:false, clientId:null, messages:[], msgUnsub:null, msgFor:null, draft:null, dirty:false, saving:false, status:"", authChecked:false };
 
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const fmtDate = (d) => { if(!d) return ""; const t = new Date(d + (d.length===10 ? "T12:00:00" : "")); return isNaN(t) ? d : t.toLocaleDateString("es-PE",{day:"2-digit",month:"short",year:"numeric"}); };
   const fmtDT = (iso) => { const t = new Date(iso); return isNaN(t) ? "" : t.toLocaleString("es-PE",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}); };
   const safeUrl = (u) => /^https?:\/\//i.test(u || "") ? u : "";
-  const newId = (p) => p + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+  const newId = (p) => {
+    const raw = (window.crypto && window.crypto.randomUUID)
+      ? window.crypto.randomUUID().replace(/-/g, "")
+      : Date.now().toString(36) + Math.random().toString(36).slice(2, 12);
+    return p + raw;
+  };
   const clone = (o) => JSON.parse(JSON.stringify(o));
 
-  // ---------- routing ----------
+  // ---------- routing & shell controls ----------
   function readHash(){
     const h = location.hash.replace("#","");
     if (h.startsWith("propietario-")) { state.view = "cliente"; state.clientId = h.slice(12); }
-    else if (h === "cliente") { state.view = "cliente"; }
-    else { state.view = "asesor"; }
+    else if (h === "asesor") { state.view = "asesor"; }
+    else if (h === "admin") { state.view = "admin"; }
+    else { state.view = "cliente"; }
   }
   function go(view, id){
     if (view === "cliente" && id) location.hash = "propietario-" + id;
@@ -192,15 +557,52 @@ button.step:hover .dot{ border-color:var(--orange); }
     const before = state.clientId; readHash();
     if (state.db && !state.isAdmin && state.clientId !== before) startData(); else render();
   });
-  document.querySelectorAll(".tab").forEach(b => b.addEventListener("click", () => {
-    if (b.dataset.view === "cliente") go("cliente", state.selected || state.clientId || (state.props[0] && state.props[0].id));
-    else go("asesor");
-  }));
+
+  const sidebarEl = document.getElementById("sidebar");
+  const sbBackdropEl = document.getElementById("sb-backdrop");
+  const closeDrawer = () => {
+    if (sidebarEl) sidebarEl.classList.remove("open");
+    if (sbBackdropEl) sbBackdropEl.classList.remove("open");
+  };
+  const openDrawer = () => {
+    if (sidebarEl) sidebarEl.classList.add("open");
+    if (sbBackdropEl) sbBackdropEl.classList.add("open");
+  };
+  const menuToggleEl = document.getElementById("menu-toggle");
+  const sbCloseEl = document.getElementById("sb-close");
+  const sbCollapseEl = document.getElementById("sb-collapse");
+  if (localStorage.getItem("cw_sb_collapsed") === "1") document.body.classList.add("sb-collapsed");
+  if (sbCollapseEl) {
+    sbCollapseEl.onclick = () => {
+      const collapsed = document.body.classList.toggle("sb-collapsed");
+      localStorage.setItem("cw_sb_collapsed", collapsed ? "1" : "0");
+    };
+  }
+  if (menuToggleEl) menuToggleEl.onclick = openDrawer;
+  if (sbCloseEl) sbCloseEl.onclick = closeDrawer;
+  if (sbBackdropEl) sbBackdropEl.onclick = closeDrawer;
+
+  const chatWidgetEl = document.getElementById("chat-widget");
+  const chatFabEl = document.getElementById("chat-fab");
+  const chatCloseEl = document.getElementById("chat-close");
+  function setChatOpen(open){
+    state.chatOpen = !!open;
+    if (chatWidgetEl) chatWidgetEl.classList.toggle("open", state.chatOpen);
+    if (chatFabEl) chatFabEl.setAttribute("aria-expanded", String(state.chatOpen));
+    if (state.chatOpen) {
+      const box = document.getElementById("chat");
+      if (box) box.scrollTop = box.scrollHeight;
+      const inp = document.getElementById("msg-in");
+      if (inp && !inp.disabled) setTimeout(() => inp.focus(), 60);
+    }
+  }
+  if (chatFabEl) chatFabEl.onclick = () => setChatOpen(!state.chatOpen);
+  if (chatCloseEl) chatCloseEl.onclick = () => setChatOpen(false);
 
   // ---------- data ----------
-  // Two backends with the same interface:
-  //  - Firebase Firestore (production): asesor and propietarios see the same data from any device.
-  //  - localStorage (demo): works without configuration, but only inside this browser.
+  // Dos backends con la misma interfaz:
+  //  - Supabase (producción): asesor y propietarios ven los mismos datos desde cualquier equipo.
+  //  - localStorage (demo): se activa con ?demo=1 y guarda solo en este navegador.
   function makeLocalDb(){
     const KEY = "cw_portal_db";
     const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch(e){ return {}; } };
@@ -232,18 +634,126 @@ button.step:hover .dot{ border-color:var(--orange); }
     }
     return { collection, doc };
   }
-  function makeFirebaseDb(){
-    const fs = firebase.firestore();
-    const wrap = (d) => ({ id:d.id, exists:d.exists, data:() => d.data() });
+  function makeSupabaseDb(sb){
+    const toProp = (row) => row && ({
+      id: row.id,
+      propietario: row.propietario || "",
+      propietarioEmail: row.propietario_email || "",
+      asesorWhatsapp: row.asesor_whatsapp || "",
+      propiedad: row.propiedad || "",
+      direccion: row.direccion || "",
+      etapa: row.etapa || 0,
+      interesados: row.interesados || 0,
+      propuestas: row.propuestas || 0,
+      resumen: row.resumen || "",
+      resumenFecha: row.resumen_fecha || "",
+      visitas: Array.isArray(row.visitas) ? row.visitas : [],
+      documentos: Array.isArray(row.documentos) ? row.documentos : [],
+      actualizado: row.actualizado || row.creado_en || ""
+    });
+    const fromProp = (d) => ({
+      propietario: d.propietario || "",
+      propietario_email: (d.propietarioEmail || "").trim().toLowerCase(),
+      asesor_whatsapp: (d.asesorWhatsapp || "").trim(),
+      propiedad: d.propiedad || "",
+      direccion: d.direccion || "",
+      etapa: Math.max(0, Math.min(5, parseInt(d.etapa, 10) || 0)),
+      interesados: Math.max(0, parseInt(d.interesados, 10) || 0),
+      propuestas: Math.max(0, parseInt(d.propuestas, 10) || 0),
+      resumen: d.resumen || "",
+      resumen_fecha: d.resumenFecha || null,
+      visitas: Array.isArray(d.visitas) ? d.visitas : [],
+      documentos: Array.isArray(d.documentos) ? d.documentos : [],
+      actualizado: d.actualizado || new Date().toISOString()
+    });
+
+    // Refresca la vista cada vez que cambia la tabla. Es más simple y robusto
+    // que intentar aplicar los cambios fila por fila.
+    function subscribeTable(table, onChange){
+      const channel = sb.channel("cw-" + table + "-" + Math.random().toString(36).slice(2))
+        .on("postgres_changes", { event:"*", schema:"public", table }, onChange)
+        .subscribe();
+      return () => { sb.removeChannel(channel); };
+    }
+
     function collection(path){
-      let q = fs.collection(path);
-      const api = { orderBy(f){ q = q.orderBy(f); return api; }, limit(n){ q = q.limit(n); return api; },
-        onSnapshot(next, err){ return q.onSnapshot(s => next({ docs:s.docs.map(wrap) }), err); } };
+      const isMensajes = path.indexOf("mensajes/") === 0;
+      const propId = isMensajes ? path.split("/")[1] : null;
+      const table = isMensajes ? "mensajes" : "propiedades";
+      let order = null, lim = null;
+      const api = {
+        orderBy(f){ order = f; return api; },
+        limit(n){ lim = n; return api; },
+        onSnapshot(next, err){
+          let active = true;
+          const fetchRows = async () => {
+            let q = sb.from(table).select("*");
+            if (isMensajes) q = q.eq("propiedad_id", propId);
+            if (order) q = q.order(order === "resumenFecha" ? "resumen_fecha" : order, { ascending: true });
+            if (lim) q = q.limit(lim);
+            const { data, error } = await q;
+            if (!active) return;
+            if (error) { if (err) err(error); return; }
+            const docs = (data || []).map(row => {
+              const mapped = isMensajes
+                ? { de: row.de, texto: row.texto, fecha: row.fecha }
+                : toProp(row);
+              return { id: row.id, exists: true, data: () => mapped };
+            });
+            next({ docs });
+          };
+          fetchRows();
+          const unsub = subscribeTable(table, fetchRows);
+          return () => { active = false; unsub(); };
+        }
+      };
       return api;
     }
+
     function doc(path){
-      const r = fs.doc(path);
-      return { set:(d) => r.set(d), delete:() => r.delete(), onSnapshot:(next, err) => r.onSnapshot(s => next(wrap(s)), err) };
+      const parts = path.split("/");
+      const isMensajes = parts[0] === "mensajes";
+      const propId = isMensajes ? parts[1] : null;
+      const id = parts[parts.length - 1];
+      const table = isMensajes ? "mensajes" : "propiedades";
+      return {
+        async set(d){
+          if (isMensajes) {
+            const { error } = await sb.from("mensajes").insert({
+              id,
+              propiedad_id: propId,
+              de: d.de,
+              texto: String(d.texto || "").slice(0, 1000),
+              fecha: d.fecha || new Date().toISOString()
+            });
+            if (error) throw error;
+          } else {
+            const { error } = await sb.from("propiedades").upsert({ id, ...fromProp(d) });
+            if (error) throw error;
+          }
+        },
+        async delete(){
+          const { data, error } = await sb.from(table).delete().eq("id", id).select("id");
+          if (error) throw error;
+          if (!data || !data.length) throw new Error("No tienes permiso para eliminar este registro o ya no existe.");
+        },
+        onSnapshot(next, err){
+          let active = true;
+          const fetchRow = async () => {
+            const { data, error } = await sb.from(table).select("*").eq("id", id).maybeSingle();
+            if (!active) return;
+            if (error) { if (err) err(error); return; }
+            if (!data) { next({ id, exists: false, data: () => undefined }); return; }
+            const mapped = isMensajes
+              ? { de: data.de, texto: data.texto, fecha: data.fecha }
+              : toProp(data);
+            next({ id, exists: true, data: () => mapped });
+          };
+          fetchRow();
+          const unsub = subscribeTable(table, fetchRow);
+          return () => { active = false; unsub(); };
+        }
+      };
     }
     return { collection, doc };
   }
@@ -251,10 +761,16 @@ button.step:hover .dot{ border-color:var(--orange); }
   let propsUnsub = null;
   function startData(){
     if (propsUnsub) { propsUnsub(); propsUnsub = null; }
+    if (!state.user && state.mode === "supabase") {
+      if (state.msgUnsub) { state.msgUnsub(); state.msgUnsub = null; }
+      state.msgFor = null; state.messages = [];
+      state.props = []; state.loaded = true; state.error = null; render();
+      return;
+    }
     state.loaded = false; state.error = null; render();
     const timer = setTimeout(() => { if (!state.loaded) { state.error = "timeout"; render(); } }, 10000);
-    const fail = () => { clearTimeout(timer); state.error = "unavailable"; state.loaded = true; render(); };
-    if (state.isAdmin) {
+    const fail = (e) => { clearTimeout(timer); state.error = "unavailable"; state.errorDetail = (e && (e.message || e.error_description)) || ""; state.loaded = true; render(); };
+    if (state.isAdmin || state.user || state.mode === "local") {
       propsUnsub = state.db.collection("propiedades").onSnapshot(snap => {
         clearTimeout(timer);
         state.props = snap.docs.map(d => ({ id:d.id, ...d.data() })).sort((a,b) => (b.actualizado||"").localeCompare(a.actualizado||""));
@@ -264,33 +780,98 @@ button.step:hover .dot{ border-color:var(--orange); }
         if (!state.dirty) state.draft = null;
         render();
       }, fail);
-    } else if (state.clientId) {
-      propsUnsub = state.db.doc("propiedades/" + state.clientId).onSnapshot(d => {
-        clearTimeout(timer);
-        state.props = d.exists ? [{ id:d.id, ...d.data() }] : [];
-        state.loaded = true; state.error = null; render();
-      }, fail);
     } else { clearTimeout(timer); state.props = []; state.loaded = true; render(); }
   }
 
   async function init(){
     readHash();
-    const cfg = window.CW_FIREBASE_CONFIG;
-    const useFirebase = !!(cfg && cfg.apiKey && window.firebase);
-    state.mode = useFirebase ? "firebase" : "local";
+    const cfg = window.CW_SUPABASE_CONFIG;
+    const forceDemo = new URLSearchParams(location.search).get("demo") === "1";
+    const useSupabase = !forceDemo && !!(cfg && cfg.url && cfg.anonKey && window.supabase && window.supabase.createClient);
+    state.mode = useSupabase ? "supabase" : "local";
     state.canWrite = true;
-    if (useFirebase) {
-      firebase.initializeApp(cfg);
-      state.db = makeFirebaseDb();
-      firebase.auth().onAuthStateChanged(u => { state.isAdmin = !!u; state.authChecked = true; startData(); });
+    if (useSupabase) {
+      state.sb = window.supabase.createClient(cfg.url, cfg.anonKey, {
+        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+      });
+      state.db = makeSupabaseDb(state.sb);
+      state.sb.auth.onAuthStateChange((_event, session) => {
+        state.user = session ? session.user : null;
+        setTimeout(async () => {
+          if (state.user) {
+            try {
+              const { data: rolData, error: rolErr } = await state.sb.rpc("mi_rol");
+              if (!rolErr && rolData) {
+                state.role = rolData;
+              } else {
+                const { data: isAsesor } = await state.sb.rpc("es_asesor");
+                state.role = isAsesor ? "asesor" : "propietario";
+              }
+            } catch {
+              state.role = "propietario";
+            }
+            state.isSuperAdmin = (state.role === "admin");
+            state.isAdmin = (state.role === "admin" || state.role === "asesor");
+            if (state.isSuperAdmin) loadAsesores();
+            if (state.isAdmin && !location.hash.startsWith("#propietario-") && location.hash !== "#admin") {
+              state.view = "asesor";
+              if (location.hash !== "#asesor") history.replaceState(null, "", "#asesor");
+            }
+          } else {
+            state.role = null;
+            state.isSuperAdmin = false;
+            state.isAdmin = false;
+            state.asesores = [];
+          }
+          state.authChecked = true;
+          startData();
+        }, 0);
+      });
     } else {
-      state.db = makeLocalDb(); state.isAdmin = true; state.authChecked = true; startData();
+      state.db = makeLocalDb();
+      state.user = { email: "demo@cwinmobiliaria.pe" };
+      state.role = "admin";
+      state.isSuperAdmin = true;
+      state.isAdmin = true;
+      state.authChecked = true;
+      startData();
+    }
+  }
+
+  async function loadAsesores(){
+    if (!state.sb || !state.isSuperAdmin) return;
+    const { data, error } = await state.sb.from("asesores").select("*").order("creado_en", { ascending: true });
+    if (!error && Array.isArray(data)) {
+      state.asesores = data;
+      if (state.view === "admin") render();
     }
   }
 
   async function login(email, pass){
-    try { await firebase.auth().signInWithEmailAndPassword(email, pass); go("asesor"); }
-    catch(e){ const s = document.getElementById("login-status"); if (s) s.textContent = "Correo o contraseña incorrectos."; }
+    const s = document.getElementById("login-status");
+    const cleanEmail = String(email || "").trim().toLowerCase();
+    if (!state.sb) {
+      if (s) s.textContent = "Error: Supabase no está configurado en config.js.";
+      return;
+    }
+    if (s) s.textContent = "Verificando acceso…";
+    try {
+      const { error } = await state.sb.auth.signInWithPassword({ email: cleanEmail, password: pass });
+      if (error) throw error;
+    } catch(e) {
+      const msg = String((e && e.message) || "");
+      let detail = "No se pudo iniciar sesión.";
+      if (/email not confirmed/i.test(msg)) {
+        detail = "Tu correo aún no está confirmado en Supabase. Confírmalo en Authentication → Users o desactiva 'Confirm email'.";
+      } else if (/invalid login credentials/i.test(msg)) {
+        detail = "Correo o contraseña incorrectos (o el usuario aún no existe en Authentication → Users).";
+      } else if (/too many requests|rate limit/i.test(msg)) {
+        detail = "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.";
+      } else if (msg) {
+        detail = "Error de acceso: " + msg;
+      }
+      if (s) s.textContent = detail;
+    }
   }
 
   function subscribeMessages(propId){
@@ -304,9 +885,9 @@ button.step:hover .dot{ border-color:var(--orange); }
     }, () => {});
   }
 
-  const blankProp = () => ({ propietario:"", propiedad:"", direccion:"", etapa:0, interesados:0, propuestas:0, resumen:"", resumenFecha:"", visitas:[], documentos:[], actualizado:new Date().toISOString() });
+  const blankProp = () => ({ propietario:"", propietarioEmail:"", asesorWhatsapp:"", propiedad:"", direccion:"", etapa:0, interesados:0, propuestas:0, resumen:"", resumenFecha:"", visitas:[], documentos:[], actualizado:new Date().toISOString() });
   const demoProp = () => ({
-    propietario:"Carlos", propiedad:"Departamento en San Borja", direccion:"Av. San Borja Norte", etapa:2,
+    propietario:"Carlos", propietarioEmail:"", asesorWhatsapp:"51910818357", propiedad:"Departamento en San Borja", direccion:"Av. San Borja Norte", etapa:2,
     interesados:3, propuestas:1, resumenFecha:new Date().toISOString().slice(0,10),
     resumen:"Esta semana recibimos 3 nuevas consultas y realizamos 2 visitas. Los interesados destacaron la iluminación y la ubicación. Seguimos difundiendo la propiedad en TikTok, Instagram y Facebook.",
     visitas:[
@@ -330,11 +911,63 @@ button.step:hover .dot{ border-color:var(--orange); }
     catch(e){ handleWriteError(e); state.status = "No se pudo guardar."; }
     state.saving = false; render();
   }
+  function cwConfirm({ title, message, warning, confirmText = "Eliminar" }){
+    return new Promise((resolve) => {
+      const bd = document.getElementById("cw-modal-backdrop");
+      const tEl = document.getElementById("cw-modal-title");
+      const dEl = document.getElementById("cw-modal-desc");
+      const wEl = document.getElementById("cw-modal-warn");
+      const cBtn = document.getElementById("cw-modal-cancel");
+      const okBtn = document.getElementById("cw-modal-confirm");
+      if (!bd) { resolve(confirm((warning ? warning + "\n\n" : "") + message)); return; }
+      tEl.textContent = title || "Confirmar acción";
+      dEl.textContent = message || "";
+      if (warning) { wEl.textContent = warning; wEl.style.display = ""; }
+      else { wEl.textContent = ""; wEl.style.display = "none"; }
+      okBtn.textContent = confirmText;
+      bd.classList.add("open");
+      okBtn.focus();
+      const close = (val) => {
+        bd.classList.remove("open");
+        cBtn.onclick = null; okBtn.onclick = null; bd.onclick = null;
+        document.removeEventListener("keydown", onKey);
+        resolve(val);
+      };
+      const onKey = (e) => { if (e.key === "Escape") close(false); };
+      document.addEventListener("keydown", onKey);
+      cBtn.onclick = () => close(false);
+      okBtn.onclick = () => close(true);
+      bd.onclick = (e) => { if (e.target === bd) close(false); };
+    });
+  }
+
   async function deleteProp(id){
     if (!state.db) return;
-    if (!confirm("¿Eliminar esta propiedad del portal? El propietario dejará de verla.")) return;
-    try { await state.db.doc("propiedades/" + id).delete(); state.selected = null; state.draft = null; state.dirty = false; }
-    catch(e){ handleWriteError(e); }
+    const target = state.props.find(p => p.id === id);
+    const propName = (target && target.propiedad) ? target.propiedad.trim() : "Propiedad sin nombre";
+    const ownerName = (target && target.propietario) ? target.propietario.trim() : "";
+    const ownerEmail = (target && target.propietarioEmail) ? target.propietarioEmail.trim() : "";
+    const hasOwner = !!(ownerName || ownerEmail);
+    const ownerLabel = ownerName || ownerEmail;
+    const ok = await cwConfirm({
+      title: 'Eliminar "' + propName + '"',
+      warning: hasOwner
+        ? '¿Estás seguro? Esta propiedad está a nombre de ' + ownerLabel + (ownerName && ownerEmail ? ' (' + ownerEmail + ')' : '') + '.'
+        : '',
+      message: hasOwner
+        ? 'Si la eliminas, el propietario perderá acceso inmediato a su portal y se borrarán sus visitas, documentos y mensajes asociados.'
+        : 'Esta propiedad no tiene propietario asignado. Se eliminará de tu cartera junto con sus registros asociados.',
+      confirmText: "Sí, eliminar"
+    });
+    if (!ok) return;
+    try {
+      await state.db.doc("propiedades/" + id).delete();
+      state.props = state.props.filter(p => p.id !== id);
+      if (state.selected === id) { state.selected = state.props[0] ? state.props[0].id : null; state.draft = null; state.dirty = false; }
+      if (state.page !== "asesor-lista") state.page = "asesor-lista";
+      state.status = "Propiedad eliminada.";
+      render();
+    } catch(e){ handleWriteError(e); }
   }
   async function sendMessage(propId, de, texto){
     if (!state.db || !texto.trim()) return;
@@ -343,9 +976,17 @@ button.step:hover .dot{ border-color:var(--orange); }
     catch(e){ handleWriteError(e); }
   }
   function handleWriteError(e){
-    if (e && (e.code === "invalid_argument" || e.code === "permission-denied")) { state.canWrite = false; alert("Tu acceso a este portal es de solo lectura."); render(); }
-    else if (e && e.code === "quota_exceeded") alert("Se alcanzó el límite de almacenamiento del portal.");
-    else alert("No se pudo completar la acción. Inténtalo nuevamente.");
+    const msg = (e && (e.message || e.error_description)) || "";
+    const code = e && (e.code || e.status);
+    if (code === "42501" || code === "PGRST301" || /row-level security|permission denied|jwt/i.test(msg)) {
+      state.canWrite = false;
+      alert("Tu acceso a este portal es de solo lectura. Inicia sesión con el usuario asesor autorizado.");
+      render();
+    } else if (/PGRST205|does not exist|schema cache/i.test(msg)) {
+      alert("La base de datos todavía no tiene las tablas del portal. Ejecuta supabase/schema.sql en el SQL Editor de Supabase.");
+    } else {
+      alert("No se pudo completar la acción. Inténtalo nuevamente.\n" + msg);
+    }
   }
 
   // ---------- shared pieces ----------
@@ -369,177 +1010,1089 @@ button.step:hover .dot{ border-color:var(--orange); }
       revoked:["Este portal ya no está disponible para ti",""],
     };
     const m = msgs[state.error] || msgs.unavailable;
-    return '<div class="card empty"><h2>' + m[0] + '</h2><p class="muted">' + m[1] + '</p></div>';
+    const missingTables = /PGRST205|does not exist|schema cache/i.test(state.errorDetail || "");
+    const detail = missingTables
+      ? '<p class="notice" style="margin-top:16px;text-align:left">Faltan crear las tablas en Supabase. Abre el <b>SQL Editor</b>, pega el contenido de <b>supabase/schema.sql</b> y pulsa <b>Run</b>.</p>'
+      : (state.errorDetail ? '<p class="muted" style="margin-top:12px;font-size:13px">' + esc(state.errorDetail) + '</p>' : '');
+    return '<div class="card empty"><h2>' + m[0] + '</h2><p class="muted">' + m[1] + '</p>' + detail +
+      '<p style="margin-top:18px"><a class="btn btn-ghost" href="?demo=1">Ver el portal en modo demostración</a></p></div>';
   }
 
-  // ---------- render ----------
+  // ---------- user menu ----------
+  const userMenuEl = document.getElementById("user-menu");
+  const userBtnEl = document.getElementById("user-btn");
+  const menuLogoutEl = document.getElementById("menu-logout");
+  if (userBtnEl && userMenuEl) {
+    userBtnEl.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isOpen = userMenuEl.classList.toggle("open");
+      userBtnEl.setAttribute("aria-expanded", String(isOpen));
+    });
+    document.addEventListener("click", (e) => {
+      if (!userMenuEl.contains(e.target)) {
+        userMenuEl.classList.remove("open");
+        userBtnEl.setAttribute("aria-expanded", "false");
+      }
+    });
+  }
+  if (menuLogoutEl) {
+    menuLogoutEl.addEventListener("click", () => {
+      if (state.sb) state.sb.auth.signOut();
+    });
+  }
+
+  function getDisplayName(){
+    if (!state.user) return "";
+    if (!state.isAdmin && state.props && state.props.length && state.props[0].propietario) {
+      return state.props[0].propietario;
+    }
+    const email = state.user.email || "";
+    if (email.toLowerCase() === "cwinmobiliariasac@gmail.com") return "CW Inmobiliaria";
+    const prefix = email.split("@")[0].replace(/[._-]+/g, " ");
+    return prefix.replace(/\b\w/g, c => c.toUpperCase()) || "Usuario";
+  }
+
+  function updateUserMenu(){
+    const backLink = document.getElementById("back-web-link");
+    if (!userMenuEl) return;
+    if (!state.user || state.mode !== "supabase") {
+      userMenuEl.style.display = "none";
+      if (backLink) backLink.style.display = "";
+      return;
+    }
+    userMenuEl.style.display = "";
+    if (backLink) backLink.style.display = "none";
+    const name = getDisplayName();
+    const email = state.user.email || "";
+    const roleLabel = state.role === "admin" ? "Administrador" : state.role === "asesor" ? "Asesor CW" : "Propietario";
+    const parts = name.trim().split(/\s+/);
+    const initials = parts.length >= 2
+      ? (parts[0][0] + parts[1][0]).toUpperCase()
+      : name.slice(0, 2).toUpperCase();
+    document.getElementById("user-avatar").textContent = initials || "CW";
+    document.getElementById("user-name").textContent = name;
+    document.getElementById("user-role").textContent = roleLabel;
+    document.getElementById("drop-name").textContent = name;
+    document.getElementById("drop-role").textContent = email + " · " + roleLabel;
+  }
+
+  // ---------- sidebar + chat widget + render ----------
+  const ICONS = {
+    home:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>',
+    visits:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+    docs:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>',
+    list:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>',
+    edit:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+    link:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
+    users:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+    userPlus:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>',
+    shield:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+    chat:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>'
+  };
+
+  function setPageHeader(title, sub){
+    const t = document.getElementById("page-title");
+    const s = document.getElementById("page-sub");
+    if (t) t.textContent = title;
+    if (s) s.textContent = sub;
+  }
+
+  function setupChatWidget(prop, senderRole){
+    if (!chatWidgetEl) return;
+    // La burbuja flotante de atención al cliente es exclusiva para el propietario.
+    if (!prop || senderRole !== "propietario") {
+      setChatOpen(false);
+      chatWidgetEl.style.display = "none";
+      return;
+    }
+    chatWidgetEl.style.display = "";
+    const ava = document.getElementById("chat-ava");
+    const title = document.getElementById("chat-title");
+    const sub = document.getElementById("chat-sub");
+    const wsp = document.getElementById("chat-wsp");
+    const form = document.getElementById("chat-form");
+    const inp = document.getElementById("msg-in");
+
+    if (ava) ava.textContent = "CW";
+    if (title) title.textContent = "Tu asesor CW";
+    if (sub) sub.textContent = "En línea · Respuesta directa";
+    const rawWsp = (prop.asesorWhatsapp || "51910818357").replace(/\D/g, "");
+    const phone = rawWsp.length === 9 ? "51" + rawWsp : (rawWsp || "51910818357");
+    const wspText = encodeURIComponent("Hola, soy " + (prop.propietario || "propietario") + " (" + (prop.propiedad || "mi propiedad") + ") y te escribo desde mi Portal CW.");
+    if (wsp) { wsp.style.display = "grid"; wsp.href = "https://wa.me/" + phone + "?text=" + wspText; }
+    if (inp) {
+      inp.disabled = (state.canWrite === false);
+      inp.placeholder = "Escribe tu consulta al asesor…";
+    }
+    if (form) {
+      form.onsubmit = (e) => {
+        e.preventDefault();
+        if (!inp || state.canWrite === false) return;
+        const txt = inp.value; inp.value = "";
+        sendMessage(prop.id, "propietario", txt);
+      };
+    }
+    renderChatOnly();
+  }
+
+  function renderSidebar(currentProp){
+    const navEl = document.getElementById("sb-nav");
+    const pickerEl = document.getElementById("sb-prop-picker");
+    const footEl = document.getElementById("sb-foot");
+    if (!navEl || !pickerEl || !footEl) return;
+
+    if (state.view === "cliente") {
+      pickerEl.style.display = "none";
+      const p = currentProp;
+      const vCount = p ? (p.visitas || []).length : 0;
+      const dCount = p ? (p.documentos || []).filter(x => safeUrl(x.url)).length : 0;
+      const items = [
+        { id:"client-resumen", label:"Resumen general", icon:ICONS.home },
+        { id:"client-visitas", label:"Visitas", icon:ICONS.visits, badge:vCount },
+        { id:"client-docs", label:"Documentos", icon:ICONS.docs, badge:dCount }
+      ];
+      navEl.innerHTML = '<div class="sb-group">Mi propiedad</div>' +
+        items.map(it => '<button type="button" class="sb-link" title="' + it.label + '" data-page="' + it.id + '" aria-current="' + (state.page === it.id ? "page" : "false") + '">' +
+          it.icon + '<span>' + it.label + '</span>' + (it.badge !== undefined ? '<span class="sb-badge">' + it.badge + '</span>' : '') + '</button>').join("");
+
+      if (p) {
+        const rawWsp = (p.asesorWhatsapp || "51910818357").replace(/\D/g, "");
+        const phone = rawWsp.length === 9 ? "51" + rawWsp : (rawWsp || "51910818357");
+        const wspText = encodeURIComponent("Hola, soy " + (p.propietario || "propietario") + " (" + (p.propiedad || "mi propiedad") + ") y te escribo desde mi Portal CW.");
+        footEl.innerHTML = '<a class="btn wsp-btn" title="WhatsApp al asesor" href="https://wa.me/' + phone + '?text=' + wspText + '" target="_blank" rel="noopener">' +
+          '<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm5.76 14.12c-.24.68-1.41 1.3-1.95 1.38-.5.07-1.13.1-1.82-.12-.42-.13-.96-.31-1.65-.61-2.9-1.25-4.79-4.17-4.94-4.36-.14-.19-1.18-1.57-1.18-3 0-1.43.75-2.13 1.02-2.42.27-.29.59-.36.79-.36h.57c.18 0 .43-.07.67.51.25.6.84 2.06.91 2.21.07.15.12.33.02.52-.1.19-.15.31-.3.48-.15.17-.31.38-.44.51-.15.15-.3.31-.13.61.17.3.76 1.25 1.63 2.03 1.12 1 2.07 1.31 2.37 1.46.3.15.47.12.65-.07.18-.19.74-.86.94-1.16.2-.3.4-.25.67-.15.27.1 1.73.82 2.03.97.3.15.5.22.57.34.07.12.07.7-.17 1.38Z"/></svg>' +
+          '<span class="sb-btn-lbl">WhatsApp al asesor</span></a>';
+      } else {
+        footEl.innerHTML = "";
+      }
+    } else {
+      // Asesor o Admin
+      if (state.props.length && (state.view === "asesor" || state.isSuperAdmin)) {
+        pickerEl.style.display = "";
+        pickerEl.innerHTML = '<label for="sb-prop-sel">Propiedad activa</label>' +
+          '<select id="sb-prop-sel">' + state.props.map(p =>
+            '<option value="' + esc(p.id) + '"' + (currentProp && p.id === currentProp.id ? ' selected' : '') + '>' + esc(p.propiedad || "Propiedad sin nombre") + '</option>'
+          ).join("") + '</select>';
+        const sel = document.getElementById("sb-prop-sel");
+        if (sel) sel.onchange = () => {
+          if (state.dirty && !confirm("Tienes cambios sin guardar. ¿Deseas descartarlos?")) { sel.value = state.selected; return; }
+          state.selected = sel.value; state.draft = null; state.dirty = false; state.status = "";
+          if (state.view !== "asesor") state.view = "asesor";
+          if (!state.page || state.page.startsWith("admin-")) state.page = "asesor-general";
+          render();
+        };
+      } else {
+        pickerEl.style.display = "none";
+      }
+
+      const d = state.draft || currentProp;
+      const vCount = d ? (d.visitas || []).length : 0;
+      const docCount = d ? (d.documentos || []).length : 0;
+      let html = "";
+      if (state.isSuperAdmin) {
+        const adminItems = [
+          { id:"admin-accesos", label:"Accesos por inmueble", icon:ICONS.shield },
+          { id:"admin-crear", label:"Crear usuario", icon:ICONS.userPlus },
+          { id:"admin-equipo", label:"Equipo Asesor / Admin", icon:ICONS.users }
+        ];
+        html += '<div class="sb-group">Administración</div>' +
+          adminItems.map(it => '<button type="button" class="sb-link" title="' + it.label + '" data-page="' + it.id + '" aria-current="' + (state.page === it.id ? "page" : "false") + '">' +
+            it.icon + '<span>' + it.label + '</span></button>').join("");
+      }
+      const asesorItems = [
+        { id:"asesor-lista", label:"Propiedades", icon:ICONS.list, badge:state.props.length },
+        { id:"asesor-general", label:"General y Etapa", icon:ICONS.edit },
+        { id:"asesor-visitas", label:"Visitas", icon:ICONS.visits, badge:vCount },
+        { id:"asesor-docs", label:"Documentos", icon:ICONS.docs, badge:docCount },
+        { id:"asesor-mensajes", label:"Mensajes", icon:ICONS.chat, badge:state.messages.length, badgeId:"sb-msg-badge" },
+        { id:"asesor-link", label:"Enlace de acceso", icon:ICONS.link }
+      ];
+      html += '<div class="sb-group">Gestión de inmuebles</div>' +
+        asesorItems.map(it => '<button type="button" class="sb-link" title="' + it.label + '" data-page="' + it.id + '" aria-current="' + (state.page === it.id ? "page" : "false") + '">' +
+          it.icon + '<span>' + it.label + '</span>' + (it.badge !== undefined ? '<span class="sb-badge"' + (it.badgeId ? ' id="' + it.badgeId + '"' : '') + '>' + it.badge + '</span>' : '') + '</button>').join("");
+      navEl.innerHTML = html;
+      footEl.innerHTML = (state.isAdmin && state.canWrite !== false)
+        ? '<button type="button" class="btn btn-primary" id="sb-new-prop" title="Nueva propiedad"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span class="sb-btn-lbl">Nueva propiedad</span></button>'
+        : '';
+      const sbNew = document.getElementById("sb-new-prop");
+      if (sbNew) sbNew.onclick = () => { closeDrawer(); createProp(false); };
+    }
+
+    navEl.querySelectorAll("[data-page]").forEach(btn => {
+      btn.onclick = () => {
+        const nextPage = btn.dataset.page;
+        if (nextPage.startsWith("admin-")) state.view = "admin";
+        else if (nextPage.startsWith("asesor-")) state.view = "asesor";
+        else if (nextPage.startsWith("client-")) state.view = "cliente";
+        state.page = nextPage;
+        closeDrawer();
+        render();
+      };
+    });
+  }
+
   function render(){
-    const ownerLink = location.hash.indexOf("#propietario-") === 0;
-    document.querySelector(".tabs").style.display = ((!state.isAdmin || OWNER_ENTRY) && ownerLink) ? "none" : "";
-    if (state.view === "asesor" && state.mode === "firebase" && !state.isAdmin) {
-      document.getElementById("tab-asesor").setAttribute("aria-selected", true);
-      document.getElementById("tab-cliente").setAttribute("aria-selected", false);
-      if (!state.authChecked) { app.innerHTML = '<div class="card empty"><h2>Cargando portal…</h2></div>'; return; }
-      app.innerHTML = '<div class="card login"><h2>Acceso asesores</h2><p class="muted">Ingresa con tu cuenta de CW para administrar las propiedades.</p>' +
-        '<form id="login-form"><div><label for="l-email">Correo</label><input id="l-email" type="email" autocomplete="username" required></div>' +
-        '<div><label for="l-pass">Contraseña</label><input id="l-pass" type="password" autocomplete="current-password" required></div>' +
-        '<button class="btn btn-primary" style="justify-content:center">Ingresar</button><p class="status" id="login-status" role="alert"></p></form></div>';
+    const brandSub = document.getElementById("brand-sub");
+    const isAuthScreen = (state.mode === "supabase" && !state.user);
+    document.body.classList.toggle("is-auth-screen", isAuthScreen);
+    updateUserMenu();
+
+    if (isAuthScreen) {
+      if (brandSub) brandSub.textContent = "Acceso al portal";
+      if (!state.authChecked) { app.innerHTML = '<div class="card empty" style="margin:40px auto;max-width:440px"><h2>Cargando portal…</h2></div>'; return; }
+      const isAsesorLogin = state.view === "asesor" || state.view === "admin";
+      app.innerHTML =
+        '<div class="auth-split">' +
+          '<div class="auth-photo">' +
+            '<img src="assets/entrega-llaves.jpg" alt="Entrega de llaves CW Inmobiliaria">' +
+            '<div class="auth-caption">' +
+              '<div class="auth-photo-top"><span>CW INMOBILIARIA · LIMA</span><a href="index.html">← Volver a la web</a></div>' +
+              '<div>' +
+                '<span class="pill-dark">' + (isAsesorLogin ? 'Equipo CW' : 'Portal exclusivo') + '</span>' +
+                '<h1>Tu propiedad, nuestro compromiso.</h1>' +
+                '<p>Seguimiento transparente de tu proceso de venta en un solo lugar.</p>' +
+                '<ul class="auth-bullets">' +
+                  '<li>Registro de visitas y comentarios en tiempo real</li>' +
+                  '<li>Resumen semanal, etapas y propuestas claras</li>' +
+                  '<li>Documentos disponibles y contacto directo con tu asesor</li>' +
+                '</ul>' +
+              '</div>' +
+              '<div class="auth-photo-foot">© ' + new Date().getFullYear() + ' CW Inmobiliaria · Lima, Perú</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="auth-panel">' +
+            '<div class="login-box">' +
+              '<div class="login-logo"><img src="assets/logo-cw-transparente-512.png" alt="CW Inmobiliaria"><b>CW INMOBILIARIA</b></div>' +
+              '<h2>' + (isAsesorLogin ? 'Acceso asesores' : 'Iniciar sesión') + '</h2>' +
+              '<p class="muted">' + (isAsesorLogin ? 'Ingresa con tu cuenta de CW para administrar las propiedades.' : 'Ingresa con tu correo y contraseña para ver el avance de tu propiedad.') + '</p>' +
+              '<form id="login-form">' +
+                '<div><label for="l-email">Correo electrónico</label><div class="input-ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg><input id="l-email" type="email" autocomplete="username" placeholder="tu@correo.com" required></div></div>' +
+                '<div><label for="l-pass">Contraseña</label><div class="input-ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><input id="l-pass" type="password" autocomplete="current-password" placeholder="••••••••" required><button type="button" class="eye-btn" id="toggle-pass" aria-label="Mostrar contraseña"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>' +
+                '<button class="btn btn-primary" style="width:100%;min-height:46px;font-size:15px">Ingresar →</button>' +
+                '<p class="status" id="login-status" role="alert"></p>' +
+              '</form>' +
+              '<div class="login-switch">' +
+                (isAsesorLogin
+                  ? '<span>¿Eres propietario?</span><a href="#cliente">Ir a acceso propietarios</a>'
+                  : '<span>¿No tienes clave? <a href="https://wa.me/51910818357?text=Hola%20CW%2C%20necesito%20mi%20acceso%20al%20portal%20del%20propietario" target="_blank" rel="noopener">Solicítala por WhatsApp</a></span><a href="#asesor">Soy asesor</a>') +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      const tp = document.getElementById("toggle-pass");
+      const lp = document.getElementById("l-pass");
+      if (tp && lp) tp.onclick = () => { lp.type = (lp.type === "password") ? "text" : "password"; };
       document.getElementById("login-form").onsubmit = (e) => { e.preventDefault(); login(document.getElementById("l-email").value.trim(), document.getElementById("l-pass").value); };
       return;
     }
-    document.getElementById("tab-asesor").setAttribute("aria-selected", state.view === "asesor");
-    document.getElementById("tab-cliente").setAttribute("aria-selected", state.view === "cliente");
-    if (state.error && !state.props.length) { app.innerHTML = statusScreen(); return; }
-    if (!state.loaded) { app.innerHTML = '<div class="card empty"><h2>Cargando portal…</h2><p class="muted">Conectando con la información de las propiedades.</p></div>'; return; }
-    if (state.view === "cliente") renderClient(); else renderEditor();
+
+    // Separación estricta de vistas por rol:
+    // - Propietario: solo Vista del propietario
+    // - Asesor: solo Panel del asesor (sin acceso a vista del propietario)
+    // - Admin: Panel admin y Gestión de inmuebles (sin vista del propietario)
+    if (state.mode === "supabase") {
+      if (!state.isAdmin) {
+        state.view = "cliente";
+      } else if (!state.isSuperAdmin) {
+        state.view = "asesor";
+      } else if (state.view !== "admin" && state.view !== "asesor") {
+        state.view = "admin";
+      }
+    }
+
+    if (state.view === "cliente" && (!state.page || !state.page.startsWith("client-"))) state.page = "client-resumen";
+    if (state.view === "asesor" && (!state.page || !state.page.startsWith("asesor-"))) state.page = "asesor-general";
+    if (state.view === "admin" && (!state.page || !state.page.startsWith("admin-"))) state.page = "admin-accesos";
+
+    if (brandSub) {
+      brandSub.textContent = state.view === "admin" ? "Administración" : state.view === "asesor" ? "Panel del asesor" : "Portal del propietario";
+    }
+
+    if (state.error && !state.props.length) { renderSidebar(null); setupChatWidget(null); app.innerHTML = statusScreen(); return; }
+    if (!state.loaded) { renderSidebar(null); setupChatWidget(null); app.innerHTML = '<div class="card empty"><h2>Cargando portal…</h2><p class="muted">Conectando con la información de las propiedades.</p></div>'; return; }
+
+    if (state.view === "admin") renderAdmin();
+    else if (state.view === "cliente") renderClient();
+    else renderEditor();
+  }
+
+  function renderAdmin(){
+    const current = state.props.find(p => p.id === state.selected) || state.props[0] || null;
+    if (current) state.selected = current.id;
+    renderSidebar(current);
+    setupChatWidget(null);
+
+    const myEmail = (state.user && state.user.email || "").toLowerCase();
+    const withAccessCount = state.props.filter(p => !!(p.propietarioEmail || "").trim()).length;
+    const propOptions = '<option value="">— Vincular después —</option>' +
+      state.props.map(p => '<option value="' + esc(p.id) + '">' + esc(p.propiedad || "Propiedad sin nombre") + (p.propietario ? ' (' + esc(p.propietario) + ')' : '') + '</option>').join("");
+
+    const asesoresRows = state.asesores.length
+      ? state.asesores.map(a => {
+          const isMe = (a.email || "").toLowerCase() === myEmail;
+          return '<div class="admin-row">' +
+            '<span><b>' + esc(a.email) + '</b>' + (isMe ? ' <span class="pill accent">Tú</span>' : '') + '</span>' +
+            '<span class="pill ' + (a.rol === "admin" ? "accent" : "") + '">' + esc(a.rol || "asesor") + '</span>' +
+            (isMe ? '<span></span><span></span>' :
+              '<button class="btn btn-ghost" data-toggle-rol="' + esc(a.email) + '" data-cur="' + esc(a.rol || "asesor") + '" style="padding:6px 12px;font-size:12.5px;min-height:36px">' + (a.rol === "admin" ? "Pasar a asesor" : "Hacer admin") + '</button>' +
+              '<button class="btn btn-danger" data-del-asesor="' + esc(a.email) + '">Quitar</button>') +
+          '</div>';
+        }).join("")
+      : '<p class="muted" style="font-size:14px">No se pudo cargar la lista de asesores (ejecuta el SQL actualizado).</p>';
+
+    const propAccessRows = state.props.length
+      ? state.props.map(p => '<div class="admin-prop-row">' +
+          '<span><b>' + esc(p.propiedad || "Propiedad sin nombre") + '</b><br><small class="muted">' + esc(p.propietario || "Sin propietario") + '</small></span>' +
+          '<span>' + (p.propietarioEmail ? esc(p.propietarioEmail) : '<span class="muted">Sin correo asignado</span>') + '</span>' +
+          '<span class="pill ' + (p.propietarioEmail ? 'ok' : '') + '">' + (p.propietarioEmail ? 'Con acceso' : 'Pendiente') + '</span>' +
+        '</div>').join("")
+      : '<p class="muted" style="font-size:14px">Aún no hay propiedades creadas.</p>';
+
+    if (state.page === "admin-crear") {
+      setPageHeader("Crear usuario", "Administración · Asesores y propietarios");
+      app.innerHTML =
+        '<div class="page-head"><div><p class="page-kicker">Administración</p><h1>Crear cuenta de acceso</h1></div></div>' +
+        '<div class="card sec" style="max-width:680px">' +
+          '<h3>Nuevo usuario (Asesor o Propietario)</h3>' +
+          '<p class="hint">Crea la cuenta con correo, contraseña y rol. El usuario podrá iniciar sesión de inmediato.</p>' +
+          '<form id="adm-create-form" style="display:grid;gap:14px">' +
+            '<div><label for="adm-email">Correo electrónico</label><input id="adm-email" type="email" placeholder="usuario@correo.com" required></div>' +
+            '<div><label for="adm-pass">Contraseña (mín. 6 caracteres)</label>' +
+              '<div style="display:flex;gap:8px"><input id="adm-pass" type="text" minlength="6" placeholder="Ej. Cw2026#Lima" required><button type="button" class="btn btn-ghost" id="adm-gen">Generar</button></div></div>' +
+            '<div class="grid2">' +
+              '<div><label for="adm-rol">Rol del usuario</label>' +
+                '<select id="adm-rol"><option value="propietario">Propietario (cliente)</option><option value="asesor">Asesor inmobiliario</option><option value="admin">Administrador</option></select></div>' +
+              '<div id="adm-prop-wrap"><label for="adm-prop-search">Vincular a propiedad</label>' +
+                '<input id="adm-prop-search" type="search" placeholder="Buscar propiedad o propietario…" style="margin-bottom:8px;min-height:38px;font-size:13.5px">' +
+                '<select id="adm-prop">' + propOptions + '</select></div>' +
+            '</div>' +
+            '<button class="btn btn-primary" id="adm-submit">Crear usuario</button>' +
+            '<div id="adm-msg" class="status" role="alert"></div>' +
+          '</form>' +
+        '</div>';
+
+      document.getElementById("adm-gen").onclick = () => {
+        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+        let pass = "Cw-";
+        for (let i = 0; i < 7; i++) pass += chars[Math.floor(Math.random() * chars.length)];
+        document.getElementById("adm-pass").value = pass;
+      };
+      const rolSel = document.getElementById("adm-rol");
+      const propWrap = document.getElementById("adm-prop-wrap");
+      const propSel = document.getElementById("adm-prop");
+      const propSearch = document.getElementById("adm-prop-search");
+      rolSel.onchange = () => { propWrap.style.display = (rolSel.value === "propietario") ? "" : "none"; };
+      if (propSearch && propSel) {
+        propSearch.addEventListener("input", () => {
+          const q = propSearch.value.trim().toLowerCase();
+          const curVal = propSel.value;
+          const filtered = state.props.filter(p =>
+            !q || (p.propiedad || "").toLowerCase().includes(q) || (p.propietario || "").toLowerCase().includes(q) || (p.direccion || "").toLowerCase().includes(q)
+          );
+          propSel.innerHTML = '<option value="">— Vincular después —</option>' +
+            filtered.map(p => '<option value="' + esc(p.id) + '">' + esc(p.propiedad || "Propiedad sin nombre") + (p.propietario ? ' (' + esc(p.propietario) + ')' : '') + '</option>').join("");
+          if (curVal && filtered.some(p => p.id === curVal)) propSel.value = curVal;
+        });
+      }
+      document.getElementById("adm-create-form").onsubmit = async (e) => {
+        e.preventDefault();
+        const email = document.getElementById("adm-email").value.trim().toLowerCase();
+        const password = document.getElementById("adm-pass").value;
+        const rol = rolSel.value;
+        const propiedadId = (rol === "propietario") ? propSel.value : "";
+        const msgEl = document.getElementById("adm-msg");
+        const btn = document.getElementById("adm-submit");
+        if (state.mode !== "supabase") { msgEl.textContent = "En modo demostración no se crean cuentas reales de Supabase."; return; }
+        btn.disabled = true; msgEl.textContent = "Creando usuario…";
+        try {
+          let createdDirect = false, needsConfirm = false;
+          try {
+            const { data, error } = await state.sb.functions.invoke("crear-usuario", { body: { email, password, rol, propiedadId } });
+            if (error) throw error;
+            if (data && data.error) throw new Error(data.error);
+            createdDirect = true;
+          } catch (_fnErr) {
+            const cfg = window.CW_SUPABASE_CONFIG;
+            const tempSb = window.supabase.createClient(cfg.url, cfg.anonKey, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
+            const { data: suData, error: suErr } = await tempSb.auth.signUp({ email, password, options: { data: { rol } } });
+            if (suErr) throw suErr;
+            if (suData && suData.user && Array.isArray(suData.user.identities) && suData.user.identities.length === 0) throw new Error("Este correo ya está registrado en Authentication.");
+            needsConfirm = !(suData && suData.session);
+            if (rol === "asesor" || rol === "admin") {
+              const { error: aErr } = await state.sb.from("asesores").upsert({ email, rol }, { onConflict: "email" });
+              if (aErr) throw aErr;
+            } else if (propiedadId) {
+              const { error: pErr } = await state.sb.from("propiedades").update({ propietario_email: email }).eq("id", propiedadId);
+              if (pErr) throw pErr;
+            }
+          }
+          msgEl.innerHTML = '<span style="color:var(--green);font-weight:700">✓ Usuario creado:</span> ' + esc(email) + ' (' + esc(rol) + ').' +
+            (needsConfirm && !createdDirect
+              ? '<br><small class="muted">Nota: "Confirm email" está activo en Supabase; el usuario debe confirmar su correo (o desactiva <b>Confirm email</b> en Authentication → Providers → Email para que entre al instante).</small>'
+              : ' Ya puede iniciar sesión con esa contraseña.');
+          document.getElementById("adm-create-form").reset();
+          propWrap.style.display = "";
+          if (rol === "asesor" || rol === "admin") loadAsesores();
+        } catch (err) {
+          const detail = (err && err.message) || String(err);
+          msgEl.innerHTML = '<span style="color:#C2412D;font-weight:700">Error al crear usuario:</span> ' + esc(detail);
+        }
+        btn.disabled = false;
+      };
+      return;
+    }
+
+    if (state.page === "admin-equipo") {
+      setPageHeader("Equipo Asesor / Admin", "Administración · Permisos del equipo");
+      app.innerHTML =
+        '<div class="page-head"><div><p class="page-kicker">Administración</p><h1>Equipo Asesor / Admin</h1></div></div>' +
+        '<div class="card sec">' +
+          '<h3>Miembros autorizados</h3>' +
+          '<p class="hint">Solo los correos de esta lista pueden entrar al Panel del asesor. Los administradores también ven la sección de Administración.</p>' +
+          '<div class="row-list">' + asesoresRows + '</div>' +
+          '<form id="adm-add-asesor" class="admin-inline-form">' +
+            '<input id="adm-ex-email" type="email" placeholder="Autorizar correo ya existente en Auth" required>' +
+            '<button class="btn btn-primary">+ Autorizar asesor</button>' +
+          '</form>' +
+        '</div>';
+
+      document.getElementById("adm-add-asesor").onsubmit = async (e) => {
+        e.preventDefault();
+        const email = document.getElementById("adm-ex-email").value.trim().toLowerCase();
+        if (!email || !state.sb) return;
+        const { error } = await state.sb.from("asesores").upsert({ email, rol: "asesor" }, { onConflict: "email" });
+        if (error) { alert("Error al autorizar: " + error.message); return; }
+        document.getElementById("adm-ex-email").value = "";
+        loadAsesores();
+      };
+      app.querySelectorAll("[data-toggle-rol]").forEach(btn => {
+        btn.onclick = async () => {
+          const email = btn.dataset.toggleRol;
+          const nextRol = btn.dataset.cur === "admin" ? "asesor" : "admin";
+          const { error } = await state.sb.from("asesores").update({ rol: nextRol }).eq("email", email);
+          if (error) alert(error.message); else loadAsesores();
+        };
+      });
+      app.querySelectorAll("[data-del-asesor]").forEach(btn => {
+        btn.onclick = async () => {
+          const email = btn.dataset.delAsesor;
+          if (!confirm("¿Quitar acceso de asesor a " + email + "?")) return;
+          const { error } = await state.sb.from("asesores").delete().eq("email", email);
+          if (error) alert(error.message); else loadAsesores();
+        };
+      });
+      return;
+    }
+
+    setPageHeader("Accesos por inmueble", "Administración · Resumen general");
+    app.innerHTML =
+      '<div class="page-head"><div><p class="page-kicker">Administración</p><h1>Resumen y Accesos</h1></div></div>' +
+      '<div class="admin-kpis">' +
+        '<div class="card admin-kpi"><div><b>' + state.asesores.length + '</b><span>Asesores y Admins</span></div><span class="stat-ico navy">' + ICONS.users + '</span></div>' +
+        '<div class="card admin-kpi"><div><b>' + state.props.length + '</b><span>Propiedades registradas</span></div><span class="stat-ico orange">' + ICONS.home + '</span></div>' +
+        '<div class="card admin-kpi"><div><b>' + withAccessCount + '</b><span>Propietarios con acceso</span></div><span class="stat-ico green">' + ICONS.shield + '</span></div>' +
+      '</div>' +
+      '<div class="card sec">' +
+        '<h3>Accesos de propietarios por inmueble</h3>' +
+        '<p class="hint">Resumen de qué correo tiene acceso a cada propiedad. Puedes editarlo en Gestión de inmuebles → General y Etapa.</p>' +
+        '<div class="row-list">' + propAccessRows + '</div>' +
+      '</div>';
   }
 
   function renderEditor(){
     const writable = !!state.isAdmin && state.canWrite !== false;
     if (!state.props.length){
+      renderSidebar(null);
+      setupChatWidget(null);
+      setPageHeader("Propiedades", "Panel del asesor");
       app.innerHTML = '<div class="card empty"><h2>Aún no hay propiedades en el portal</h2><p class="muted">Crea la primera propiedad para que su propietario pueda seguir el avance de la venta.</p>' +
         (writable ? '<div style="display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap"><button class="btn btn-primary" id="new-blank">Nueva propiedad</button><button class="btn btn-ghost" id="new-demo">Crear propiedad de ejemplo</button></div>' : '<p class="notice" style="margin-top:16px">Tu acceso es de solo lectura.</p>') + '</div>';
       const nb = document.getElementById("new-blank"); if (nb) nb.onclick = () => createProp(false);
       const nd = document.getElementById("new-demo"); if (nd) nd.onclick = () => createProp(true);
       return;
     }
+
     const current = state.props.find(p => p.id === state.selected) || state.props[0];
     state.selected = current.id;
     if (!state.draft || state.draft.id !== current.id) { state.draft = clone(current); state.dirty = false; }
     const d = state.draft;
     subscribeMessages(current.id);
+    renderSidebar(current);
+    setupChatWidget(null);
 
-    const list = state.props.map(p => '<button class="prop-item" data-id="' + esc(p.id) + '" aria-current="' + (p.id===current.id) + '"><b>' + esc(p.propiedad || "Propiedad sin nombre") + '</b><span>' + esc(p.propietario || "Sin propietario") + ' · </span><span class="pill">' + STAGES[p.etapa||0] + '</span></button>').join("");
+    const saveBarHTML =
+      '<div class="save-bar card sec">' +
+        (writable ? '<button class="btn btn-danger" type="button" id="del-prop-bar">Eliminar propiedad</button>' : '') +
+        '<span class="status" id="status" style="margin-right:auto">' + esc(state.dirty ? "Tienes cambios sin guardar." : state.status) + '</span>' +
+        (writable ? '<button class="btn btn-primary" id="save" ' + (state.dirty ? "" : "disabled") + '>Guardar cambios</button>' : '') +
+      '</div>';
 
-    const visitas = (d.visitas||[]).slice().sort((a,b)=>(b.fecha||"").localeCompare(a.fecha||""));
-    app.innerHTML =
-    '<div class="editor">' +
-      '<aside class="card side"><h3>Propiedades <span class="pill">' + state.props.length + '</span></h3>' + list +
-        (writable ? '<button class="btn btn-ghost" id="new-blank" style="width:100%;justify-content:center;margin-top:6px">+ Nueva propiedad</button>' : '') + '</aside>' +
-      '<section>' +
-        (state.mode === "local" ? '<p class="notice" style="margin-bottom:16px">Modo demostración: los datos se guardan solo en este navegador. Configura Firebase en config.js para conectar al asesor con los propietarios.</p>' : '') +
-        '<div class="edit-head"><div><p class="muted" style="font-size:13px;font-weight:700">EDITANDO</p><h2>' + esc(d.propiedad || "Propiedad sin nombre") + '</h2></div>' +
-          '<div style="display:flex;gap:8px;flex-wrap:wrap">' + (state.mode === "firebase" ? '<button class="btn btn-ghost" id="logout">Cerrar sesión</button>' : '') + '<button class="btn btn-ghost" id="copy-link">Copiar enlace del propietario</button><button class="btn btn-ghost" id="preview">Ver como propietario</button></div></div>' +
-        (writable ? '' : '<p class="notice" style="margin-bottom:16px">Tu acceso es de solo lectura: puedes revisar la información, pero no modificarla.</p>') +
+    const readonlyNotice = writable ? '' : '<p class="notice" style="margin-bottom:16px">Tu acceso es de solo lectura: puedes revisar la información, pero no modificarla.</p>';
+    const demoNotice = state.mode === "local" ? '<p class="notice" style="margin-bottom:16px">Modo demostración: los datos se guardan solo en este navegador.</p>' : '';
+    const propTitle = esc(d.propiedad || "Propiedad sin nombre");
+    const stageIdx = d.etapa || 0;
+    const pct = Math.round(((stageIdx + 1) / STAGES.length) * 100);
+    const visitasArr = d.visitas || [];
+    const docsArr = d.documentos || [];
+    const validDocs = docsArr.filter(x => safeUrl(x.url));
+
+    if (state.page === "asesor-lista") {
+      setPageHeader("Propiedades", state.props.length + " inmuebles registrados");
+      const totalVisitsAll = state.props.reduce((s,p) => s + (p.visitas||[]).length, 0);
+      const activeSales = state.props.filter(p => (p.etapa||0) >= 2 && (p.etapa||0) <= 3).length;
+      const closingSales = state.props.filter(p => (p.etapa||0) >= 4).length;
+
+      app.innerHTML = demoNotice +
+        '<div class="page-head"><div><p class="page-kicker">Cartera de inmuebles</p><h1>Propiedades (' + state.props.length + ')</h1></div>' +
+          (writable ? '<button class="btn btn-primary" id="new-blank-top">+ Nueva propiedad</button>' : '') +
+        '</div>' +
+        '<div class="stats stats-4">' +
+          '<div class="card stat"><div><div class="n">' + state.props.length + '</div><div class="l">Inmuebles totales</div></div><div class="stat-ico navy">' + ICONS.home + '</div></div>' +
+          '<div class="card stat"><div><div class="n">' + activeSales + '</div><div class="l">En publicación / visitas</div></div><div class="stat-ico orange">' + ICONS.visits + '</div></div>' +
+          '<div class="card stat"><div><div class="n">' + closingSales + '</div><div class="l">En negociación / cierre</div></div><div class="stat-ico green">' + ICONS.shield + '</div></div>' +
+          '<div class="card stat"><div><div class="n">' + totalVisitsAll + '</div><div class="l">Visitas acumuladas</div></div><div class="stat-ico navy">' + ICONS.users + '</div></div>' +
+        '</div>' +
+        '<div class="card sec" style="padding:16px 20px;margin-bottom:18px">' +
+          '<div class="toolbar-row" style="margin-bottom:0">' +
+            '<input id="prop-grid-search" type="search" placeholder="Buscar por propiedad, propietario, correo o zona…">' +
+            '<select id="prop-stage-filter" style="max-width:220px"><option value="">Todas las etapas</option>' +
+              STAGES.map((s,i) => '<option value="' + i + '">' + (i+1) + '. ' + s + '</option>').join("") +
+            '</select>' +
+          '</div>' +
+        '</div>' +
+        '<div class="prop-grid" id="prop-grid">' +
+          state.props.map(p => {
+            const pStage = p.etapa || 0;
+            const pPct = Math.round(((pStage + 1) / STAGES.length) * 100);
+            const pVis = (p.visitas || []).length;
+            const pDocs = (p.documentos || []).length;
+            return '<div role="button" tabindex="0" class="prop-card" style="cursor:pointer" data-pick="' + esc(p.id) + '" data-stage="' + pStage + '" data-search="' + esc(((p.propiedad||"") + " " + (p.propietario||"") + " " + (p.propietarioEmail||"") + " " + (p.direccion||"")).toLowerCase()) + '" aria-current="' + (p.id === current.id) + '">' +
+              '<div class="prop-meta"><span class="pill accent">' + STAGES[pStage] + '</span><span style="font-weight:700;color:var(--navy)">' + pPct + '%</span></div>' +
+              '<b>' + esc(p.propiedad || "Propiedad sin nombre") + '</b>' +
+              '<span class="muted" style="font-size:13px">' + esc(p.direccion || "Sin dirección registrada") + '</span>' +
+              '<div class="prop-mini-bar"><span style="width:' + pPct + '%"></span></div>' +
+              '<div class="prop-card-stats">' +
+                '<span>' + pVis + (pVis === 1 ? ' visita' : ' visitas') + '</span>' +
+                '<span>' + (p.interesados || 0) + ' interesados</span>' +
+                '<span>' + pDocs + ' docs</span>' +
+              '</div>' +
+              '<div class="prop-meta" style="margin-top:4px;padding-top:10px;border-top:1px solid var(--line)"><span>' + esc(p.propietario || "Sin propietario") + '</span>' +
+                '<div style="display:flex;align-items:center;gap:8px">' +
+                  (writable ? '<button type="button" class="btn btn-danger" style="padding:5px 10px;font-size:12px;border-radius:8px" data-delprop="' + esc(p.id) + '">Eliminar</button>' : '') +
+                  '<span style="color:var(--orange);font-weight:700">Gestionar →</span>' +
+                '</div>' +
+              '</div>' +
+            '</div>';
+          }).join("") +
+        '</div>';
+      const nbt = document.getElementById("new-blank-top"); if (nbt) nbt.onclick = () => createProp(false);
+      const gs = document.getElementById("prop-grid-search");
+      const sf = document.getElementById("prop-stage-filter");
+      const applyPropFilters = () => {
+        const q = gs ? gs.value.trim().toLowerCase() : "";
+        const stg = sf ? sf.value : "";
+        app.querySelectorAll(".prop-card").forEach(c => {
+          const okQ = !q || (c.dataset.search || "").includes(q);
+          const okS = stg === "" || c.dataset.stage === stg;
+          c.style.display = (okQ && okS) ? "" : "none";
+        });
+      };
+      if (gs) gs.addEventListener("input", applyPropFilters);
+      if (sf) sf.addEventListener("change", applyPropFilters);
+      app.querySelectorAll("[data-delprop]").forEach(btn => btn.onclick = (e) => {
+        e.stopPropagation();
+        deleteProp(btn.dataset.delprop);
+      });
+      app.querySelectorAll("[data-pick]").forEach(btn => {
+        const pick = () => {
+          if (state.dirty && !confirm("Tienes cambios sin guardar. ¿Deseas descartarlos?")) return;
+          state.selected = btn.dataset.pick; state.draft = null; state.dirty = false; state.status = "";
+          state.page = "asesor-general";
+          render();
+        };
+        btn.onclick = pick;
+        btn.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } };
+      });
+      return;
+    }
+
+    if (state.page === "asesor-mensajes") {
+      setPageHeader("Mensajes con propietarios", propTitle);
+      const ownerName = current.propietario || "Propietario";
+      const parts = ownerName.trim().split(/\s+/);
+      const ini = parts.length >= 2 ? (parts[0][0] + parts[1][0]).toUpperCase() : ownerName.slice(0,2).toUpperCase();
+      const rawWsp = (current.asesorWhatsapp || "").replace(/\D/g, "");
+      const phone = rawWsp.length === 9 ? "51" + rawWsp : rawWsp;
+
+      app.innerHTML = demoNotice + readonlyNotice +
+        '<div class="page-head"><div><p class="page-kicker">Bandeja del asesor</p><h1>Mensajes de propietarios</h1></div></div>' +
+        '<div class="inbox-grid">' +
+          '<div class="card inbox-list">' +
+            '<input id="inbox-search" type="search" placeholder="Filtrar propiedad o propietario…" style="margin-bottom:4px">' +
+            state.props.map(p =>
+              '<button type="button" class="inbox-item" data-inbox-prop="' + esc(p.id) + '" data-search="' + esc(((p.propiedad||"") + " " + (p.propietario||"")).toLowerCase()) + '" aria-current="' + (p.id === current.id) + '">' +
+                '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>' + esc(p.propiedad || "Propiedad sin nombre") + '</b><span class="pill" style="font-size:10.5px">' + STAGES[p.etapa || 0] + '</span></div>' +
+                '<small>' + esc(p.propietario || "Sin propietario") + (p.propietarioEmail ? ' · ' + esc(p.propietarioEmail) : '') + '</small>' +
+              '</button>'
+            ).join("") +
+          '</div>' +
+          '<div class="card inbox-thread">' +
+            '<div class="inbox-head">' +
+              '<div style="display:flex;align-items:center;gap:12px">' +
+                '<div class="advisor-ava">' + esc(ini || "PR") + '</div>' +
+                '<div><b style="display:block;font-size:15px;color:var(--navy)">' + esc(ownerName) + '</b><small class="muted">' + esc(current.propiedad || "Propiedad") + ' · <span id="inbox-msg-count">' + state.messages.length + (state.messages.length === 1 ? " mensaje" : " mensajes") + '</span></small></div>' +
+              '</div>' +
+              '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+                (phone ? '<a class="btn btn-ghost" style="padding:8px 14px;font-size:13px" href="https://wa.me/' + phone + '" target="_blank" rel="noopener">WhatsApp</a>' : '') +
+                '<button type="button" class="btn btn-ghost" style="padding:8px 14px;font-size:13px" id="inbox-go-prop">Ver inmueble</button>' +
+              '</div>' +
+            '</div>' +
+            '<div class="inbox-msgs" id="chat-inbox">' + messagesMarkup(false) + '</div>' +
+            '<form class="inbox-compose" id="inbox-form">' +
+              '<input id="inbox-input" maxlength="1000" placeholder="Escribe una respuesta para ' + esc(ownerName) + '…"' + (writable ? '' : ' disabled') + '>' +
+              '<button type="submit" class="btn btn-primary"' + (writable ? '' : ' disabled') + '>Enviar</button>' +
+            '</form>' +
+          '</div>' +
+        '</div>';
+
+      const isrch = document.getElementById("inbox-search");
+      if (isrch) isrch.addEventListener("input", () => {
+        const q = isrch.value.trim().toLowerCase();
+        app.querySelectorAll("[data-inbox-prop]").forEach(b => { b.style.display = (!q || (b.dataset.search||"").includes(q)) ? "" : "none"; });
+      });
+      app.querySelectorAll("[data-inbox-prop]").forEach(b => b.onclick = () => {
+        if (b.dataset.inboxProp === state.selected) return;
+        if (state.dirty && !confirm("Tienes cambios sin guardar. ¿Deseas descartarlos?")) return;
+        state.selected = b.dataset.inboxProp; state.draft = null; state.dirty = false; state.status = "";
+        render();
+      });
+      const goProp = document.getElementById("inbox-go-prop");
+      if (goProp) goProp.onclick = () => { state.page = "asesor-general"; render(); };
+      const iform = document.getElementById("inbox-form");
+      const iinp = document.getElementById("inbox-input");
+      if (iform) iform.onsubmit = (e) => {
+        e.preventDefault();
+        if (!writable || !iinp) return;
+        const txt = iinp.value; iinp.value = "";
+        sendMessage(current.id, "asesor", txt);
+      };
+      const inboxBox = document.getElementById("chat-inbox");
+      if (inboxBox) inboxBox.scrollTop = inboxBox.scrollHeight;
+      return;
+    }
+
+    if (state.page === "asesor-visitas") {
+      setPageHeader("Registro de visitas", propTitle);
+      const visitas = visitasArr.slice().sort((a,b)=>(b.fecha||"").localeCompare(a.fecha||""));
+      const totalPeople = visitas.reduce((s,v) => s + (Number(v.personas)||0), 0);
+      const lastDate = visitas[0] ? fmtDate(visitas[0].fecha) : "—";
+
+      app.innerHTML = demoNotice + readonlyNotice +
+        '<div class="page-head"><div><p class="page-kicker">' + propTitle + '</p><h1>Registro de visitas</h1></div>' +
+          '<button type="button" class="btn btn-ghost" id="back-general">← General y Etapa</button>' +
+        '</div>' +
+        '<div class="stats">' +
+          '<div class="card stat"><div><div class="n">' + visitas.length + '</div><div class="l">Visitas realizadas</div></div><div class="stat-ico orange">' + ICONS.visits + '</div></div>' +
+          '<div class="card stat"><div><div class="n">' + totalPeople + '</div><div class="l">Personas que visitaron</div></div><div class="stat-ico navy">' + ICONS.users + '</div></div>' +
+          '<div class="card stat"><div><div class="n" style="font-size:22px">' + esc(lastDate) + '</div><div class="l">Última visita</div></div><div class="stat-ico green">' + ICONS.home + '</div></div>' +
+        '</div>' +
         '<fieldset ' + (writable ? '' : 'disabled') + ' style="border:0">' +
-        '<div class="card sec"><h3>Datos de la propiedad</h3><p class="hint">Esta información aparece en el saludo y la cabecera del portal del propietario.</p>' +
-          '<div class="grid3"><div><label for="f-prop">Nombre del propietario</label><input id="f-prop" data-field="propietario" value="' + esc(d.propietario) + '" maxlength="80"></div>' +
-          '<div><label for="f-inm">Propiedad</label><input id="f-inm" data-field="propiedad" value="' + esc(d.propiedad) + '" maxlength="100"></div>' +
-          '<div><label for="f-dir">Dirección o zona</label><input id="f-dir" data-field="direccion" value="' + esc(d.direccion) + '" maxlength="120"></div></div></div>' +
-        '<div class="card sec"><h3>Etapa de la venta</h3><p class="hint">Haz clic en la etapa actual. El propietario verá su avance en la línea de tiempo.</p>' + stepperHTML(d.etapa||0, writable) + '</div>' +
-        '<div class="card sec"><h3>Indicadores</h3><p class="hint">Las visitas realizadas se cuentan automáticamente desde el registro de visitas.</p>' +
-          '<div class="grid3"><div><label>Visitas realizadas</label><input value="' + (d.visitas||[]).length + '" disabled></div>' +
-          '<div><label for="f-int">Interesados activos</label><input id="f-int" type="number" min="0" max="999" data-field="interesados" data-num="1" value="' + (d.interesados||0) + '"></div>' +
-          '<div><label for="f-pro">Propuestas recibidas</label><input id="f-pro" type="number" min="0" max="999" data-field="propuestas" data-num="1" value="' + (d.propuestas||0) + '"></div></div></div>' +
-        '<div class="card sec"><h3>Resumen semanal</h3><p class="hint">Cuenta en pocas líneas qué pasó esta semana con la venta.</p>' +
-          '<div style="max-width:220px;margin-bottom:12px"><label for="f-rf">Semana del</label><input id="f-rf" type="date" data-field="resumenFecha" value="' + esc(d.resumenFecha) + '"></div>' +
-          '<label for="f-res">Resumen</label><textarea id="f-res" data-field="resumen" maxlength="1500">' + esc(d.resumen) + '</textarea></div>' +
-        '<div class="card sec"><h3>Registro de visitas</h3><p class="hint">Agrega cada visita con la cantidad de personas y el comentario de los interesados.</p>' +
-          '<div class="row-list">' + (visitas.length ? visitas.map(v => '<div class="row"><span>' + fmtDate(v.fecha) + '</span><span>' + (v.personas||0) + (v.personas==1?" persona":" personas") + '</span><span>' + esc(v.feedback) + '</span><button class="btn btn-danger" data-delvisit="' + esc(v.id) + '" aria-label="Eliminar visita">Eliminar</button></div>').join("") : '<p class="muted" style="font-size:14px">Aún no hay visitas registradas.</p>') + '</div>' +
-          '<div class="add-row"><div><label for="v-f">Fecha</label><input id="v-f" type="date"></div><div><label for="v-p">Personas</label><input id="v-p" type="number" min="1" max="20" value="1"></div><div><label for="v-c">Comentario</label><input id="v-c" maxlength="140" placeholder="Ej. Interesado en el precio"></div><button class="btn btn-ghost" id="add-visit">Agregar</button></div></div>' +
-        '<div class="card sec"><h3>Documentos</h3><p class="hint">Pega el enlace de cada documento, por ejemplo de Google Drive, con permiso de lectura para el propietario.</p>' +
-          '<div class="row-list">' + ((d.documentos||[]).length ? d.documentos.map(x => '<div class="row doc"><span>' + docIco + ' ' + esc(x.nombre) + '</span><button class="btn btn-danger" data-deldoc="' + esc(x.id) + '">Eliminar</button></div>').join("") : '<p class="muted" style="font-size:14px">Aún no hay documentos.</p>') + '</div>' +
-          '<div class="add-row doc"><div><label for="d-n">Nombre del documento</label><input id="d-n" maxlength="80" placeholder="Ej. Contrato de exclusividad"></div><div><label for="d-u">Enlace</label><input id="d-u" type="url" placeholder="https://"></div><button class="btn btn-ghost" id="add-doc">Agregar</button></div></div>' +
-        '</fieldset>' +
-        '<div class="save-bar card sec" style="position:sticky;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:5">' +
-          (writable ? '<button class="btn btn-danger" id="del-prop" style="margin-right:auto">Eliminar propiedad</button>' : '') +
-          '<span class="status" id="status">' + esc(state.dirty ? "Tienes cambios sin guardar." : state.status) + '</span>' +
-          (writable ? '<button class="btn btn-primary" id="save" ' + (state.dirty ? "" : "disabled") + '>Guardar cambios</button>' : '') + '</div>' +
-        '<div class="card sec"><h3>Mensajes con el propietario</h3><p class="hint">Los mensajes se envían al instante y aparecen en el portal del propietario.</p><div class="chat" id="chat"></div>' +
-          '<form class="composer" id="composer"><input id="msg-in" maxlength="1000" placeholder="Escribe un mensaje para el propietario" ' + (writable ? '' : 'disabled') + ' aria-label="Mensaje"><button class="btn btn-primary" ' + (writable ? '' : 'disabled') + '>Enviar</button></form></div>' +
-      '</section></div>';
+        '<div class="client-split">' +
+          '<div class="card sec">' +
+            '<div class="toolbar-row"><h3 style="margin:0">Historial de visitas (' + visitas.length + ')</h3><input id="av-search" type="search" placeholder="Filtrar comentario o fecha…"></div>' +
+            '<div class="row-list" id="av-list">' + (visitas.length ? visitas.map((v, idx) =>
+              '<div class="row" data-vsearch="' + esc((fmtDate(v.fecha) + " " + (v.feedback||"")).toLowerCase()) + '">' +
+                '<span><b>' + fmtDate(v.fecha) + '</b></span>' +
+                '<span class="pill">' + (v.personas||0) + (v.personas==1?" persona":" personas") + '</span>' +
+                '<span>' + esc(v.feedback || "Sin comentarios") + '</span>' +
+                '<button class="btn btn-danger" type="button" data-delvisit="' + esc(v.id) + '" aria-label="Eliminar visita">Eliminar</button>' +
+              '</div>'
+            ).join("") : '<p class="muted" style="font-size:13.5px">Aún no hay visitas registradas para esta propiedad.</p>') + '</div>' +
+          '</div>' +
+          '<div class="card sec">' +
+            '<h3>Registrar nueva visita</h3><p class="hint">Cada visita registrada actualiza automáticamente el contador del propietario.</p>' +
+            '<div style="display:grid;gap:12px">' +
+              '<div><label for="v-f">Fecha de la visita</label><input id="v-f" type="date"></div>' +
+              '<div><label for="v-p">Cantidad de personas</label><input id="v-p" type="number" min="1" max="20" value="1"></div>' +
+              '<div><label for="v-c">Comentario / feedback del interesado</label><textarea id="v-c" maxlength="140" style="min-height:86px" placeholder="Ej. Consultó por cochera y mantenimiento"></textarea></div>' +
+              '<button class="btn btn-primary" type="button" id="add-visit" style="width:100%">+ Agregar visita</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '</fieldset>' + saveBarHTML;
 
-    // events
-    app.querySelectorAll(".prop-item").forEach(b => b.onclick = () => {
-      if (state.dirty && !confirm("Tienes cambios sin guardar. ¿Deseas descartarlos?")) return;
-      state.selected = b.dataset.id; state.draft = null; state.dirty = false; state.status = ""; render();
-    });
-    const nb = document.getElementById("new-blank"); if (nb) nb.onclick = () => createProp(false);
+      document.getElementById("back-general").onclick = () => { state.page = "asesor-general"; render(); };
+      const avSearch = document.getElementById("av-search");
+      if (avSearch) avSearch.addEventListener("input", () => {
+        const q = avSearch.value.trim().toLowerCase();
+        app.querySelectorAll("#av-list .row").forEach(r => { r.style.display = (!q || (r.dataset.vsearch||"").includes(q)) ? "" : "none"; });
+      });
+      const av = document.getElementById("add-visit"); if (av) av.onclick = () => {
+        const f = document.getElementById("v-f").value, p = parseInt(document.getElementById("v-p").value,10)||1, c = document.getElementById("v-c").value.trim();
+        if (!f) { document.getElementById("v-f").focus(); return; }
+        d.visitas = (d.visitas||[]).concat([{ id:newId("v"), fecha:f, personas:p, feedback:c }]); markDirty(); render();
+      };
+      app.querySelectorAll("[data-delvisit]").forEach(b => b.onclick = () => { d.visitas = d.visitas.filter(v => v.id !== b.dataset.delvisit); markDirty(); render(); });
+      const sv = document.getElementById("save"); if (sv) sv.onclick = saveDraft; const dpb = document.getElementById("del-prop-bar"); if (dpb) dpb.onclick = () => deleteProp(current.id);
+      return;
+    }
+
+    if (state.page === "asesor-docs") {
+      setPageHeader("Documentos", propTitle);
+      app.innerHTML = demoNotice + readonlyNotice +
+        '<div class="page-head"><div><p class="page-kicker">' + propTitle + '</p><h1>Documentos compartidos</h1></div>' +
+          '<button type="button" class="btn btn-ghost" id="back-general">← General y Etapa</button>' +
+        '</div>' +
+        '<div class="stats stats-2">' +
+          '<div class="card stat"><div><div class="n">' + docsArr.length + '</div><div class="l">Documentos cargados</div></div><div class="stat-ico orange">' + ICONS.docs + '</div></div>' +
+          '<div class="card stat"><div><div class="n">' + validDocs.length + '</div><div class="l">Enlaces válidos en portal</div></div><div class="stat-ico green">' + ICONS.shield + '</div></div>' +
+        '</div>' +
+        '<fieldset ' + (writable ? '' : 'disabled') + ' style="border:0">' +
+        '<div class="client-split">' +
+          '<div class="card sec"><h3>Expediente compartido (' + docsArr.length + ')</h3><p class="hint">Verifica que los enlaces tengan permisos de lectura para el propietario.</p>' +
+            (docsArr.length ? '<div class="row-list">' + docsArr.map(x => {
+              let host = "";
+              try { host = new URL(x.url).hostname.replace(/^www\./, ""); } catch(e){}
+              return '<div class="row doc">' +
+                '<span class="doc-link-l">' + docIco + '<span><b>' + esc(x.nombre) + '</b><small class="muted" style="display:block;font-weight:500">' + esc(host || x.url) + '</small></span></span>' +
+                '<div style="display:flex;gap:8px;align-items:center">' +
+                  (safeUrl(x.url) ? '<a class="btn btn-ghost" style="padding:7px 12px;font-size:12.5px" href="' + esc(x.url) + '" target="_blank" rel="noopener">Abrir ↗</a>' : '') +
+                  '<button class="btn btn-danger" type="button" data-deldoc="' + esc(x.id) + '">Eliminar</button>' +
+                '</div>' +
+              '</div>';
+            }).join("") + '</div>' : '<p class="muted" style="font-size:13.5px">Aún no hay documentos agregados.</p>') +
+          '</div>' +
+          '<div class="card sec"><h3>Agregar documento</h3><p class="hint">Pega el enlace de Google Drive, Dropbox o PDF en la nube.</p>' +
+            '<div style="display:grid;gap:12px">' +
+              '<div><label for="d-n">Nombre del documento</label><input id="d-n" maxlength="80" placeholder="Ej. Partida registral Sunarp"></div>' +
+              '<div><label for="d-u">Enlace (https://)</label><input id="d-u" type="url" placeholder="https://drive.google.com/..."></div>' +
+              '<button class="btn btn-primary" type="button" id="add-doc" style="width:100%">+ Agregar documento</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '</fieldset>' + saveBarHTML;
+
+      document.getElementById("back-general").onclick = () => { state.page = "asesor-general"; render(); };
+      const ad = document.getElementById("add-doc"); if (ad) ad.onclick = () => {
+        const n = document.getElementById("d-n").value.trim(), u = document.getElementById("d-u").value.trim();
+        if (!n) { document.getElementById("d-n").focus(); return; }
+        if (!safeUrl(u)) { alert("Ingresa un enlace válido que empiece con https://"); document.getElementById("d-u").focus(); return; }
+        d.documentos = (d.documentos||[]).concat([{ id:newId("d"), nombre:n, url:u }]); markDirty(); render();
+      };
+      app.querySelectorAll("[data-deldoc]").forEach(b => b.onclick = () => { d.documentos = d.documentos.filter(x => x.id !== b.dataset.deldoc); markDirty(); render(); });
+      const sv = document.getElementById("save"); if (sv) sv.onclick = saveDraft; const dpb = document.getElementById("del-prop-bar"); if (dpb) dpb.onclick = () => deleteProp(current.id);
+      return;
+    }
+
+    if (state.page === "asesor-link") {
+      setPageHeader("Enlace de acceso", propTitle);
+      const url = location.origin + location.pathname + "#propietario-" + current.id;
+      const wspShare = encodeURIComponent("Hola " + (current.propietario || "") + ", aquí puedes hacer seguimiento en tiempo real de la venta de tu propiedad (" + (current.propiedad || "") + "): " + url);
+      app.innerHTML = demoNotice +
+        '<div class="page-head"><div><p class="page-kicker">' + propTitle + '</p><h1>Enlace del propietario</h1></div></div>' +
+        '<div class="client-split">' +
+          '<div class="card sec"><h3>Enlace personal del propietario</h3><p class="hint">Compártelo por WhatsApp o correo. Al iniciar sesión con su correo autorizado verá su propiedad de inmediato.</p>' +
+            '<div class="composer"><input id="link-input" readonly value="' + esc(url) + '" aria-label="Enlace del propietario"><button class="btn btn-primary" id="link-copy" type="button">Copiar enlace</button></div>' +
+            '<p class="status" id="link-status" style="margin-top:10px"></p>' +
+            '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">' +
+              '<a class="btn wsp-btn" style="width:auto" href="https://wa.me/?text=' + wspShare + '" target="_blank" rel="noopener">Compartir por WhatsApp</a>' +
+              '<a class="btn btn-ghost" href="' + esc(url) + '" target="_blank" rel="noopener">Abrir enlace ↗</a>' +
+            '</div>' +
+            '<div class="link-steps">' +
+              '<div class="link-step"><span class="link-step-num">1</span><div><b>Verifica el correo autorizado</b><div class="muted">En General y Etapa confirma que el propietario tenga su correo asignado.</div></div></div>' +
+              '<div class="link-step"><span class="link-step-num">2</span><div><b>Envía el enlace personal</b><div class="muted">El propietario entra con su correo y contraseña creada desde Administración.</div></div></div>' +
+              '<div class="link-step"><span class="link-step-num">3</span><div><b>Seguimiento en tiempo real</b><div class="muted">Cada cambio que guardes se refleja al instante en su portal.</div></div></div>' +
+            '</div>' +
+          '</div>' +
+          '<div>' +
+            '<div class="card sec"><h3>Resumen de acceso</h3>' +
+              '<div class="checklist">' +
+                '<div class="check-item"><span>Propietario</span><b>' + esc(current.propietario || "Sin asignar") + '</b></div>' +
+                '<div class="check-item"><span>Correo autorizado</span><b>' + esc(current.propietarioEmail || "Pendiente") + '</b></div>' +
+                '<div class="check-item"><span>Etapa actual</span><span class="pill accent">' + STAGES[stageIdx] + '</span></div>' +
+              '</div>' +
+            '</div>' +
+            (writable ? '<div class="card sec" style="border-color:rgba(194,65,45,.22)"><h3 style="color:#C2412D">Zona de peligro</h3><p class="hint">Eliminar esta propiedad borrará también sus visitas, documentos y mensajes asociados.</p><button class="btn btn-danger" id="del-prop" style="border:1px solid rgba(194,65,45,.3);width:100%">Eliminar propiedad</button></div>' : '') +
+          '</div>' +
+        '</div>';
+
+      const inp = document.getElementById("link-input"), st = document.getElementById("link-status");
+      document.getElementById("link-copy").onclick = async () => {
+        inp.select();
+        try { await navigator.clipboard.writeText(url); st.textContent = "Enlace copiado al portapapeles."; }
+        catch(e){ st.textContent = "Selecciona el enlace y cópialo con Ctrl + C."; }
+      };
+      const dp = document.getElementById("del-prop"); if (dp) dp.onclick = () => deleteProp(current.id);
+      return;
+    }
+
+    // asesor-general (default)
+    setPageHeader("General y Etapa", propTitle);
+    const hasEmail = !!(d.propietarioEmail && d.propietarioEmail.trim());
+    const hasWsp = !!(d.asesorWhatsapp && d.asesorWhatsapp.trim());
+    const hasSummary = !!(d.resumen && d.resumen.trim());
+
+    app.innerHTML = demoNotice + readonlyNotice +
+      '<section class="card hello">' +
+        '<div>' +
+          '<p class="hello-kicker">GESTIONANDO INMUEBLE · ' + STAGES[stageIdx].toUpperCase() + '</p>' +
+          '<h1>' + propTitle + '</h1>' +
+          '<p>' + esc(d.propietario || "Propietario sin asignar") + (d.direccion ? " · " + esc(d.direccion) : "") + '</p>' +
+          '<div class="progress-pill"><span>' + pct + '% del proceso</span><div class="progress-track"><div class="progress-fill" style="width:' + pct + '%"></div></div><span>Etapa ' + (stageIdx + 1) + ' de ' + STAGES.length + '</span></div>' +
+        '</div>' +
+        '<div style="display:flex;gap:10px;flex-wrap:wrap">' +
+          '<button type="button" class="btn btn-ghost" style="background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.22)" id="qa-msgs">Mensajes (' + state.messages.length + ')</button>' +
+          '<button type="button" class="btn btn-ghost" style="background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.22)" id="qa-visits">Visitas (' + visitasArr.length + ')</button>' +
+          '<button type="button" class="btn btn-primary" id="qa-link">Enlace del propietario</button>' +
+        '</div>' +
+      '</section>' +
+      '<div class="stats stats-4">' +
+        '<div class="card stat"><div><div class="n" style="font-size:22px">' + STAGES[stageIdx] + '</div><div class="l">Etapa actual (' + (stageIdx+1) + '/6)</div></div><div class="stat-ico orange">' + ICONS.edit + '</div></div>' +
+        '<div class="card stat"><div><div class="n">' + visitasArr.length + '</div><div class="l">Visitas realizadas</div></div><div class="stat-ico navy">' + ICONS.visits + '</div></div>' +
+        '<div class="card stat"><div><div class="n">' + (d.interesados||0) + '</div><div class="l">Interesados activos</div></div><div class="stat-ico navy">' + ICONS.users + '</div></div>' +
+        '<div class="card stat"><div><div class="n">' + (d.propuestas||0) + '</div><div class="l">Propuestas recibidas</div></div><div class="stat-ico green">' + ICONS.docs + '</div></div>' +
+      '</div>' +
+      '<fieldset ' + (writable ? '' : 'disabled') + ' style="border:0">' +
+      '<div class="client-split">' +
+        '<div>' +
+          '<div class="card sec"><h3>Etapa de la venta</h3><p class="hint">Haz clic en la etapa actual. El propietario verá su avance en la línea de tiempo.</p>' + stepperHTML(stageIdx, writable) +
+            '<div class="stage-desc"><span><b>Descripción visible:</b> ' + esc(STAGE_INFO[stageIdx] || "") + '</span></div>' +
+          '</div>' +
+          '<div class="card sec"><h3>Datos de la propiedad y propietario</h3><p class="hint">El correo define qué cuenta puede iniciar sesión para ver esta propiedad.</p>' +
+            '<div class="grid2"><div><label for="f-prop">Nombre del propietario</label><input id="f-prop" data-field="propietario" value="' + esc(d.propietario) + '" maxlength="80"></div>' +
+            '<div><label for="f-pemail">Correo del propietario (acceso al portal)</label><input id="f-pemail" type="email" data-field="propietarioEmail" value="' + esc(d.propietarioEmail) + '" placeholder="cliente@correo.com" maxlength="120"></div></div>' +
+            '<div class="grid3" style="margin-top:14px"><div><label for="f-inm">Propiedad</label><input id="f-inm" data-field="propiedad" value="' + esc(d.propiedad) + '" maxlength="100"></div>' +
+            '<div><label for="f-dir">Dirección o zona</label><input id="f-dir" data-field="direccion" value="' + esc(d.direccion) + '" maxlength="120"></div>' +
+            '<div><label for="f-wsp">WhatsApp del asesor</label><input id="f-wsp" type="tel" data-field="asesorWhatsapp" value="' + esc(d.asesorWhatsapp) + '" placeholder="Ej. +51 910 818 357" maxlength="25"></div></div>' +
+          '</div>' +
+          '<div class="card sec"><h3>Indicadores comerciales</h3><p class="hint">Las visitas realizadas se cuentan automáticamente desde la pestaña Visitas.</p>' +
+            '<div class="grid3"><div><label>Visitas realizadas</label><input value="' + visitasArr.length + '" disabled></div>' +
+            '<div><label for="f-int">Interesados activos</label><input id="f-int" type="number" min="0" max="999" data-field="interesados" data-num="1" value="' + (d.interesados||0) + '"></div>' +
+            '<div><label for="f-pro">Propuestas recibidas</label><input id="f-pro" type="number" min="0" max="999" data-field="propuestas" data-num="1" value="' + (d.propuestas||0) + '"></div></div>' +
+          '</div>' +
+        '</div>' +
+        '<div>' +
+          '<div class="card sec"><h3>Resumen semanal</h3><p class="hint">Cuenta en pocas líneas qué pasó esta semana con la venta.</p>' +
+            '<div style="max-width:220px;margin-bottom:12px"><label for="f-rf">Semana del</label><input id="f-rf" type="date" data-field="resumenFecha" value="' + esc(d.resumenFecha) + '"></div>' +
+            '<label for="f-res">Mensaje para el propietario</label><textarea id="f-res" data-field="resumen" style="min-height:140px" maxlength="1500">' + esc(d.resumen) + '</textarea>' +
+          '</div>' +
+          '<div class="card sec"><h3>Checklist del portal</h3><p class="hint">Estado de configuración de este inmueble.</p>' +
+            '<div class="checklist">' +
+              '<div class="check-item"><span>Correo del propietario</span><span class="pill ' + (hasEmail ? 'ok' : 'accent') + '">' + (hasEmail ? 'Configurado' : 'Pendiente') + '</span></div>' +
+              '<div class="check-item"><span>WhatsApp del asesor</span><span class="pill ' + (hasWsp ? 'ok' : 'accent') + '">' + (hasWsp ? 'Configurado' : 'Pendiente') + '</span></div>' +
+              '<div class="check-item"><span>Resumen semanal</span><span class="pill ' + (hasSummary ? 'ok' : 'accent') + '">' + (hasSummary ? 'Publicado' : 'Vacío') + '</span></div>' +
+              '<div class="check-item"><span>Documentos compartidos</span><span class="pill">' + validDocs.length + '</span></div>' +
+              '<div class="check-item"><span>Visitas registradas</span><span class="pill">' + visitasArr.length + '</span></div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '</fieldset>' + saveBarHTML;
+
+    document.getElementById("qa-msgs").onclick = () => { state.page = "asesor-mensajes"; render(); };
+    document.getElementById("qa-visits").onclick = () => { state.page = "asesor-visitas"; render(); };
+    document.getElementById("qa-link").onclick = () => { state.page = "asesor-link"; render(); };
+
     app.querySelectorAll("[data-field]").forEach(inp => inp.addEventListener("input", () => {
       d[inp.dataset.field] = inp.dataset.num ? Math.max(0, parseInt(inp.value||"0",10)||0) : inp.value; markDirty();
-      if (inp.dataset.field === "propiedad") app.querySelector(".edit-head h2").textContent = inp.value || "Propiedad sin nombre";
+      if (inp.dataset.field === "propiedad") {
+        const h1 = app.querySelector(".hello h1");
+        if (h1) h1.textContent = inp.value || "Propiedad sin nombre";
+      }
     }));
     app.querySelectorAll("button.step").forEach(b => b.onclick = () => { d.etapa = +b.dataset.stage; markDirty(); render(); });
-    const av = document.getElementById("add-visit"); if (av) av.onclick = () => {
-      const f = document.getElementById("v-f").value, p = parseInt(document.getElementById("v-p").value,10)||1, c = document.getElementById("v-c").value.trim();
-      if (!f) { document.getElementById("v-f").focus(); return; }
-      d.visitas = (d.visitas||[]).concat([{ id:newId("v"), fecha:f, personas:p, feedback:c }]); markDirty(); render();
-    };
-    app.querySelectorAll("[data-delvisit]").forEach(b => b.onclick = () => { d.visitas = d.visitas.filter(v => v.id !== b.dataset.delvisit); markDirty(); render(); });
-    const ad = document.getElementById("add-doc"); if (ad) ad.onclick = () => {
-      const n = document.getElementById("d-n").value.trim(), u = document.getElementById("d-u").value.trim();
-      if (!n) { document.getElementById("d-n").focus(); return; }
-      if (!safeUrl(u)) { alert("Ingresa un enlace válido que empiece con https://"); document.getElementById("d-u").focus(); return; }
-      d.documentos = (d.documentos||[]).concat([{ id:newId("d"), nombre:n, url:u }]); markDirty(); render();
-    };
-    app.querySelectorAll("[data-deldoc]").forEach(b => b.onclick = () => { d.documentos = d.documentos.filter(x => x.id !== b.dataset.deldoc); markDirty(); render(); });
-    const sv = document.getElementById("save"); if (sv) sv.onclick = saveDraft;
-    const dp = document.getElementById("del-prop"); if (dp) dp.onclick = () => deleteProp(current.id);
-    const lo = document.getElementById("logout"); if (lo) lo.onclick = () => firebase.auth().signOut();
-    document.getElementById("preview").onclick = () => { if (state.dirty && !confirm("Tienes cambios sin guardar. El propietario aún no los ve. ¿Continuar?")) return; go("cliente", current.id); };
-    document.getElementById("copy-link").onclick = async () => {
-      const url = location.origin + location.pathname + "#propietario-" + current.id;
-      let box = document.getElementById("link-box");
-      if (!box) {
-        box = document.createElement("div");
-        box.id = "link-box"; box.className = "card sec";
-        box.innerHTML = '<h3>Enlace personal del propietario</h3><p class="hint">Envíalo por WhatsApp. Al abrirlo, el propietario verá directamente el portal de esta propiedad.</p><div class="composer"><input id="link-input" readonly aria-label="Enlace del propietario"><button class="btn btn-primary" id="link-copy" type="button">Copiar</button></div><p class="status" id="link-status" style="margin-top:8px"></p>';
-        app.querySelector(".edit-head").after(box);
-      }
-      const inp = document.getElementById("link-input"), st = document.getElementById("link-status");
-      inp.value = url; inp.focus(); inp.select();
-      const doCopy = async () => {
-        try { await navigator.clipboard.writeText(url); st.textContent = "Enlace copiado."; }
-        catch(e){ inp.select(); st.textContent = "Selecciona el enlace y cópialo con Ctrl + C, o mantenlo presionado en el celular."; }
-      };
-      document.getElementById("link-copy").onclick = doCopy;
-      await doCopy();
-    };
-    document.getElementById("composer").onsubmit = (e) => { e.preventDefault(); const i = document.getElementById("msg-in"); const t = i.value; i.value = ""; sendMessage(current.id, "asesor", t); };
-    renderChatOnly();
+    const sv = document.getElementById("save"); if (sv) sv.onclick = saveDraft; const dpb = document.getElementById("del-prop-bar"); if (dpb) dpb.onclick = () => deleteProp(current.id);
   }
   function markDirty(){ state.dirty = true; state.status = ""; renderStatus(); const sv = document.getElementById("save"); if (sv) sv.disabled = false; }
   function renderStatus(){ const s = document.getElementById("status"); if (s) s.textContent = state.dirty ? "Tienes cambios sin guardar." : state.status; }
 
   function renderClient(){
     const id = state.clientId || state.selected || (state.props[0] && state.props[0].id);
-    const p = state.props.find(x => x.id === id);
+    const p = state.props.find(x => x.id === id) || state.props[0];
     if (!p){
-      app.innerHTML = '<div class="card empty"><h2>No encontramos esta propiedad</h2><p class="muted">Pide a tu asesor de CW que te envíe nuevamente tu enlace personal.</p></div>';
+      renderSidebar(null);
+      setupChatWidget(null);
+      setPageHeader("Portal del propietario", "Sin propiedad vinculada");
+      const emailTxt = (state.user && state.user.email) ? ' (' + esc(state.user.email) + ')' : '';
+      app.innerHTML = '<div class="card empty"><h2>Aún no tienes una propiedad vinculada</h2><p class="muted">No encontramos propiedades asociadas a tu cuenta' + emailTxt + '. Pide a tu asesor de CW que vincule tu correo a tu propiedad.</p>' +
+        (state.mode === "supabase" ? '<p style="margin-top:18px"><button class="btn btn-ghost" id="client-logout">Cerrar sesión</button></p>' : '') + '</div>';
+      const clo = document.getElementById("client-logout");
+      if (clo) clo.onclick = () => state.sb.auth.signOut();
       return;
     }
+
     subscribeMessages(p.id);
+    renderSidebar(p);
+    setupChatWidget(p, "propietario");
+
     const stage = p.etapa || 0;
+    const pct = Math.round(((stage + 1) / STAGES.length) * 100);
+    const STAGE_INFO = [
+      "Estamos realizando el análisis comparativo de mercado y definiendo el precio óptimo de salida.",
+      "Preparamos la documentación legal, sesión fotográfica y material comercial de tu inmueble.",
+      "Tu propiedad ya está publicada y promocionada en portales aliados y redes sociales de CW.",
+      "Coordinamos y filtramos interesados calificados para realizar visitas presenciales.",
+      "Evaluamos ofertas formales, condiciones de pago y términos de cierre contigo.",
+      "Firma de minuta/escritura pública en notaría y entrega final de la propiedad."
+    ];
     const visitas = (p.visitas||[]).slice().sort((a,b)=>(b.fecha||"").localeCompare(a.fecha||""));
+    const totalAsistentes = visitas.reduce((acc, v) => acc + (parseInt(v.personas, 10) || 0), 0);
+    const docs = (p.documentos||[]).filter(x => safeUrl(x.url));
+    const propTitle = esc(p.propiedad || "Tu propiedad");
+    const rawWsp = (p.asesorWhatsapp || "51910818357").replace(/\D/g, "");
+    const phone = rawWsp.length === 9 ? "51" + rawWsp : (rawWsp || "51910818357");
+    const wspText = encodeURIComponent("Hola, soy " + (p.propietario || "propietario") + " (" + (p.propiedad || "mi propiedad") + ") y te escribo desde mi Portal CW.");
+    const wspUrl = "https://wa.me/" + phone + "?text=" + wspText;
+
+    if (state.page === "client-visitas") {
+      setPageHeader("Visitas", propTitle);
+      app.innerHTML =
+        '<div class="page-head"><div><p class="page-kicker">' + propTitle + '</p><h1>Historial de visitas</h1></div>' +
+          '<button type="button" class="btn btn-ghost" id="go-resumen-v">← Volver al resumen</button></div>' +
+        '<div class="stats">' +
+          '<div class="card stat"><div><div class="n">' + visitas.length + '</div><div class="l">Visitas realizadas</div></div><span class="stat-ico orange">' + ICONS.visits + '</span></div>' +
+          '<div class="card stat"><div><div class="n">' + totalAsistentes + '</div><div class="l">Personas que visitaron</div></div><span class="stat-ico navy">' + ICONS.users + '</span></div>' +
+          '<div class="card stat"><div><div class="n" style="font-size:20px">' + (visitas[0] ? fmtDate(visitas[0].fecha) : "—") + '</div><div class="l">Última visita registrada</div></div><span class="stat-ico green">' + ICONS.shield + '</span></div>' +
+        '</div>' +
+        '<div class="card sec">' +
+          '<div class="toolbar-row"><h3 style="margin:0">Detalle de recorridos (' + visitas.length + ')</h3>' +
+            '<input id="visit-filter" type="search" placeholder="Filtrar por comentario o fecha…" aria-label="Filtrar visitas"></div>' +
+          '<div id="visit-list">' +
+          (visitas.length
+            ? visitas.map((v, i) => '<div class="visit" data-vsearch="' + esc((fmtDate(v.fecha) + " " + (v.feedback || "")).toLowerCase()) + '">' +
+                '<span class="visit-num">#' + (visitas.length - i) + '</span>' +
+                '<span class="visit-date">' + fmtDate(v.fecha) + '</span>' +
+                '<span class="pill">' + (v.personas||0) + (v.personas==1?" persona":" personas") + '</span>' +
+                '<span>' + esc(v.feedback || "Sin comentarios") + '</span>' +
+                '<span class="pill ok">Realizada</span></div>').join("")
+            : '<p class="muted">Todavía no hay visitas registradas. Te avisaremos apenas se agende la primera.</p>') +
+          '</div>' +
+        '</div>' +
+        '<p class="footer">CW Inmobiliaria · Última actualización: ' + fmtDT(p.actualizado) + '</p>';
+      document.getElementById("go-resumen-v").onclick = () => { state.page = "client-resumen"; render(); };
+      const vf = document.getElementById("visit-filter");
+      if (vf) vf.addEventListener("input", () => {
+        const q = vf.value.trim().toLowerCase();
+        app.querySelectorAll("#visit-list .visit").forEach(row => {
+          row.style.display = (!q || (row.dataset.vsearch || "").includes(q)) ? "" : "none";
+        });
+      });
+      return;
+    }
+
+    if (state.page === "client-docs") {
+      setPageHeader("Documentos", propTitle);
+      const getHost = (u) => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch(_){ return "Enlace externo"; } };
+      app.innerHTML =
+        '<div class="page-head"><div><p class="page-kicker">' + propTitle + '</p><h1>Documentos de tu propiedad</h1></div>' +
+          '<button type="button" class="btn btn-ghost" id="go-resumen-d">← Volver al resumen</button></div>' +
+        '<div class="stats stats-2">' +
+          '<div class="card stat"><div><div class="n">' + docs.length + '</div><div class="l">Documentos compartidos</div></div><span class="stat-ico orange">' + ICONS.docs + '</span></div>' +
+          '<div class="card stat"><div><div class="n" style="font-size:20px">Acceso seguro</div><div class="l">Enlaces verificados por tu asesor CW</div></div><span class="stat-ico green">' + ICONS.shield + '</span></div>' +
+        '</div>' +
+        '<div class="card sec">' +
+          '<div class="toolbar-row"><h3 style="margin:0">Archivos disponibles</h3>' +
+            '<input id="doc-filter" type="search" placeholder="Buscar documento…" aria-label="Buscar documento"></div>' +
+          (docs.length
+            ? '<div class="doc-grid" id="doc-grid">' + docs.map(x =>
+                '<div class="doc-card" data-dsearch="' + esc((x.nombre || "").toLowerCase()) + '">' +
+                  '<div class="doc-card-top"><span class="doc-card-ico">' + docIco + '</span><div><b>' + esc(x.nombre) + '</b><small>' + esc(getHost(x.url)) + '</small></div></div>' +
+                  '<a class="btn btn-ghost" href="' + esc(x.url) + '" target="_blank" rel="noopener noreferrer" style="width:100%">Abrir documento ↗</a>' +
+                '</div>'
+              ).join("") + '</div>'
+            : '<p class="muted">Tu asesor compartirá aquí tus documentos (Partida registral, contrato, estudio de mercado) cuando estén listos.</p>') +
+        '</div>' +
+        '<div class="card sec" style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">' +
+          '<div><h3>¿Necesitas otro documento?</h3><p class="muted" style="font-size:13.5px;margin:0">Solicítalo directamente a tu asesor por chat o WhatsApp.</p></div>' +
+          '<div style="display:flex;gap:10px;flex-wrap:wrap"><button type="button" class="btn btn-primary" id="open-chat-docs">Escribir en chat</button><a class="btn wsp-btn" style="width:auto" href="' + wspUrl + '" target="_blank" rel="noopener">WhatsApp</a></div>' +
+        '</div>' +
+        '<p class="footer">CW Inmobiliaria · Última actualización: ' + fmtDT(p.actualizado) + '</p>';
+      document.getElementById("go-resumen-d").onclick = () => { state.page = "client-resumen"; render(); };
+      document.getElementById("open-chat-docs").onclick = () => setChatOpen(true);
+      const df = document.getElementById("doc-filter");
+      if (df) df.addEventListener("input", () => {
+        const q = df.value.trim().toLowerCase();
+        app.querySelectorAll("#doc-grid .doc-card").forEach(c => {
+          c.style.display = (!q || (c.dataset.dsearch || "").includes(q)) ? "" : "none";
+        });
+      });
+      return;
+    }
+
+    setPageHeader("Resumen general", propTitle);
     app.innerHTML =
-    '<div class="card hello"><div><h1>Hola, ' + esc(p.propietario || "propietario") + '</h1><p>Aquí puedes ver el avance de la venta de tu propiedad.</p></div>' +
-      '<div class="prop-badge"><span class="ico">' + houseIco + '</span><div><b>' + esc(p.propiedad || "Tu propiedad") + '</b><span>' + esc(p.direccion) + '</span></div></div></div>' +
-    '<div class="client">' +
-      '<section>' +
-        '<div class="card block"><h3>Estado de tu venta <span class="pill">Etapa ' + (stage+1) + ' de ' + STAGES.length + '</span></h3>' + stepperHTML(stage, false) + '</div>' +
-        '<div class="stats"><div class="card stat"><div class="n">' + visitas.length + '</div><div class="l">Visitas realizadas</div></div>' +
-          '<div class="card stat"><div class="n">' + (p.interesados||0) + '</div><div class="l">Interesados activos</div></div>' +
-          '<div class="card stat"><div class="n">' + (p.propuestas||0) + '</div><div class="l">Propuestas recibidas</div></div></div>' +
-        '<div class="card block"><h3>Últimas visitas</h3>' + (visitas.length ? visitas.slice(0,8).map(v => '<div class="visit"><span>' + fmtDate(v.fecha) + '</span><span class="muted">' + (v.personas||0) + (v.personas==1?" persona":" personas") + '</span><span>' + esc(v.feedback) + '</span></div>').join("") : '<p class="muted">Todavía no hay visitas registradas. Te avisaremos apenas se agende la primera.</p>') + '</div>' +
-      '</section>' +
-      '<aside>' +
-        '<div class="card block summary" style="margin-top:18px"><h3>Resumen semanal <span class="date">' + (p.resumenFecha ? "Semana del " + fmtDate(p.resumenFecha) : "") + '</span></h3><p>' + esc(p.resumen || "Tu asesor publicará aquí el resumen de la semana.") + '</p></div>' +
-        '<div class="card block"><h3>Tus documentos</h3>' + ((p.documentos||[]).filter(x => safeUrl(x.url)).length ? p.documentos.filter(x => safeUrl(x.url)).map(x => '<a class="doc-link" href="' + esc(x.url) + '" target="_blank" rel="noopener noreferrer">' + docIco + esc(x.nombre) + '</a>').join("") : '<p class="muted">Tu asesor compartirá aquí tus documentos.</p>') + '</div>' +
-        '<div class="card block"><h3>Mensajes con tu asesor</h3><div class="chat" id="chat"></div>' +
-          '<form class="composer" id="composer"><input id="msg-in" maxlength="1000" placeholder="Escribe tu consulta" aria-label="Mensaje" ' + (state.canWrite === false ? "disabled" : "") + '><button class="btn btn-primary" ' + (state.canWrite === false ? "disabled" : "") + '>Enviar</button></form></div>' +
-      '</aside>' +
-    '</div>' +
-    '<p class="footer">CW Inmobiliaria · Tu propiedad, nuestro compromiso · Última actualización: ' + fmtDT(p.actualizado) + '</p>';
-    document.getElementById("composer").onsubmit = (e) => { e.preventDefault(); const i = document.getElementById("msg-in"); const t = i.value; i.value = ""; sendMessage(p.id, "propietario", t); };
-    renderChatOnly();
+      '<div class="card hello">' +
+        '<div><p class="hello-kicker">Seguimiento en tiempo real</p><h1>Hola, ' + esc(p.propietario || "propietario") + '</h1><p>Aquí puedes revisar el avance de la venta de tu propiedad.</p>' +
+          '<div class="progress-pill"><div class="progress-track"><div class="progress-fill" style="width:' + pct + '%"></div></div><span>' + pct + '% del proceso · Etapa ' + (stage+1) + ' de ' + STAGES.length + '</span></div></div>' +
+        '<div class="prop-badge"><span class="ico">' + houseIco + '</span><div><b>' + propTitle + '</b><span>' + esc(p.direccion || "Lima, Perú") + '</span></div></div>' +
+      '</div>' +
+      '<div class="card sec"><h3>Estado de tu venta <span class="pill accent">Etapa ' + (stage+1) + ' de ' + STAGES.length + ' · ' + STAGES[stage] + '</span></h3>' +
+        stepperHTML(stage, false) +
+        '<div class="stage-desc"><span><b>En esta etapa:</b> ' + STAGE_INFO[stage] + '</span><span class="pill">Siguiente: ' + (STAGES[stage+1] || "Venta cerrada") + '</span></div>' +
+      '</div>' +
+      '<div class="stats stats-4">' +
+        '<div class="card stat"><div><div class="n">' + visitas.length + '</div><div class="l">Visitas realizadas</div></div><span class="stat-ico orange">' + ICONS.visits + '</span></div>' +
+        '<div class="card stat"><div><div class="n">' + totalAsistentes + '</div><div class="l">Personas que visitaron</div></div><span class="stat-ico navy">' + ICONS.users + '</span></div>' +
+        '<div class="card stat"><div><div class="n">' + (p.interesados||0) + '</div><div class="l">Interesados activos</div></div><span class="stat-ico orange">' + ICONS.shield + '</span></div>' +
+        '<div class="card stat"><div><div class="n">' + (p.propuestas||0) + '</div><div class="l">Propuestas recibidas</div></div><span class="stat-ico green">' + ICONS.docs + '</span></div>' +
+      '</div>' +
+      '<div class="client-split">' +
+        '<div>' +
+          '<div class="card sec summary"><h3>Resumen semanal <span class="date">' + (p.resumenFecha ? "Semana del " + fmtDate(p.resumenFecha) : "") + '</span></h3><p>' + esc(p.resumen || "Tu asesor publicará aquí el resumen de la semana.") + '</p></div>' +
+          '<div class="card sec"><h3 style="display:flex;justify-content:space-between;align-items:center">Última visita registrada <button type="button" class="btn btn-ghost" id="btn-see-visits" style="min-height:34px;padding:6px 12px;font-size:12.5px">Ver todas (' + visitas.length + ') →</button></h3>' +
+            (visitas[0]
+              ? '<div class="visit" style="border:0;padding-bottom:0"><span class="visit-num">#' + visitas.length + '</span><span class="visit-date">' + fmtDate(visitas[0].fecha) + '</span><span class="pill">' + (visitas[0].personas||0) + (visitas[0].personas==1?" persona":" personas") + '</span><span>' + esc(visitas[0].feedback || "Sin comentarios") + '</span><span></span></div>'
+              : '<p class="muted" style="font-size:13.5px">Aún no hay visitas registradas. Te avisaremos apenas se agende la primera.</p>') +
+          '</div>' +
+        '</div>' +
+        '<div class="card sec advisor-card">' +
+          '<div class="advisor-head"><span class="advisor-ava">CW</span><div><h3 style="margin:0">Tu asesor CW</h3><span class="muted" style="font-size:13px">Atención personalizada · Lima</span></div></div>' +
+          '<p class="muted" style="font-size:13.5px;margin:0">¿Tienes dudas sobre una visita, propuesta o documento? Escríbenos directo.</p>' +
+          '<div class="advisor-actions"><button type="button" class="btn btn-primary" id="btn-open-chat">Abrir chat</button><a class="btn wsp-btn" href="' + wspUrl + '" target="_blank" rel="noopener">WhatsApp</a></div>' +
+          '<button type="button" class="btn btn-ghost" id="btn-see-docs" style="width:100%">Ver documentos compartidos (' + docs.length + ') →</button>' +
+        '</div>' +
+      '</div>' +
+      '<p class="footer">CW Inmobiliaria · Tu propiedad, nuestro compromiso · Última actualización: ' + fmtDT(p.actualizado) + '</p>';
+
+    document.getElementById("btn-see-visits").onclick = () => { state.page = "client-visitas"; render(); };
+    document.getElementById("btn-see-docs").onclick = () => { state.page = "client-docs"; render(); };
+    document.getElementById("btn-open-chat").onclick = () => setChatOpen(true);
+  }
+
+  function messagesMarkup(ownerView){
+    if (!state.messages.length) {
+      return '<p class="muted" style="font-size:13.5px;text-align:center;margin:auto">' + (ownerView ? "¿Tienes alguna duda? Escríbele a tu asesor." : "Aún no hay mensajes con este propietario. Cuando te escriba desde su portal aparecerá aquí.") + '</p>';
+    }
+    return state.messages.map(m => '<div class="msg ' + (m.de === "asesor" ? "asesor" : "propietario") + '"><b>' + (m.de === "asesor" ? "Asesor CW" : "Propietario") + '</b>' + esc(m.texto) + '<small>' + fmtDT(m.fecha) + '</small></div>').join("");
   }
 
   function renderChatOnly(){
-    const box = document.getElementById("chat"); if (!box) return;
+    const sbBadge = document.getElementById("sb-msg-badge");
+    if (sbBadge) sbBadge.textContent = String(state.messages.length);
+
+    const countEl = document.getElementById("chat-count");
+    if (countEl) {
+      if (state.messages.length > 0 && !state.chatOpen) {
+        countEl.style.display = "grid";
+        countEl.textContent = String(state.messages.length);
+      } else {
+        countEl.style.display = "none";
+      }
+    }
     const ownerView = state.view === "cliente";
-    if (!state.messages.length) { box.innerHTML = '<p class="muted" style="font-size:14px">' + (ownerView ? "¿Tienes alguna duda? Escríbele a tu asesor." : "Aún no hay mensajes.") + '</p>'; return; }
-    box.innerHTML = state.messages.map(m => '<div class="msg ' + (m.de === "asesor" ? "asesor" : "propietario") + '"><b>' + (m.de === "asesor" ? "Asesor CW" : "Propietario") + '</b>' + esc(m.texto) + '<small>' + fmtDT(m.fecha) + '</small></div>').join("");
-    box.scrollTop = box.scrollHeight;
+    const markup = messagesMarkup(ownerView);
+    const box = document.getElementById("chat");
+    if (box) {
+      box.innerHTML = markup;
+      box.scrollTop = box.scrollHeight;
+    }
+    const inbox = document.getElementById("chat-inbox");
+    if (inbox) {
+      inbox.innerHTML = markup;
+      inbox.scrollTop = inbox.scrollHeight;
+    }
+    const inboxCnt = document.getElementById("inbox-msg-count");
+    if (inboxCnt) inboxCnt.textContent = state.messages.length + (state.messages.length === 1 ? " mensaje" : " mensajes");
   }
 
   init();
