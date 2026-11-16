@@ -353,10 +353,9 @@ grant insert, update, delete on public.vitrina_propiedades to authenticated;
 
 insert into public.vitrina_propiedades (id, titulo, distrito, etiqueta, descripcion, imagenes, usar_carrusel, orden, visible)
 values
-  ('vit_la_molina', 'Casa residencial con jardín', 'La Molina', 'EXCLUSIVIDAD', 'Amplios ambientes, jardín interior y seguridad integral. Tasada bajo estudio comparativo de mercado.', '["assets/propiedades/casa-la-molina.jpg"]'::jsonb, false, 1, true),
-  ('vit_san_borja', 'Departamento familiar iluminado', 'San Borja', 'CAPTACIÓN', 'Ubicación estratégica cerca a parques, acabados modernos y compradores previamente verificados.', '["assets/propiedades/post-ig-depa-san-borja.jpg"]'::jsonb, false, 2, true),
-  ('vit_surco', 'Tríplex exclusivo con terraza', 'Surco', 'EN VENTA', 'Área social con vista panorámica y zona de parrillas. Comercializado mediante pauta digital en redes.', '["assets/propiedades/triplex-surco.jpg"]'::jsonb, false, 3, true),
-  ('vit_pueblo_libre', 'Departamento céntrico y moderno', 'Pueblo Libre', 'EN GESTIÓN', 'Conectividad inmediata, edificio seguro y documentación completamente saneada por nuestros abogados.', '["assets/propiedades/depa-pueblo-libre.jpg"]'::jsonb, false, 4, true)
+  ('vit_los_fresnos', 'Casa de un piso con cochera', 'Los Fresnos', 'EN VENTA', 'Fachada amplia, jardín al frente y cochera con portón de madera.', '["assets/propiedades/casa-los-fresnos.webp"]'::jsonb, false, 1, true),
+  ('vit_brisas_de_villa', 'Casa moderna con jardín', 'Brisas de Villa', 'RESERVADA', 'Tres pisos, terraza y jardín de ingreso en condominio cerca a la playa.', '["assets/propiedades/casa-brisas-de-villa.webp"]'::jsonb, false, 2, true),
+  ('vit_los_olivos_local', 'Local comercial con portón', 'Los Olivos', 'EN VENTA', 'Terreno cercado con ingreso vehicular, en zona comercial de Los Olivos.', '["assets/propiedades/local-comercial-los-olivos.webp"]'::jsonb, false, 3, true)
 on conflict (id) do nothing;
 
 -- ------------------------------------------------------------

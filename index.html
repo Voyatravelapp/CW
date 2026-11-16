@@ -800,7 +800,7 @@
   }
   .showcase-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 24px;
   }
   .prop-card {
@@ -856,6 +856,24 @@
     padding: 3px 9px;
     border-radius: 4px;
     text-transform: uppercase;
+  }
+  .prop-status.is-reservada { display: none; }
+  .prop-card.is-reservada .prop-media img { filter: saturate(0.8); }
+  .prop-card.is-reservada .prop-media::after {
+    content: "Reservada";
+    position: absolute;
+    top: 18px;
+    right: -34px;
+    transform: rotate(35deg);
+    background: #D96A2B;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: 5px 40px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.25);
+    pointer-events: none;
   }
   .prop-carousel-btn {
     position: absolute;
@@ -1244,7 +1262,6 @@
 
   @media (max-width: 1120px) {
     .steps-grid { grid-template-columns: repeat(3, 1fr); }
-    .showcase-grid { grid-template-columns: repeat(2, 1fr); }
     .foot { grid-template-columns: 1fr 1fr 1fr; }
   }
 
@@ -1618,66 +1635,50 @@
     </div>
 
     <div class="showcase-grid" id="showcase-grid">
-      <!-- Card 1: La Molina -->
+      <!-- Card 1: Los Fresnos -->
       <article class="prop-card reveal reveal-delay-1">
         <div class="prop-media">
-          <img src="assets/propiedades/casa-la-molina.jpg" alt="Casa residencial en La Molina comercializada por CW" loading="lazy" decoding="async" width="318" height="565">
-          <span class="prop-badge">La Molina</span>
-          <span class="prop-status">Exclusividad</span>
+          <img src="assets/propiedades/casa-los-fresnos.webp" alt="Casa de un piso con cochera en Los Fresnos" loading="lazy" decoding="async" width="1200" height="825">
+          <span class="prop-badge">Los Fresnos</span>
+          <span class="prop-status">EN VENTA</span>
         </div>
         <div class="prop-body">
-          <h3>Casa residencial con jardín</h3>
-          <p>Amplios ambientes, jardín interior y seguridad integral. Tasada bajo estudio comparativo de mercado.</p>
-          <a class="prop-link" href="https://wa.me/51910818357?text=Hola%20CW%2C%20quisiera%20informaci%C3%B3n%20sobre%20propiedades%20en%20La%20Molina" target="_blank" rel="noopener">
-            <span>Consultar por esta zona</span> →
+          <h3>Casa de un piso con cochera</h3>
+          <p>Fachada amplia, jardín al frente y cochera con portón de madera.</p>
+          <a class="prop-link" href="https://wa.me/51910818357?text=Hola%20CW%2C%20quisiera%20informaci%C3%B3n%20sobre%20la%20casa%20en%20Los%20Fresnos" target="_blank" rel="noopener">
+            <span>Consultar por esta casa</span> →
           </a>
         </div>
       </article>
 
-      <!-- Card 2: San Borja -->
-      <article class="prop-card reveal reveal-delay-2">
+      <!-- Card 2: Brisas de Villa · RESERVADA -->
+      <article class="prop-card is-reservada reveal reveal-delay-2">
         <div class="prop-media">
-          <img src="assets/propiedades/post-ig-depa-san-borja.jpg" alt="Departamento familiar en San Borja gestionado por CW" loading="lazy" decoding="async" width="312" height="415">
-          <span class="prop-badge">San Borja</span>
-          <span class="prop-status">Captación</span>
+          <img src="assets/propiedades/casa-brisas-de-villa.webp" alt="Casa moderna con jardín en Brisas de Villa" loading="lazy" decoding="async" width="1200" height="825">
+          <span class="prop-badge">Brisas de Villa</span>
+          <span class="prop-status is-reservada">RESERVADA</span>
         </div>
         <div class="prop-body">
-          <h3>Departamento familiar iluminado</h3>
-          <p>Ubicación estratégica cerca a parques, acabados modernos y compradores previamente verificados.</p>
-          <a class="prop-link" href="https://wa.me/51910818357?text=Hola%20CW%2C%20quisiera%20informaci%C3%B3n%20sobre%20propiedades%20en%20San%20Borja" target="_blank" rel="noopener">
-            <span>Consultar por esta zona</span> →
+          <h3>Casa moderna con jardín</h3>
+          <p>Tres pisos, terraza y jardín de ingreso en condominio cerca a la playa.</p>
+          <a class="prop-link" href="https://wa.me/51910818357?text=Hola%20CW%2C%20vi%20que%20la%20casa%20de%20Brisas%20de%20Villa%20est%C3%A1%20reservada.%20%C2%BFTienen%20otras%20similares%3F" target="_blank" rel="noopener">
+            <span>Ver casas similares</span> →
           </a>
         </div>
       </article>
 
-      <!-- Card 3: Santiago de Surco -->
+      <!-- Card 3: Los Olivos -->
       <article class="prop-card reveal reveal-delay-3">
         <div class="prop-media">
-          <img src="assets/propiedades/triplex-surco.jpg" alt="Tríplex con terraza en Surco gestionado por CW" loading="lazy" decoding="async" width="431" height="419">
-          <span class="prop-badge">Surco</span>
-          <span class="prop-status">En venta</span>
+          <img src="assets/propiedades/local-comercial-los-olivos.webp" alt="Local comercial con portón en Los Olivos" loading="lazy" decoding="async" width="1200" height="825">
+          <span class="prop-badge">Los Olivos</span>
+          <span class="prop-status">EN VENTA</span>
         </div>
         <div class="prop-body">
-          <h3>Tríplex exclusivo con terraza</h3>
-          <p>Área social con vista panorámica y zona de parrillas. Comercializado mediante pauta digital en redes.</p>
-          <a class="prop-link" href="https://wa.me/51910818357?text=Hola%20CW%2C%20quisiera%20informaci%C3%B3n%20sobre%20propiedades%20en%20Surco" target="_blank" rel="noopener">
-            <span>Consultar por esta zona</span> →
-          </a>
-        </div>
-      </article>
-
-      <!-- Card 4: Pueblo Libre -->
-      <article class="prop-card reveal reveal-delay-4">
-        <div class="prop-media">
-          <img src="assets/propiedades/depa-pueblo-libre.jpg" alt="Departamento en Pueblo Libre comercializado por CW" loading="lazy" decoding="async" width="308" height="561">
-          <span class="prop-badge">Pueblo Libre</span>
-          <span class="prop-status">En gestión</span>
-        </div>
-        <div class="prop-body">
-          <h3>Departamento céntrico y moderno</h3>
-          <p>Conectividad inmediata, edificio seguro y documentación completamente saneada por nuestros abogados.</p>
-          <a class="prop-link" href="https://wa.me/51910818357?text=Hola%20CW%2C%20quisiera%20informaci%C3%B3n%20sobre%20propiedades%20en%20Pueblo%20Libre" target="_blank" rel="noopener">
-            <span>Consultar por esta zona</span> →
+          <h3>Local comercial con portón</h3>
+          <p>Terreno cercado con ingreso vehicular, en zona comercial de Los Olivos.</p>
+          <a class="prop-link" href="https://wa.me/51910818357?text=Hola%20CW%2C%20quisiera%20informaci%C3%B3n%20sobre%20el%20local%20comercial%20en%20Los%20Olivos" target="_blank" rel="noopener">
+            <span>Consultar por este local</span> →
           </a>
         </div>
       </article>
@@ -2057,16 +2058,24 @@
         }
         showcaseGrid.innerHTML = rows.map(function (item, idx) {
           var imgs = Array.isArray(item.imagenes) ? item.imagenes.filter(Boolean) : [];
-          if (!imgs.length) imgs = ['assets/propiedades/post-ig-casa-la-molina-jardin.jpg'];
+          if (!imgs.length) imgs = ['assets/propiedades/casa-los-fresnos.webp'];
           var hasCarousel = (item.usar_carrusel && imgs.length > 1) || imgs.length > 1;
+          var isReservada = /reservad[ao]/i.test(item.etiqueta || '');
+          var tituloLower = String(item.titulo || '').toLowerCase();
+          var ctaText = isReservada
+            ? 'Ver casas similares'
+            : (tituloLower.indexOf('local') !== -1 ? 'Consultar por este local' : (tituloLower.indexOf('casa') !== -1 ? 'Consultar por esta casa' : 'Consultar por esta propiedad'));
+          var waText = isReservada
+            ? 'Hola CW, vi que la propiedad' + (item.distrito ? ' de ' + item.distrito : '') + ' está reservada. ¿Tienen otras similares?'
+            : 'Hola CW, quisiera información sobre ' + (item.titulo || 'esta propiedad') + (item.distrito ? ' en ' + item.distrito : '');
           var metaParts = [];
           if (item.precio) metaParts.push('<span>' + escHtml(item.precio) + '</span>');
           if (item.caracteristicas) metaParts.push('<span style="color:var(--cw-gris);font-weight:600">' + escHtml(item.caracteristicas) + '</span>');
-          return '<article class="prop-card" data-vitrina-idx="' + idx + '">' +
+          return '<article class="prop-card' + (isReservada ? ' is-reservada' : '') + '" data-vitrina-idx="' + idx + '">' +
             '<div class="prop-media">' +
               '<img src="' + escHtml(imgs[0]) + '" alt="' + escHtml(item.titulo || 'Propiedad CW') + '" loading="lazy" decoding="async" data-imgs="' + escHtml(JSON.stringify(imgs)) + '" data-cur="0">' +
               (item.distrito ? '<span class="prop-badge">' + escHtml(item.distrito) + '</span>' : '') +
-              (item.etiqueta ? '<span class="prop-status">' + escHtml(item.etiqueta) + '</span>' : '') +
+              (item.etiqueta ? '<span class="prop-status' + (isReservada ? ' is-reservada' : '') + '">' + escHtml(item.etiqueta) + '</span>' : '') +
               (hasCarousel
                 ? '<button type="button" class="prop-carousel-btn prev" aria-label="Imagen anterior">‹</button>' +
                   '<button type="button" class="prop-carousel-btn next" aria-label="Siguiente imagen">›</button>' +
@@ -2079,7 +2088,7 @@
               '<h3>' + escHtml(item.titulo || 'Propiedad CW') + '</h3>' +
               (item.descripcion ? '<p>' + escHtml(item.descripcion) + '</p>' : '') +
               (metaParts.length ? '<div class="prop-meta-line">' + metaParts.join('') + '</div>' : '') +
-              '<a class="prop-link" href="https://wa.me/51910818357?text=' + encodeURIComponent('Hola CW, quisiera información sobre ' + (item.titulo || 'esta propiedad') + (item.distrito ? ' en ' + item.distrito : '')) + '" target="_blank" rel="noopener"><span>Consultar por esta zona</span> →</a>' +
+              '<a class="prop-link" href="https://wa.me/51910818357?text=' + encodeURIComponent(waText) + '" target="_blank" rel="noopener"><span>' + escHtml(ctaText) + '</span> →</a>' +
             '</div>' +
           '</article>';
         }).join('');
