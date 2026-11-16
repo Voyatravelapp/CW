@@ -201,12 +201,21 @@ textarea{ min-height:110px; resize:vertical; }
 .prop-card b{ font-size:15.5px; color:var(--navy); line-height:1.25; }
 .prop-card .prop-meta{ font-size:13px; color:var(--muted); display:flex; justify-content:space-between; align-items:center; gap:8px; }
 .admin-kpis{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:18px; }
+.admin-kpis.cols-4{ grid-template-columns:repeat(4,1fr); }
 .admin-kpi{ padding:16px 18px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
 .admin-kpi b{ font-family:var(--serif); font-size:28px; color:var(--navy); line-height:1; }
 .admin-kpi > div span{ font-size:13px; color:var(--muted); font-weight:600; display:block; margin-top:4px; }
 .admin-row{ display:grid; grid-template-columns:1fr auto auto auto; gap:10px; align-items:center; padding:11px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-2); font-size:13.5px; }
-.admin-prop-row{ display:grid; grid-template-columns:1.2fr 1fr auto; gap:10px; align-items:center; padding:11px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-2); font-size:13.5px; }
-.admin-inline-form{ display:flex; gap:8px; margin-top:14px; }
+.admin-prop-row{ display:grid; grid-template-columns:1.35fr 1.1fr auto auto; gap:12px; align-items:center; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-2); font-size:13.5px; }
+.admin-inline-form{ display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+.admin-toolbar{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; padding:12px 14px; background:var(--surface); border:1px solid var(--line); border-radius:14px; margin-bottom:14px; }
+.admin-toolbar input[type="search"], .admin-toolbar input[type="text"]{ flex:1 1 220px; min-height:38px; font-size:13.5px; }
+.admin-toolbar select{ width:auto; min-width:148px; min-height:38px; font-size:13.5px; }
+.admin-toolbar-meta{ display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px; font-size:13px; color:var(--muted); }
+.admin-avatar{ width:34px; height:34px; border-radius:50%; background:var(--navy); color:#fff; display:grid; place-items:center; font-weight:800; font-size:12px; flex:none; letter-spacing:.03em; }
+.admin-role-box{ padding:12px 14px; border-radius:12px; background:var(--surface-2); border:1px solid var(--line); font-size:13px; color:var(--muted); line-height:1.45; }
+.admin-role-box b{ color:var(--navy); display:block; margin-bottom:4px; }
+.pill.warn{ background:#FFF4EC; color:#B54F17; border-color:#F3D1BA; }
 .add-row{ display:grid; grid-template-columns:150px 96px 1fr auto; gap:10px; align-items:end; }
 .add-row.doc{ grid-template-columns:1fr 1fr auto; }
 .save-bar{ display:flex; align-items:center; gap:12px; justify-content:flex-end; flex-wrap:wrap; padding:14px 20px !important; background:#fff; border:1px solid rgba(17,27,46,.14); box-shadow:0 6px 20px rgba(17,27,46,.06); }
@@ -357,7 +366,7 @@ button.step:hover .dot{ border-color:var(--orange); }
   .sb-collapse-btn{ display:none; }
   .sb-close{ display:grid; place-items:center; }
   .menu-toggle{ display:grid; }
-  .admin-kpis{ grid-template-columns:repeat(2,1fr); }
+  .admin-kpis, .admin-kpis.cols-4{ grid-template-columns:repeat(2,1fr); }
   .admin-kpis > .admin-kpi:last-child:nth-child(odd){ grid-column:1 / -1; }
   .stats{ grid-template-columns:repeat(2,1fr); }
   .stats:not(.stats-2):not(.stats-4) > .stat:last-child:nth-child(odd){ grid-column:1 / -1; }
@@ -377,7 +386,7 @@ button.step:hover .dot{ border-color:var(--orange); }
   .admin-row{ display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; }
   .admin-row > span:first-child{ flex:1 1 100%; }
   .admin-inline-form{ flex-direction:column; }
-  .stats,.stats-2,.stats-4,.admin-kpis{ grid-template-columns:repeat(2,1fr); gap:10px; }
+  .stats,.stats-2,.stats-4,.admin-kpis,.admin-kpis.cols-4{ grid-template-columns:repeat(2,1fr); gap:10px; }
   .stat,.admin-kpi{ padding:14px; gap:8px; }
   .stat .n,.admin-kpi b{ font-size:24px; }
   .stat-ico{ width:36px; height:36px; border-radius:10px; }
@@ -557,7 +566,7 @@ button.step:hover .dot{ border-color:var(--orange); }
     "Firma de minuta/escritura pública en notaría y entrega final de la propiedad."
   ];
   const app = document.getElementById("app");
-  const state = { db:null, sb:null, mode:null, user:null, role:null, canWrite:null, isAdmin:null, isSuperAdmin:false, asesores:[], vitrina:[], vitrinaError:"", vitrinaDraft:null, props:[], loaded:false, error:null, errorDetail:"", selected:null, view:"asesor", page:null, chatOpen:false, clientId:null, messages:[], msgUnsub:null, msgPoll:null, msgFor:null, draft:null, dirty:false, saving:false, status:"", authChecked:false };
+  const state = { db:null, sb:null, mode:null, user:null, role:null, canWrite:null, isAdmin:null, isSuperAdmin:false, asesores:[], vitrina:[], vitrinaError:"", vitrinaDraft:null, props:[], loaded:false, error:null, errorDetail:"", selected:null, view:"asesor", page:null, chatOpen:false, clientId:null, messages:[], msgUnsub:null, msgPoll:null, msgFor:null, draft:null, dirty:false, saving:false, status:"", authChecked:false, editingAccessId:null, lastCreatedUser:null, adminFilters:{ accQ:"", accStatus:"all", accStage:"all", accSort:"name", teamQ:"", teamRol:"all", vitQ:"", vitVis:"all", vitTag:"all", vitDist:"all", crearOnlyPending:false } };
 
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const fmtDate = (d) => { if(!d) return ""; const t = new Date(d + (d.length===10 ? "T12:00:00" : "")); return isNaN(t) ? d : t.toLocaleDateString("es-PE",{day:"2-digit",month:"short",year:"numeric"}); };
@@ -1324,8 +1333,13 @@ button.step:hover .dot{ border-color:var(--orange); }
         if (sel) sel.onchange = () => {
           if (state.dirty && !confirm("Tienes cambios sin guardar. ¿Deseas descartarlos?")) { sel.value = state.selected; return; }
           state.selected = sel.value; state.draft = null; state.dirty = false; state.status = "";
-          if (state.view !== "asesor") state.view = "asesor";
-          if (!state.page || state.page.startsWith("admin-")) state.page = "asesor-general";
+          if (state.isSuperAdmin) {
+            state.view = "admin";
+            if (!state.page || !state.page.startsWith("admin-")) state.page = "admin-accesos";
+          } else {
+            if (state.view !== "asesor") state.view = "asesor";
+            if (!state.page || state.page.startsWith("admin-")) state.page = "asesor-general";
+          }
           render();
         };
       } else {
@@ -1346,24 +1360,27 @@ button.step:hover .dot{ border-color:var(--orange); }
         html += '<div class="sb-group">Administración</div>' +
           adminItems.map(it => '<button type="button" class="sb-link" title="' + it.label + '" data-page="' + it.id + '" aria-current="' + (state.page === it.id ? "page" : "false") + '">' +
             it.icon + '<span>' + it.label + '</span>' + (it.badge !== undefined ? '<span class="sb-badge">' + it.badge + '</span>' : '') + '</button>').join("");
+        navEl.innerHTML = html;
+        footEl.innerHTML = "";
+      } else {
+        const asesorItems = [
+          { id:"asesor-lista", label:"Propiedades", icon:ICONS.list, badge:state.props.length },
+          { id:"asesor-general", label:"General y Etapa", icon:ICONS.edit },
+          { id:"asesor-visitas", label:"Visitas", icon:ICONS.visits, badge:vCount },
+          { id:"asesor-docs", label:"Documentos", icon:ICONS.docs, badge:docCount },
+          { id:"asesor-mensajes", label:"Mensajes", icon:ICONS.chat, badge:state.messages.length, badgeId:"sb-msg-badge" },
+          { id:"asesor-link", label:"Enlace de acceso", icon:ICONS.link }
+        ];
+        html += '<div class="sb-group">Gestión de inmuebles</div>' +
+          asesorItems.map(it => '<button type="button" class="sb-link" title="' + it.label + '" data-page="' + it.id + '" aria-current="' + (state.page === it.id ? "page" : "false") + '">' +
+            it.icon + '<span>' + it.label + '</span>' + (it.badge !== undefined ? '<span class="sb-badge"' + (it.badgeId ? ' id="' + it.badgeId + '"' : '') + '>' + it.badge + '</span>' : '') + '</button>').join("");
+        navEl.innerHTML = html;
+        footEl.innerHTML = (state.isAdmin && state.canWrite !== false)
+          ? '<button type="button" class="btn btn-primary" id="sb-new-prop" title="Nueva propiedad"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span class="sb-btn-lbl">Nueva propiedad</span></button>'
+          : '';
+        const sbNew = document.getElementById("sb-new-prop");
+        if (sbNew) sbNew.onclick = () => { closeDrawer(); createProp(false); };
       }
-      const asesorItems = [
-        { id:"asesor-lista", label:"Propiedades", icon:ICONS.list, badge:state.props.length },
-        { id:"asesor-general", label:"General y Etapa", icon:ICONS.edit },
-        { id:"asesor-visitas", label:"Visitas", icon:ICONS.visits, badge:vCount },
-        { id:"asesor-docs", label:"Documentos", icon:ICONS.docs, badge:docCount },
-        { id:"asesor-mensajes", label:"Mensajes", icon:ICONS.chat, badge:state.messages.length, badgeId:"sb-msg-badge" },
-        { id:"asesor-link", label:"Enlace de acceso", icon:ICONS.link }
-      ];
-      html += '<div class="sb-group">Gestión de inmuebles</div>' +
-        asesorItems.map(it => '<button type="button" class="sb-link" title="' + it.label + '" data-page="' + it.id + '" aria-current="' + (state.page === it.id ? "page" : "false") + '">' +
-          it.icon + '<span>' + it.label + '</span>' + (it.badge !== undefined ? '<span class="sb-badge"' + (it.badgeId ? ' id="' + it.badgeId + '"' : '') + '>' + it.badge + '</span>' : '') + '</button>').join("");
-      navEl.innerHTML = html;
-      footEl.innerHTML = (state.isAdmin && state.canWrite !== false)
-        ? '<button type="button" class="btn btn-primary" id="sb-new-prop" title="Nueva propiedad"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span class="sb-btn-lbl">Nueva propiedad</span></button>'
-        : '';
-      const sbNew = document.getElementById("sb-new-prop");
-      if (sbNew) sbNew.onclick = () => { closeDrawer(); createProp(false); };
     }
 
     navEl.querySelectorAll("[data-page]").forEach(btn => {
@@ -1444,7 +1461,7 @@ button.step:hover .dot{ border-color:var(--orange); }
         state.view = "cliente";
       } else if (!state.isSuperAdmin) {
         state.view = "asesor";
-      } else if (state.view !== "admin" && state.view !== "asesor") {
+      } else {
         state.view = "admin";
       }
     }
@@ -1454,7 +1471,7 @@ button.step:hover .dot{ border-color:var(--orange); }
     if (state.view === "admin" && (!state.page || !state.page.startsWith("admin-"))) state.page = "admin-accesos";
 
     if (brandSub) {
-      brandSub.textContent = state.view === "admin" ? "Administración" : state.view === "asesor" ? "Panel del asesor" : "Portal del propietario";
+      brandSub.textContent = (state.view === "admin" || state.view === "asesor") ? "Panel del asesor" : "Portal del propietario";
     }
 
     if (state.error && !state.props.length) { renderSidebar(null); setupChatWidget(null); app.innerHTML = statusScreen(); return; }
@@ -1477,76 +1494,127 @@ button.step:hover .dot{ border-color:var(--orange); }
     setupChatWidget(null);
 
     const myEmail = (state.user && state.user.email || "").toLowerCase();
+    const af = state.adminFilters;
     const withAccessCount = state.props.filter(p => !!(p.propietarioEmail || "").trim()).length;
-    const propOptions = '<option value="">— Vincular después —</option>' +
-      state.props.map(p => '<option value="' + esc(p.id) + '">' + esc(p.propiedad || "Propiedad sin nombre") + (p.propietario ? ' (' + esc(p.propietario) + ')' : '') + '</option>').join("");
-
-    const asesoresRows = state.asesores.length
-      ? state.asesores.map(a => {
-          const isMe = (a.email || "").toLowerCase() === myEmail;
-          return '<div class="admin-row">' +
-            '<span><b>' + esc(a.email) + '</b>' + (isMe ? ' <span class="pill accent">Tú</span>' : '') + '</span>' +
-            '<span class="pill ' + (a.rol === "admin" ? "accent" : "") + '">' + esc(a.rol || "asesor") + '</span>' +
-            (isMe ? '<span></span><span></span>' :
-              '<button class="btn btn-ghost" data-toggle-rol="' + esc(a.email) + '" data-cur="' + esc(a.rol || "asesor") + '" style="padding:6px 12px;font-size:12.5px;min-height:36px">' + (a.rol === "admin" ? "Pasar a asesor" : "Hacer admin") + '</button>' +
-              '<button class="btn btn-danger" data-del-asesor="' + esc(a.email) + '">Quitar</button>') +
-          '</div>';
-        }).join("")
-      : '<p class="muted" style="font-size:14px">No se pudo cargar la lista de asesores (ejecuta el SQL actualizado).</p>';
-
-    const propAccessRows = state.props.length
-      ? state.props.map(p => '<div class="admin-prop-row">' +
-          '<span><b>' + esc(p.propiedad || "Propiedad sin nombre") + '</b><br><small class="muted">' + esc(p.propietario || "Sin propietario") + '</small></span>' +
-          '<span>' + (p.propietarioEmail ? esc(p.propietarioEmail) : '<span class="muted">Sin correo asignado</span>') + '</span>' +
-          '<span class="pill ' + (p.propietarioEmail ? 'ok' : '') + '">' + (p.propietarioEmail ? 'Con acceso' : 'Pendiente') + '</span>' +
-        '</div>').join("")
-      : '<p class="muted" style="font-size:14px">Aún no hay propiedades creadas.</p>';
+    const pendingProps = state.props.filter(p => !(p.propietarioEmail || "").trim());
 
     if (state.page === "admin-crear") {
       setPageHeader("Crear usuario", "Administración · Asesores y propietarios");
+      const roleHelp = {
+        propietario: "<b>Propietario (cliente):</b> Solo accede al Portal del propietario de su inmueble vinculado para ver etapa, visitas, documentos y mensajes.",
+        asesor: "<b>Asesor inmobiliario:</b> Accede al Panel del asesor y Gestión de inmuebles para actualizar etapas, registrar visitas, subir documentos y responder mensajes.",
+        admin: "<b>Administrador:</b> Acceso completo a Administración (accesos por inmueble, creación de usuarios, equipo asesor/admin y Vitrina Web)."
+      };
+      const buildPropOptions = (q, onlyPending) => {
+        const ql = (q || "").trim().toLowerCase();
+        const list = state.props.filter(p => {
+          if (onlyPending && (p.propietarioEmail || "").trim()) return false;
+          if (!ql) return true;
+          return (p.propiedad || "").toLowerCase().includes(ql) || (p.propietario || "").toLowerCase().includes(ql) || (p.direccion || "").toLowerCase().includes(ql);
+        });
+        return '<option value="">— Vincular después —</option>' +
+          list.map(p => '<option value="' + esc(p.id) + '">' + esc(p.propiedad || "Propiedad sin nombre") + (p.propietario ? ' (' + esc(p.propietario) + ')' : '') + (!(p.propietarioEmail || "").trim() ? ' · Sin acceso' : '') + '</option>').join("");
+      };
+      const lastU = state.lastCreatedUser;
       app.innerHTML =
-        '<div class="page-head"><div><p class="page-kicker">Administración</p><h1>Crear cuenta de acceso</h1></div></div>' +
-        '<div class="card sec" style="max-width:680px">' +
-          '<h3>Nuevo usuario (Asesor o Propietario)</h3>' +
-          '<p class="hint">Crea la cuenta con correo, contraseña y rol. El usuario podrá iniciar sesión de inmediato.</p>' +
-          '<form id="adm-create-form" style="display:grid;gap:14px">' +
-            '<div><label for="adm-email">Correo electrónico</label><input id="adm-email" type="email" placeholder="usuario@correo.com" required></div>' +
-            '<div><label for="adm-pass">Contraseña (mín. 6 caracteres)</label>' +
-              '<div style="display:flex;gap:8px"><input id="adm-pass" type="text" minlength="6" placeholder="Ej. Cw2026#Lima" required><button type="button" class="btn btn-ghost" id="adm-gen">Generar</button></div></div>' +
-            '<div class="grid2">' +
-              '<div><label for="adm-rol">Rol del usuario</label>' +
-                '<select id="adm-rol"><option value="propietario">Propietario (cliente)</option><option value="asesor">Asesor inmobiliario</option><option value="admin">Administrador</option></select></div>' +
-              '<div id="adm-prop-wrap"><label for="adm-prop-search">Vincular a propiedad</label>' +
-                '<input id="adm-prop-search" type="search" placeholder="Buscar propiedad o propietario…" style="margin-bottom:8px;min-height:38px;font-size:13.5px">' +
-                '<select id="adm-prop">' + propOptions + '</select></div>' +
+        '<div class="page-head"><div><p class="page-kicker">Administración</p><h1>Crear cuenta de acceso</h1></div>' +
+          '<button type="button" class="btn btn-ghost" id="adm-go-accesos">Ver accesos por inmueble →</button>' +
+        '</div>' +
+        '<div class="client-split">' +
+          '<div class="card sec">' +
+            '<h3>Nuevo usuario (Asesor, Admin o Propietario)</h3>' +
+            '<p class="hint">Crea la cuenta con correo, contraseña y rol. El usuario podrá iniciar sesión de inmediato en el portal.</p>' +
+            '<form id="adm-create-form" style="display:grid;gap:14px">' +
+              '<div><label for="adm-email">Correo electrónico</label><input id="adm-email" type="email" placeholder="usuario@correo.com" required></div>' +
+              '<div><label for="adm-pass">Contraseña (mín. 6 caracteres)</label>' +
+                '<div style="display:flex;gap:8px;flex-wrap:wrap"><input id="adm-pass" type="text" minlength="6" placeholder="Ej. Cw2026#Lima" required style="flex:1;min-width:180px"><button type="button" class="btn btn-ghost" id="adm-gen">Generar segura</button></div></div>' +
+              '<div class="grid2">' +
+                '<div><label for="adm-rol">Rol del usuario</label>' +
+                  '<select id="adm-rol"><option value="propietario">Propietario (cliente)</option><option value="asesor">Asesor inmobiliario</option><option value="admin">Administrador</option></select></div>' +
+                '<div id="adm-prop-wrap"><label for="adm-prop-search">Vincular a propiedad</label>' +
+                  '<input id="adm-prop-search" type="search" placeholder="Buscar propiedad o propietario…" style="margin-bottom:8px;min-height:38px;font-size:13.5px">' +
+                  '<select id="adm-prop">' + buildPropOptions("", af.crearOnlyPending) + '</select>' +
+                  '<label style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer"><input id="adm-only-pending" type="checkbox"' + (af.crearOnlyPending ? ' checked' : '') + ' style="width:auto;min-height:auto"> Mostrar solo propiedades sin acceso (' + pendingProps.length + ')</label>' +
+                '</div>' +
+              '</div>' +
+              '<div id="adm-role-help" class="admin-role-box">' + roleHelp.propietario + '</div>' +
+              '<button class="btn btn-primary" id="adm-submit">Crear usuario</button>' +
+              '<div id="adm-msg" class="status" role="alert"></div>' +
+            '</form>' +
+            (lastU ? '<div style="margin-top:16px;padding:14px;border-radius:12px;background:#F1F8F4;border:1px solid #C6E6D2;display:grid;gap:10px">' +
+              '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b style="color:var(--green);font-size:14px">Último acceso generado</b><span class="pill ok">' + esc(lastU.rol) + '</span></div>' +
+              '<div style="font-size:13px;color:var(--navy);line-height:1.5">Correo: <b>' + esc(lastU.email) + '</b><br>Contraseña: <code>' + esc(lastU.password) + '</code></div>' +
+              '<div class="btn-pair"><button type="button" class="btn btn-ghost" id="adm-copy-cred">Copiar credenciales</button>' +
+              '<a class="btn btn-primary" target="_blank" rel="noopener" href="https://wa.me/?text=' + encodeURIComponent("Hola, ya tienes acceso al Portal CW Inmobiliaria.\nIngresa en: " + location.origin + location.pathname + "\nCorreo: " + lastU.email + "\nContraseña: " + lastU.password) + '">Enviar por WhatsApp ↗</a></div>' +
+            '</div>' : '') +
+          '</div>' +
+          '<div style="display:grid;gap:18px;align-content:start">' +
+            '<div class="card sec">' +
+              '<h3>Propiedades pendientes de acceso (' + pendingProps.length + ')</h3>' +
+              '<p class="hint">Inmuebles que aún no tienen un correo de propietario vinculado.</p>' +
+              '<div class="row-list">' +
+                (pendingProps.length
+                  ? pendingProps.slice(0, 6).map(p =>
+                      '<div class="admin-row" style="grid-template-columns:1fr auto">' +
+                        '<span><b>' + esc(p.propiedad || "Propiedad sin nombre") + '</b><br><small class="muted">' + esc(p.propietario || "Sin propietario") + (p.direccion ? ' · ' + esc(p.direccion) : '') + '</small></span>' +
+                        '<button type="button" class="btn btn-ghost" style="padding:6px 10px;min-height:34px;font-size:12.5px" data-pick-pending="' + esc(p.id) + '">Vincular →</button>' +
+                      '</div>'
+                    ).join("")
+                  : '<p class="muted" style="font-size:13.5px">¡Excelente! Todas las propiedades tienen un correo de propietario asignado.</p>') +
+              '</div>' +
             '</div>' +
-            '<button class="btn btn-primary" id="adm-submit">Crear usuario</button>' +
-            '<div id="adm-msg" class="status" role="alert"></div>' +
-          '</form>' +
+            '<div class="card sec">' +
+              '<h3>Resumen de permisos</h3>' +
+              '<div style="display:grid;gap:10px">' +
+                '<div class="admin-role-box">' + roleHelp.propietario + '</div>' +
+                '<div class="admin-role-box">' + roleHelp.asesor + '</div>' +
+                '<div class="admin-role-box">' + roleHelp.admin + '</div>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
         '</div>';
 
+      const goAcc = document.getElementById("adm-go-accesos");
+      if (goAcc) goAcc.onclick = () => { state.page = "admin-accesos"; render(); };
       document.getElementById("adm-gen").onclick = () => {
         const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
         let pass = "Cw-";
-        for (let i = 0; i < 7; i++) pass += chars[Math.floor(Math.random() * chars.length)];
+        for (let i = 0; i < 8; i++) pass += chars[Math.floor(Math.random() * chars.length)];
         document.getElementById("adm-pass").value = pass;
       };
       const rolSel = document.getElementById("adm-rol");
       const propWrap = document.getElementById("adm-prop-wrap");
       const propSel = document.getElementById("adm-prop");
       const propSearch = document.getElementById("adm-prop-search");
-      rolSel.onchange = () => { propWrap.style.display = (rolSel.value === "propietario") ? "" : "none"; };
-      if (propSearch && propSel) {
-        propSearch.addEventListener("input", () => {
-          const q = propSearch.value.trim().toLowerCase();
-          const curVal = propSel.value;
-          const filtered = state.props.filter(p =>
-            !q || (p.propiedad || "").toLowerCase().includes(q) || (p.propietario || "").toLowerCase().includes(q) || (p.direccion || "").toLowerCase().includes(q)
-          );
-          propSel.innerHTML = '<option value="">— Vincular después —</option>' +
-            filtered.map(p => '<option value="' + esc(p.id) + '">' + esc(p.propiedad || "Propiedad sin nombre") + (p.propietario ? ' (' + esc(p.propietario) + ')' : '') + '</option>').join("");
-          if (curVal && filtered.some(p => p.id === curVal)) propSel.value = curVal;
-        });
+      const onlyPendCb = document.getElementById("adm-only-pending");
+      const roleHelpEl = document.getElementById("adm-role-help");
+      rolSel.onchange = () => {
+        propWrap.style.display = (rolSel.value === "propietario") ? "" : "none";
+        if (roleHelpEl) roleHelpEl.innerHTML = roleHelp[rolSel.value] || "";
+      };
+      const refreshPropSel = () => {
+        const curVal = propSel.value;
+        propSel.innerHTML = buildPropOptions(propSearch ? propSearch.value : "", af.crearOnlyPending);
+        if (curVal && Array.from(propSel.options).some(o => o.value === curVal)) propSel.value = curVal;
+      };
+      if (propSearch && propSel) propSearch.addEventListener("input", refreshPropSel);
+      if (onlyPendCb) onlyPendCb.onchange = () => { af.crearOnlyPending = onlyPendCb.checked; refreshPropSel(); };
+      app.querySelectorAll("[data-pick-pending]").forEach(b => {
+        b.onclick = () => {
+          rolSel.value = "propietario";
+          rolSel.onchange();
+          if (propSearch) propSearch.value = "";
+          refreshPropSel();
+          propSel.value = b.dataset.pickPending;
+          document.getElementById("adm-email").focus();
+        };
+      });
+      const copyCredBtn = document.getElementById("adm-copy-cred");
+      if (copyCredBtn && lastU) {
+        copyCredBtn.onclick = async () => {
+          const txt = "Portal CW Inmobiliaria: " + location.origin + location.pathname + "\nCorreo: " + lastU.email + "\nContraseña: " + lastU.password;
+          try { await navigator.clipboard.writeText(txt); copyCredBtn.textContent = "✓ Copiado"; setTimeout(() => { copyCredBtn.textContent = "Copiar credenciales"; }, 1800); } catch(e){}
+        };
       }
       document.getElementById("adm-create-form").onsubmit = async (e) => {
         e.preventDefault();
@@ -1580,13 +1648,21 @@ button.step:hover .dot{ border-color:var(--orange); }
               if (pErr) throw pErr;
             }
           }
-          msgEl.innerHTML = '<span style="color:var(--green);font-weight:700">✓ Usuario creado:</span> ' + esc(email) + ' (' + esc(rol) + ').' +
-            (needsConfirm && !createdDirect
-              ? '<br><small class="muted">Nota: "Confirm email" está activo en Supabase; el usuario debe confirmar su correo (o desactiva <b>Confirm email</b> en Authentication → Providers → Email para que entre al instante).</small>'
-              : ' Ya puede iniciar sesión con esa contraseña.');
-          document.getElementById("adm-create-form").reset();
-          propWrap.style.display = "";
-          if (rol === "asesor" || rol === "admin") loadAsesores();
+          state.lastCreatedUser = { email, password, rol };
+          if (rol === "asesor" || rol === "admin") await loadAsesores();
+          else if (propiedadId) {
+            const targetP = state.props.find(x => x.id === propiedadId);
+            if (targetP) targetP.propietarioEmail = email;
+          }
+          render();
+          const newMsgEl = document.getElementById("adm-msg");
+          if (newMsgEl) {
+            newMsgEl.innerHTML = '<span style="color:var(--green);font-weight:700">✓ Usuario creado:</span> ' + esc(email) + ' (' + esc(rol) + ').' +
+              (needsConfirm && !createdDirect
+                ? '<br><small class="muted">Nota: "Confirm email" está activo en Supabase; el usuario debe confirmar su correo (o desactiva <b>Confirm email</b> en Authentication → Providers → Email para que entre al instante).</small>'
+                : ' Ya puede iniciar sesión con esa contraseña.');
+          }
+          return;
         } catch (err) {
           const detail = (err && err.message) || String(err);
           msgEl.innerHTML = '<span style="color:#C2412D;font-weight:700">Error al crear usuario:</span> ' + esc(detail);
@@ -1598,84 +1674,196 @@ button.step:hover .dot{ border-color:var(--orange); }
 
     if (state.page === "admin-equipo") {
       setPageHeader("Equipo Asesor / Admin", "Administración · Permisos del equipo");
+      const adminsCount = state.asesores.filter(a => a.rol === "admin").length;
+      const asesoresCount = state.asesores.length - adminsCount;
+      const filterTeam = () => {
+        const q = (af.teamQ || "").trim().toLowerCase();
+        return state.asesores.filter(a => {
+          const r = a.rol || "asesor";
+          if (af.teamRol !== "all" && r !== af.teamRol) return false;
+          if (q && !(a.email || "").toLowerCase().includes(q)) return false;
+          return true;
+        });
+      };
+      const renderTeamRows = (list) => {
+        if (!state.asesores.length) return '<p class="muted" style="font-size:14px">No se pudo cargar la lista de asesores (ejecuta el SQL actualizado).</p>';
+        if (!list.length) return '<p class="muted" style="font-size:14px">No hay miembros que coincidan con el filtro.</p>';
+        return list.map(a => {
+          const em = a.email || "";
+          const isMe = em.toLowerCase() === myEmail;
+          const ini = (em.split("@")[0] || "CW").slice(0, 2).toUpperCase();
+          const r = a.rol || "asesor";
+          return '<div class="admin-row" style="grid-template-columns:auto 1fr auto auto auto">' +
+            '<span class="admin-avatar">' + esc(ini) + '</span>' +
+            '<span><b>' + esc(em) + '</b>' + (isMe ? ' <span class="pill accent">Tú</span>' : '') +
+              (a.creado_en ? '<br><small class="muted">Alta: ' + esc(fmtDate(a.creado_en)) + '</small>' : '') + '</span>' +
+            '<span class="pill ' + (r === "admin" ? "accent" : "") + '">' + (r === "admin" ? "Administrador" : "Asesor") + '</span>' +
+            (isMe ? '<span></span><span></span>' :
+              '<button class="btn btn-ghost" data-toggle-rol="' + esc(em) + '" data-cur="' + esc(r) + '" style="padding:6px 12px;font-size:12.5px;min-height:36px">' + (r === "admin" ? "Pasar a asesor" : "Hacer admin") + '</button>' +
+              '<button class="btn btn-danger" data-del-asesor="' + esc(em) + '">Quitar</button>') +
+          '</div>';
+        }).join("");
+      };
+      const filteredTeam = filterTeam();
+
       app.innerHTML =
         '<div class="page-head"><div><p class="page-kicker">Administración</p><h1>Equipo Asesor / Admin</h1></div></div>' +
+        '<div class="admin-kpis">' +
+          '<div class="card admin-kpi"><div><b>' + state.asesores.length + '</b><span>Total en equipo</span></div><span class="stat-ico navy">' + ICONS.users + '</span></div>' +
+          '<div class="card admin-kpi"><div><b>' + adminsCount + '</b><span>Administradores</span></div><span class="stat-ico orange">' + ICONS.shield + '</span></div>' +
+          '<div class="card admin-kpi"><div><b>' + asesoresCount + '</b><span>Asesores inmobiliarios</span></div><span class="stat-ico green">' + ICONS.home + '</span></div>' +
+        '</div>' +
         '<div class="card sec">' +
           '<h3>Miembros autorizados</h3>' +
-          '<p class="hint">Solo los correos de esta lista pueden entrar al Panel del asesor. Los administradores también ven la sección de Administración.</p>' +
-          '<div class="row-list">' + asesoresRows + '</div>' +
+          '<p class="hint">Solo los correos de esta lista pueden entrar al Panel del asesor. Los administradores gestionan accesos, usuarios, equipo y vitrina.</p>' +
+          '<div class="admin-toolbar">' +
+            '<input id="team-q" type="search" value="' + esc(af.teamQ) + '" placeholder="Buscar por correo…">' +
+            '<select id="team-rol"><option value="all">Todos los roles</option><option value="admin"' + (af.teamRol === "admin" ? ' selected' : '') + '>Administradores</option><option value="asesor"' + (af.teamRol === "asesor" ? ' selected' : '') + '>Asesores</option></select>' +
+            '<button type="button" class="btn btn-ghost" id="team-clear" style="min-height:38px;padding:6px 12px;font-size:13px">Limpiar</button>' +
+          '</div>' +
+          '<div class="admin-toolbar-meta"><span id="team-count">Mostrando ' + filteredTeam.length + ' de ' + state.asesores.length + ' miembros</span></div>' +
+          '<div class="row-list" id="team-list">' + renderTeamRows(filteredTeam) + '</div>' +
           '<form id="adm-add-asesor" class="admin-inline-form">' +
-            '<input id="adm-ex-email" type="email" placeholder="Autorizar correo ya existente en Auth" required>' +
-            '<button class="btn btn-primary">+ Autorizar asesor</button>' +
+            '<input id="adm-ex-email" type="email" placeholder="Autorizar correo ya existente en Auth" required style="flex:1;min-width:220px">' +
+            '<select id="adm-ex-rol" style="width:auto;min-width:150px"><option value="asesor">Asesor</option><option value="admin">Administrador</option></select>' +
+            '<button class="btn btn-primary">+ Autorizar miembro</button>' +
           '</form>' +
         '</div>';
+
+      const bindTeamRowActions = () => {
+        app.querySelectorAll("[data-toggle-rol]").forEach(btn => {
+          btn.onclick = async () => {
+            const email = btn.dataset.toggleRol;
+            const nextRol = btn.dataset.cur === "admin" ? "asesor" : "admin";
+            const { error } = await state.sb.from("asesores").update({ rol: nextRol }).eq("email", email);
+            if (error) alert(error.message); else loadAsesores();
+          };
+        });
+        app.querySelectorAll("[data-del-asesor]").forEach(btn => {
+          btn.onclick = async () => {
+            const email = btn.dataset.delAsesor;
+            if (!confirm("¿Quitar acceso de asesor a " + email + "?")) return;
+            const { error } = await state.sb.from("asesores").delete().eq("email", email);
+            if (error) alert(error.message); else loadAsesores();
+          };
+        });
+      };
+      const updateTeamList = () => {
+        const list = filterTeam();
+        const listEl = document.getElementById("team-list");
+        const countEl = document.getElementById("team-count");
+        if (listEl) listEl.innerHTML = renderTeamRows(list);
+        if (countEl) countEl.textContent = "Mostrando " + list.length + " de " + state.asesores.length + " miembros";
+        bindTeamRowActions();
+      };
+      bindTeamRowActions();
+      document.getElementById("team-q").addEventListener("input", (e) => { af.teamQ = e.target.value; updateTeamList(); });
+      document.getElementById("team-rol").onchange = (e) => { af.teamRol = e.target.value; updateTeamList(); };
+      document.getElementById("team-clear").onclick = () => {
+        af.teamQ = ""; af.teamRol = "all";
+        document.getElementById("team-q").value = "";
+        document.getElementById("team-rol").value = "all";
+        updateTeamList();
+      };
 
       document.getElementById("adm-add-asesor").onsubmit = async (e) => {
         e.preventDefault();
         const email = document.getElementById("adm-ex-email").value.trim().toLowerCase();
+        const rol = document.getElementById("adm-ex-rol").value || "asesor";
         if (!email || !state.sb) return;
-        const { error } = await state.sb.from("asesores").upsert({ email, rol: "asesor" }, { onConflict: "email" });
+        const { error } = await state.sb.from("asesores").upsert({ email, rol }, { onConflict: "email" });
         if (error) { alert("Error al autorizar: " + error.message); return; }
         document.getElementById("adm-ex-email").value = "";
         loadAsesores();
       };
-      app.querySelectorAll("[data-toggle-rol]").forEach(btn => {
-        btn.onclick = async () => {
-          const email = btn.dataset.toggleRol;
-          const nextRol = btn.dataset.cur === "admin" ? "asesor" : "admin";
-          const { error } = await state.sb.from("asesores").update({ rol: nextRol }).eq("email", email);
-          if (error) alert(error.message); else loadAsesores();
-        };
-      });
-      app.querySelectorAll("[data-del-asesor]").forEach(btn => {
-        btn.onclick = async () => {
-          const email = btn.dataset.delAsesor;
-          if (!confirm("¿Quitar acceso de asesor a " + email + "?")) return;
-          const { error } = await state.sb.from("asesores").delete().eq("email", email);
-          if (error) alert(error.message); else loadAsesores();
-        };
-      });
       return;
     }
 
     if (state.page === "admin-vitrina") {
       setPageHeader("Vitrina Web", "Propiedades gestionadas con la estrategia CW");
       if (!state.vitrinaDraft) {
-        state.vitrinaDraft = { id:"", titulo:"", distrito:"La Molina", etiqueta:"EXCLUSIVIDAD", precio:"", caracteristicas:"", descripcion:"", imagenes:[], usar_carrusel:true, orden:state.vitrina.length + 1, visible:true };
+        state.vitrinaDraft = { id:"", titulo:"", distrito:"Los Fresnos", etiqueta:"EN VENTA", precio:"", caracteristicas:"", descripcion:"", imagenes:[], usar_carrusel:true, orden:state.vitrina.length + 1, visible:true };
       }
       const vd = state.vitrinaDraft;
       const isEditing = !!vd.id;
       const visibleCount = state.vitrina.filter(v => v.visible !== false).length;
+      const hiddenCount = state.vitrina.length - visibleCount;
       const carouselCount = state.vitrina.filter(v => v.usar_carrusel || (Array.isArray(v.imagenes) && v.imagenes.length > 1)).length;
+      const baseTags = ["EN VENTA","RESERVADA","EXCLUSIVIDAD","DESTACADA","CAPTACIÓN","EN GESTIÓN","OPORTUNIDAD","VENDIDA","PRÓXIMAMENTE"];
+      const allTags = Array.from(new Set(baseTags.concat(state.vitrina.map(v => v.etiqueta).filter(Boolean)).concat(vd.etiqueta ? [vd.etiqueta] : [])));
+      const allDists = Array.from(new Set(state.vitrina.map(v => (v.distrito || "").trim()).filter(Boolean))).sort();
+
+      const filterVitrina = () => {
+        const q = (af.vitQ || "").trim().toLowerCase();
+        return state.vitrina.filter(item => {
+          const isVis = item.visible !== false;
+          if (af.vitVis === "visible" && !isVis) return false;
+          if (af.vitVis === "hidden" && isVis) return false;
+          if (af.vitTag !== "all" && (item.etiqueta || "") !== af.vitTag) return false;
+          if (af.vitDist !== "all" && (item.distrito || "").trim() !== af.vitDist) return false;
+          if (q && !(item.titulo || "").toLowerCase().includes(q) && !(item.distrito || "").toLowerCase().includes(q) && !(item.descripcion || "").toLowerCase().includes(q)) return false;
+          return true;
+        });
+      };
+
+      const renderVitrinaRows = (list) => {
+        if (!state.vitrina.length) {
+          return '<div style="display:grid;gap:12px"><p class="muted" style="font-size:13.5px">Aún no hay propiedades cargadas en Supabase (la web muestra las 3 propiedades de respaldo).</p>' +
+            (!state.vitrinaError ? '<button type="button" class="btn btn-primary" id="v-seed-btn">Importar las 3 propiedades actuales de la web</button>' : '') + '</div>';
+        }
+        if (!list.length) return '<p class="muted" style="font-size:13.5px">Ninguna propiedad coincide con los filtros actuales.</p>';
+        return list.map(item => {
+          const imgs = Array.isArray(item.imagenes) ? item.imagenes : [];
+          const thumb = imgs[0] || "assets/propiedades/casa-los-fresnos.webp";
+          const isVis = item.visible !== false;
+          const isRes = /reservad[ao]/i.test(item.etiqueta || "");
+          return '<div class="admin-row" style="grid-template-columns:60px 1fr auto;align-items:center">' +
+            '<img src="' + esc(thumb) + '" alt="" style="width:56px;height:44px;object-fit:cover;border-radius:8px;background:#eee;' + (isRes ? 'filter:saturate(0.75)' : '') + '">' +
+            '<span>' +
+              '<b>' + esc(item.titulo || "Sin título") + '</b> ' +
+              (isRes ? '<span class="pill warn" style="font-size:11px;padding:2px 7px">RESERVADA</span>' : '') + '<br>' +
+              '<small class="muted">#' + (item.orden || 0) + ' · ' + esc(item.distrito || "Sin distrito") + ' · ' + esc(item.etiqueta || "EN VENTA") + ' · ' + imgs.length + (imgs.length === 1 ? ' foto' : ' fotos') + (item.usar_carrusel ? ' · Carrusel' : '') + (item.precio ? ' · ' + esc(item.precio) : '') + '</small>' +
+            '</span>' +
+            '<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">' +
+              '<button type="button" class="btn btn-ghost" style="padding:5px 9px;min-height:32px;font-size:12px" data-vtoggle="' + esc(item.id) + '" title="' + (isVis ? 'Ocultar de la web' : 'Mostrar en la web') + '">' + (isVis ? 'Visible ✓' : 'Oculta') + '</button>' +
+              '<button type="button" class="btn btn-ghost" style="padding:5px 9px;min-height:32px;font-size:12px" data-vdup="' + esc(item.id) + '" title="Duplicar propiedad">Duplicar</button>' +
+              '<button type="button" class="btn btn-ghost" style="padding:5px 9px;min-height:32px;font-size:12px" data-vedit="' + esc(item.id) + '">Editar</button>' +
+              '<button type="button" class="btn btn-danger" style="padding:5px 9px;min-height:32px;font-size:12px" data-vdel="' + esc(item.id) + '">Eliminar</button>' +
+            '</div>' +
+          '</div>';
+        }).join("");
+      };
+      const filteredVitrina = filterVitrina();
 
       app.innerHTML =
         '<div class="page-head"><div><p class="page-kicker">Administración · Landing & Catálogo</p><h1>Vitrina Web y Carrusel</h1></div>' +
           '<a class="btn btn-ghost" href="index.html#propiedades-cw" target="_blank" rel="noopener">Ver en la web ↗</a>' +
         '</div>' +
         (state.vitrinaError ? '<p class="notice" style="margin-bottom:16px">' + esc(state.vitrinaError) + '</p>' : '') +
-        '<div class="admin-kpis">' +
+        '<div class="admin-kpis cols-4">' +
           '<div class="card admin-kpi"><div><b>' + state.vitrina.length + '</b><span>En vitrina</span></div><span class="stat-ico navy">' + ICONS.home + '</span></div>' +
           '<div class="card admin-kpi"><div><b>' + visibleCount + '</b><span>Visibles en web</span></div><span class="stat-ico green">' + ICONS.shield + '</span></div>' +
-          '<div class="card admin-kpi"><div><b>' + carouselCount + '</b><span>Con carrusel</span></div><span class="stat-ico orange">' + ICONS.docs + '</span></div>' +
+          '<div class="card admin-kpi"><div><b>' + hiddenCount + '</b><span>Ocultas</span></div><span class="stat-ico orange">' + ICONS.list + '</span></div>' +
+          '<div class="card admin-kpi"><div><b>' + carouselCount + '</b><span>Con carrusel</span></div><span class="stat-ico navy">' + ICONS.docs + '</span></div>' +
         '</div>' +
         '<div class="client-split">' +
           '<div class="card sec">' +
             '<h3>' + (isEditing ? 'Editar propiedad en vitrina' : 'Agregar propiedad a la vitrina') + '</h3>' +
-            '<p class="hint">Configura la información, imágenes y si la tarjeta usa carrusel de fotos en la web (y en el próximo catálogo).</p>' +
+            '<p class="hint">Configura la información, imágenes y si la tarjeta usa carrusel de fotos en la web.</p>' +
             '<form id="vitrina-form" style="display:grid;gap:12px">' +
               '<div class="grid2">' +
-                '<div><label for="v-titulo">Título de la propiedad</label><input id="v-titulo" value="' + esc(vd.titulo) + '" placeholder="Ej. Casa residencial con jardín" required></div>' +
-                '<div><label for="v-distrito">Distrito</label><input id="v-distrito" value="' + esc(vd.distrito) + '" placeholder="Ej. La Molina" required></div>' +
+                '<div><label for="v-titulo">Título de la propiedad</label><input id="v-titulo" value="' + esc(vd.titulo) + '" placeholder="Ej. Casa de un piso con cochera" required></div>' +
+                '<div><label for="v-distrito">Distrito</label><input id="v-distrito" value="' + esc(vd.distrito) + '" placeholder="Ej. Los Fresnos" required></div>' +
               '</div>' +
               '<div class="grid3">' +
                 '<div><label for="v-etiqueta">Etiqueta</label><select id="v-etiqueta">' +
-                  ["EXCLUSIVIDAD","DESTACADA","VENDIDA","OPORTUNIDAD","PRÓXIMAMENTE"].map(opt => '<option value="' + opt + '"' + (vd.etiqueta === opt ? ' selected' : '') + '>' + opt + '</option>').join("") +
+                  allTags.map(opt => '<option value="' + esc(opt) + '"' + (vd.etiqueta === opt ? ' selected' : '') + '>' + esc(opt) + '</option>').join("") +
                 '</select></div>' +
                 '<div><label for="v-precio">Precio (opcional)</label><input id="v-precio" value="' + esc(vd.precio) + '" placeholder="Ej. $550,000"></div>' +
                 '<div><label for="v-orden">Orden</label><input id="v-orden" type="number" min="0" max="999" value="' + (vd.orden || 0) + '"></div>' +
               '</div>' +
               '<div><label for="v-caract">Características (opcional)</label><input id="v-caract" value="' + esc(vd.caracteristicas) + '" placeholder="Ej. 4 dorm · 320 m² · 2 cocheras"></div>' +
-              '<div><label for="v-desc">Descripción breve</label><textarea id="v-desc" style="min-height:84px" maxlength="320" placeholder="Resume los diferenciales y la estrategia aplicada…">' + esc(vd.descripcion) + '</textarea></div>' +
+              '<div><label for="v-desc">Descripción breve</label><textarea id="v-desc" style="min-height:84px" maxlength="320" placeholder="Resume los diferenciales de la propiedad…">' + esc(vd.descripcion) + '</textarea></div>' +
               '<div id="v-img-box" tabindex="0" style="padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);display:grid;gap:10px">' +
                 '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">' +
                   '<b style="font-size:13.5px;color:var(--navy)">Imágenes de la propiedad (' + (vd.imagenes || []).length + ')</b>' +
@@ -1714,28 +1902,16 @@ button.step:hover .dot{ border-color:var(--orange); }
           '</div>' +
           '<div class="card sec">' +
             '<h3>Propiedades en Vitrina (' + state.vitrina.length + ')</h3>' +
-            '<p class="hint">Ordenadas según aparecerán en la web. Puedes editar sus fotos y activar el carrusel.</p>' +
-            '<div class="row-list">' +
-              (state.vitrina.length
-                ? state.vitrina.map(item => {
-                    const imgs = Array.isArray(item.imagenes) ? item.imagenes : [];
-                    const thumb = imgs[0] || "assets/propiedades/post-ig-casa-la-molina-jardin.jpg";
-                    return '<div class="admin-row" style="grid-template-columns:60px 1fr auto;align-items:center">' +
-                      '<img src="' + esc(thumb) + '" alt="" style="width:56px;height:44px;object-fit:cover;border-radius:8px;background:#eee">' +
-                      '<span>' +
-                        '<b>' + esc(item.titulo || "Sin título") + '</b><br>' +
-                        '<small class="muted">' + esc(item.distrito || "Sin distrito") + ' · ' + esc(item.etiqueta || "EXCLUSIVIDAD") + ' · ' + imgs.length + (imgs.length === 1 ? ' foto' : ' fotos') + (item.usar_carrusel ? ' · Carrusel ON' : '') + '</small>' +
-                      '</span>' +
-                      '<div style="display:flex;gap:6px;flex-wrap:wrap">' +
-                        '<span class="pill ' + (item.visible !== false ? 'ok' : '') + '">' + (item.visible !== false ? 'Visible' : 'Oculta') + '</span>' +
-                        '<button type="button" class="btn btn-ghost" style="padding:6px 10px;min-height:34px;font-size:12.5px" data-vedit="' + esc(item.id) + '">Editar</button>' +
-                        '<button type="button" class="btn btn-danger" style="padding:6px 10px;min-height:34px;font-size:12.5px" data-vdel="' + esc(item.id) + '">Eliminar</button>' +
-                      '</div>' +
-                    '</div>';
-                  }).join("")
-                : '<div style="display:grid;gap:12px"><p class="muted" style="font-size:13.5px">Aún no hay propiedades cargadas en Supabase (la web muestra las 4 propiedades de respaldo).</p>' +
-                  (!state.vitrinaError ? '<button type="button" class="btn btn-primary" id="v-seed-btn">Importar las 4 propiedades actuales de la web</button>' : '') + '</div>') +
+            '<p class="hint">Ordenadas según aparecerán en la web. Filtra por visibilidad, etiqueta o distrito.</p>' +
+            '<div class="admin-toolbar">' +
+              '<input id="vit-q" type="search" value="' + esc(af.vitQ) + '" placeholder="Buscar título o distrito…">' +
+              '<select id="vit-vis"><option value="all">Todas</option><option value="visible"' + (af.vitVis === "visible" ? ' selected' : '') + '>Visibles</option><option value="hidden"' + (af.vitVis === "hidden" ? ' selected' : '') + '>Ocultas</option></select>' +
+              '<select id="vit-tag"><option value="all">Todas las etiquetas</option>' + allTags.map(t => '<option value="' + esc(t) + '"' + (af.vitTag === t ? ' selected' : '') + '>' + esc(t) + '</option>').join("") + '</select>' +
+              '<select id="vit-dist"><option value="all">Todos los distritos</option>' + allDists.map(d => '<option value="' + esc(d) + '"' + (af.vitDist === d ? ' selected' : '') + '>' + esc(d) + '</option>').join("") + '</select>' +
+              '<button type="button" class="btn btn-ghost" id="vit-clear" style="min-height:38px;padding:6px 12px;font-size:13px">Limpiar</button>' +
             '</div>' +
+            '<div class="admin-toolbar-meta"><span id="vit-count">Mostrando ' + filteredVitrina.length + ' de ' + state.vitrina.length + ' propiedades</span></div>' +
+            '<div class="row-list" id="vit-list">' + renderVitrinaRows(filteredVitrina) + '</div>' +
           '</div>' +
         '</div>';
 
@@ -1869,52 +2045,247 @@ button.step:hover .dot{ border-color:var(--orange); }
         await loadVitrina();
       };
 
-      const seedBtn = document.getElementById("v-seed-btn");
-      if (seedBtn) seedBtn.onclick = async () => {
-        seedBtn.disabled = true; seedBtn.textContent = "Importando…";
-        const rows = DEFAULT_VITRINA.map(x => ({ ...x, actualizado: new Date().toISOString() }));
-        const { error } = await state.sb.from("vitrina_propiedades").upsert(rows);
-        if (error) { alert("Error al importar: " + error.message); seedBtn.disabled = false; seedBtn.textContent = "Importar las 4 propiedades actuales de la web"; return; }
-        await loadVitrina();
-      };
-
-      app.querySelectorAll("[data-vedit]").forEach(b => b.onclick = () => {
-        const found = state.vitrina.find(x => x.id === b.dataset.vedit);
-        if (found) { state.vitrinaDraft = clone(found); render(); }
-      });
-      app.querySelectorAll("[data-vdel]").forEach(b => b.onclick = async () => {
-        const found = state.vitrina.find(x => x.id === b.dataset.vdel);
-        const ok = await cwConfirm({
-          title: 'Eliminar de Vitrina Web',
-          message: '¿Quitar "' + ((found && found.titulo) || "esta propiedad") + '" de la vitrina pública de la web?',
-          confirmText: "Sí, eliminar"
+      const bindVitrinaRowActions = () => {
+        const seedBtn = document.getElementById("v-seed-btn");
+        if (seedBtn) seedBtn.onclick = async () => {
+          seedBtn.disabled = true; seedBtn.textContent = "Importando…";
+          const rows = DEFAULT_VITRINA.map(x => ({ ...x, actualizado: new Date().toISOString() }));
+          const { error } = await state.sb.from("vitrina_propiedades").upsert(rows);
+          if (error) { alert("Error al importar: " + error.message); seedBtn.disabled = false; seedBtn.textContent = "Importar las 3 propiedades actuales de la web"; return; }
+          await loadVitrina();
+        };
+        app.querySelectorAll("[data-vtoggle]").forEach(b => b.onclick = async () => {
+          const found = state.vitrina.find(x => x.id === b.dataset.vtoggle);
+          if (!found) return;
+          const nextVis = found.visible === false;
+          if (state.mode === "local") {
+            const list = state.vitrina.map(x => x.id === found.id ? { ...x, visible: nextVis } : x);
+            localStorage.setItem("cw_vitrina_demo", JSON.stringify(list));
+            loadVitrina();
+            return;
+          }
+          const { error } = await state.sb.from("vitrina_propiedades").update({ visible: nextVis, actualizado: new Date().toISOString() }).eq("id", found.id);
+          if (error) alert(error.message); else loadVitrina();
         });
-        if (!ok) return;
-        if (state.mode === "local") {
-          const list = state.vitrina.filter(x => x.id !== b.dataset.vdel);
-          localStorage.setItem("cw_vitrina_demo", JSON.stringify(list));
-          loadVitrina();
-          return;
-        }
-        const { error } = await state.sb.from("vitrina_propiedades").delete().eq("id", b.dataset.vdel);
-        if (error) alert(error.message); else loadVitrina();
-      });
+        app.querySelectorAll("[data-vdup]").forEach(b => b.onclick = () => {
+          const found = state.vitrina.find(x => x.id === b.dataset.vdup);
+          if (found) {
+            const copy = clone(found);
+            copy.id = "";
+            copy.titulo = (copy.titulo || "Propiedad") + " (copia)";
+            copy.orden = state.vitrina.length + 1;
+            state.vitrinaDraft = copy;
+            render();
+          }
+        });
+        app.querySelectorAll("[data-vedit]").forEach(b => b.onclick = () => {
+          const found = state.vitrina.find(x => x.id === b.dataset.vedit);
+          if (found) { state.vitrinaDraft = clone(found); render(); }
+        });
+        app.querySelectorAll("[data-vdel]").forEach(b => b.onclick = async () => {
+          const found = state.vitrina.find(x => x.id === b.dataset.vdel);
+          const ok = await cwConfirm({
+            title: 'Eliminar de Vitrina Web',
+            message: '¿Quitar "' + ((found && found.titulo) || "esta propiedad") + '" de la vitrina pública de la web?',
+            confirmText: "Sí, eliminar"
+          });
+          if (!ok) return;
+          if (state.mode === "local") {
+            const list = state.vitrina.filter(x => x.id !== b.dataset.vdel);
+            localStorage.setItem("cw_vitrina_demo", JSON.stringify(list));
+            loadVitrina();
+            return;
+          }
+          const { error } = await state.sb.from("vitrina_propiedades").delete().eq("id", b.dataset.vdel);
+          if (error) alert(error.message); else loadVitrina();
+        });
+      };
+      const updateVitrinaList = () => {
+        const list = filterVitrina();
+        const listEl = document.getElementById("vit-list");
+        const countEl = document.getElementById("vit-count");
+        if (listEl) listEl.innerHTML = renderVitrinaRows(list);
+        if (countEl) countEl.textContent = "Mostrando " + list.length + " de " + state.vitrina.length + " propiedades";
+        bindVitrinaRowActions();
+      };
+      bindVitrinaRowActions();
+      document.getElementById("vit-q").addEventListener("input", (e) => { af.vitQ = e.target.value; updateVitrinaList(); });
+      document.getElementById("vit-vis").onchange = (e) => { af.vitVis = e.target.value; updateVitrinaList(); };
+      document.getElementById("vit-tag").onchange = (e) => { af.vitTag = e.target.value; updateVitrinaList(); };
+      document.getElementById("vit-dist").onchange = (e) => { af.vitDist = e.target.value; updateVitrinaList(); };
+      document.getElementById("vit-clear").onclick = () => {
+        af.vitQ = ""; af.vitVis = "all"; af.vitTag = "all"; af.vitDist = "all";
+        document.getElementById("vit-q").value = "";
+        document.getElementById("vit-vis").value = "all";
+        document.getElementById("vit-tag").value = "all";
+        document.getElementById("vit-dist").value = "all";
+        updateVitrinaList();
+      };
       return;
     }
 
-    setPageHeader("Accesos por inmueble", "Administración · Resumen general");
+    setPageHeader("Accesos por inmueble", "Administración · Resumen y accesos");
+    const totalVisits = state.props.reduce((s, p) => s + (p.visitas ? p.visitas.length : 0), 0);
+    const pendingAccessCount = state.props.length - withAccessCount;
+    const filterAccess = () => {
+      const q = (af.accQ || "").trim().toLowerCase();
+      let list = state.props.filter(p => {
+        const hasMail = !!(p.propietarioEmail || "").trim();
+        if (af.accStatus === "with" && !hasMail) return false;
+        if (af.accStatus === "pending" && hasMail) return false;
+        const stName = STAGES[p.etapa || 0] || STAGES[0];
+        if (af.accStage !== "all" && stName !== af.accStage) return false;
+        if (q) {
+          const hay = ((p.propiedad || "") + " " + (p.propietario || "") + " " + (p.propietarioEmail || "") + " " + (p.direccion || "")).toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      });
+      if (af.accSort === "pending") {
+        list = list.slice().sort((a, b) => (!!(a.propietarioEmail || "").trim() ? 1 : 0) - (!!(b.propietarioEmail || "").trim() ? 1 : 0));
+      } else if (af.accSort === "visits") {
+        list = list.slice().sort((a, b) => ((b.visitas || []).length) - ((a.visitas || []).length));
+      } else {
+        list = list.slice().sort((a, b) => (a.propiedad || "").localeCompare(b.propiedad || "", "es"));
+      }
+      return list;
+    };
+
+    const renderAccessRows = (list) => {
+      if (!state.props.length) return '<p class="muted" style="font-size:14px">Aún no hay propiedades creadas.</p>';
+      if (!list.length) return '<p class="muted" style="font-size:14px">Ningún inmueble coincide con los filtros seleccionados.</p>';
+      return list.map(p => {
+        const hasMail = !!(p.propietarioEmail || "").trim();
+        const stName = STAGES[p.etapa || 0] || STAGES[0];
+        const vLen = (p.visitas || []).length;
+        const dLen = (p.documentos || []).length;
+        const isEditingRow = state.editingAccessId === p.id;
+        return '<div class="admin-prop-row">' +
+          '<span>' +
+            '<b>' + esc(p.propiedad || "Propiedad sin nombre") + '</b> ' +
+            '<span class="pill" style="font-size:11px;padding:2px 8px">' + esc(stName) + '</span><br>' +
+            '<small class="muted">' + esc(p.propietario || "Sin propietario") + (p.direccion ? ' · ' + esc(p.direccion) : '') + ' · ' + vLen + (vLen === 1 ? ' visita' : ' visitas') + ' · ' + dLen + ' docs</small>' +
+          '</span>' +
+          '<div>' +
+            (isEditingRow
+              ? '<form class="acc-inline-edit" data-acc-form="' + esc(p.id) + '" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">' +
+                  '<input type="email" value="' + esc(p.propietarioEmail || "") + '" placeholder="correo@propietario.com" style="min-height:34px;padding:6px 10px;font-size:13px;min-width:190px;flex:1">' +
+                  '<button type="submit" class="btn btn-primary" style="min-height:34px;padding:6px 10px;font-size:12px">Guardar</button>' +
+                  '<button type="button" class="btn btn-ghost" data-acc-cancel="' + esc(p.id) + '" style="min-height:34px;padding:6px 10px;font-size:12px">Cancelar</button>' +
+                '</form>'
+              : (hasMail ? '<span>' + esc(p.propietarioEmail) + '</span>' : '<span class="muted">Sin correo asignado</span>')) +
+          '</div>' +
+          '<span class="pill ' + (hasMail ? 'ok' : 'warn') + '">' + (hasMail ? 'Con acceso' : 'Pendiente') + '</span>' +
+          '<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">' +
+            (!isEditingRow ? '<button type="button" class="btn btn-ghost" data-acc-edit="' + esc(p.id) + '" style="padding:5px 10px;min-height:34px;font-size:12px">' + (hasMail ? 'Editar correo' : 'Asignar correo') + '</button>' : '') +
+            '<button type="button" class="btn btn-ghost" data-acc-copy="' + esc(p.id) + '" style="padding:5px 10px;min-height:34px;font-size:12px">Copiar enlace</button>' +
+          '</div>' +
+        '</div>';
+      }).join("");
+    };
+    const filteredAccess = filterAccess();
+
     app.innerHTML =
-      '<div class="page-head"><div><p class="page-kicker">Administración</p><h1>Resumen y Accesos</h1></div></div>' +
-      '<div class="admin-kpis">' +
-        '<div class="card admin-kpi"><div><b>' + state.asesores.length + '</b><span>Asesores y Admins</span></div><span class="stat-ico navy">' + ICONS.users + '</span></div>' +
-        '<div class="card admin-kpi"><div><b>' + state.props.length + '</b><span>Propiedades registradas</span></div><span class="stat-ico orange">' + ICONS.home + '</span></div>' +
-        '<div class="card admin-kpi"><div><b>' + withAccessCount + '</b><span>Propietarios con acceso</span></div><span class="stat-ico green">' + ICONS.shield + '</span></div>' +
+      '<div class="page-head"><div><p class="page-kicker">Administración</p><h1>Resumen y Accesos</h1></div>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+          '<button type="button" class="btn btn-ghost" id="acc-csv">Exportar CSV</button>' +
+          '<button type="button" class="btn btn-primary" id="acc-go-crear">+ Crear usuario</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="admin-kpis cols-4">' +
+        '<div class="card admin-kpi"><div><b>' + state.props.length + '</b><span>Inmuebles totales</span></div><span class="stat-ico navy">' + ICONS.home + '</span></div>' +
+        '<div class="card admin-kpi"><div><b>' + withAccessCount + '</b><span>Con acceso activo</span></div><span class="stat-ico green">' + ICONS.shield + '</span></div>' +
+        '<div class="card admin-kpi"><div><b>' + pendingAccessCount + '</b><span>Pendientes de acceso</span></div><span class="stat-ico orange">' + ICONS.userPlus + '</span></div>' +
+        '<div class="card admin-kpi"><div><b>' + totalVisits + '</b><span>Visitas acumuladas</span></div><span class="stat-ico navy">' + ICONS.visits + '</span></div>' +
       '</div>' +
       '<div class="card sec">' +
         '<h3>Accesos de propietarios por inmueble</h3>' +
-        '<p class="hint">Resumen de qué correo tiene acceso a cada propiedad. Puedes editarlo en Gestión de inmuebles → General y Etapa.</p>' +
-        '<div class="row-list">' + propAccessRows + '</div>' +
+        '<p class="hint">Asigna o actualiza el correo autorizado de cada propiedad, filtra por etapa o estado y copia el enlace directo del propietario.</p>' +
+        '<div class="admin-toolbar">' +
+          '<input id="acc-q" type="search" value="' + esc(af.accQ) + '" placeholder="Buscar inmueble, propietario, correo o zona…">' +
+          '<select id="acc-status"><option value="all">Todos los estados</option><option value="with"' + (af.accStatus === "with" ? ' selected' : '') + '>Con acceso</option><option value="pending"' + (af.accStatus === "pending" ? ' selected' : '') + '>Pendiente</option></select>' +
+          '<select id="acc-stage"><option value="all">Todas las etapas</option>' + STAGES.map(s => '<option value="' + esc(s) + '"' + (af.accStage === s ? ' selected' : '') + '>' + esc(s) + '</option>').join("") + '</select>' +
+          '<select id="acc-sort"><option value="name"' + (af.accSort === "name" ? ' selected' : '') + '>Orden: Nombre (A-Z)</option><option value="pending"' + (af.accSort === "pending" ? ' selected' : '') + '>Pendientes primero</option><option value="visits"' + (af.accSort === "visits" ? ' selected' : '') + '>Más visitas</option></select>' +
+          '<button type="button" class="btn btn-ghost" id="acc-clear" style="min-height:38px;padding:6px 12px;font-size:13px">Limpiar</button>' +
+        '</div>' +
+        '<div class="admin-toolbar-meta"><span id="acc-count">Mostrando ' + filteredAccess.length + ' de ' + state.props.length + ' inmuebles</span></div>' +
+        '<div class="row-list" id="acc-list">' + renderAccessRows(filteredAccess) + '</div>' +
       '</div>';
+
+    const bindAccessRowActions = () => {
+      app.querySelectorAll("[data-acc-edit]").forEach(b => {
+        b.onclick = () => { state.editingAccessId = b.dataset.accEdit; updateAccessList(); };
+      });
+      app.querySelectorAll("[data-acc-cancel]").forEach(b => {
+        b.onclick = () => { state.editingAccessId = null; updateAccessList(); };
+      });
+      app.querySelectorAll("[data-acc-form]").forEach(form => {
+        form.onsubmit = async (e) => {
+          e.preventDefault();
+          const pid = form.dataset.accForm;
+          const nextEmail = (form.querySelector("input").value || "").trim().toLowerCase();
+          if (state.mode === "supabase" && state.sb) {
+            const { error } = await state.sb.from("propiedades").update({ propietario_email: nextEmail }).eq("id", pid);
+            if (error) { alert("Error al guardar correo: " + error.message); return; }
+          }
+          const target = state.props.find(x => x.id === pid);
+          if (target) target.propietarioEmail = nextEmail;
+          state.editingAccessId = null;
+          render();
+        };
+      });
+      app.querySelectorAll("[data-acc-copy]").forEach(b => {
+        b.onclick = async () => {
+          const url = location.origin + location.pathname + "#propietario-" + b.dataset.accCopy;
+          try {
+            await navigator.clipboard.writeText(url);
+            const orig = b.textContent;
+            b.textContent = "✓ Copiado";
+            setTimeout(() => { b.textContent = orig; }, 1600);
+          } catch (err) { alert("Enlace: " + url); }
+        };
+      });
+    };
+    const updateAccessList = () => {
+      const list = filterAccess();
+      const listEl = document.getElementById("acc-list");
+      const countEl = document.getElementById("acc-count");
+      if (listEl) listEl.innerHTML = renderAccessRows(list);
+      if (countEl) countEl.textContent = "Mostrando " + list.length + " de " + state.props.length + " inmuebles";
+      bindAccessRowActions();
+    };
+    bindAccessRowActions();
+    document.getElementById("acc-q").addEventListener("input", (e) => { af.accQ = e.target.value; updateAccessList(); });
+    document.getElementById("acc-status").onchange = (e) => { af.accStatus = e.target.value; updateAccessList(); };
+    document.getElementById("acc-stage").onchange = (e) => { af.accStage = e.target.value; updateAccessList(); };
+    document.getElementById("acc-sort").onchange = (e) => { af.accSort = e.target.value; updateAccessList(); };
+    document.getElementById("acc-clear").onclick = () => {
+      af.accQ = ""; af.accStatus = "all"; af.accStage = "all"; af.accSort = "name";
+      document.getElementById("acc-q").value = "";
+      document.getElementById("acc-status").value = "all";
+      document.getElementById("acc-stage").value = "all";
+      document.getElementById("acc-sort").value = "name";
+      updateAccessList();
+    };
+    document.getElementById("acc-go-crear").onclick = () => { state.page = "admin-crear"; render(); };
+    document.getElementById("acc-csv").onclick = () => {
+      const rows = [["Inmueble","Propietario","Correo asignado","Estado","Etapa","Visitas","Documentos","Direccion"]];
+      filterAccess().forEach(p => {
+        rows.push([
+          p.propiedad || "", p.propietario || "", p.propietarioEmail || "",
+          (p.propietarioEmail || "").trim() ? "Con acceso" : "Pendiente",
+          STAGES[p.etapa || 0] || STAGES[0],
+          String((p.visitas || []).length), String((p.documentos || []).length), p.direccion || ""
+        ]);
+      });
+      const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(",")).join("\n");
+      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "cw-accesos-inmuebles.csv";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    };
   }
 
   function renderEditor(){
