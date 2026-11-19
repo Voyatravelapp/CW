@@ -37,9 +37,9 @@
   padding-top:env(safe-area-inset-top,0px);
   padding-bottom:env(safe-area-inset-bottom,0px);
 }
-html{ scroll-padding-top:env(safe-area-inset-top,0px); height:100%; overflow-x:hidden; max-width:100%; }
+html{ scroll-padding-top:env(safe-area-inset-top,0px); height:100%; overflow-x:clip; max-width:100%; }
 *,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
-body{ overflow-x:hidden; max-width:100%; }
+body{ overflow-x:clip; max-width:100%; }
 body{ font-family:var(--sans); background:var(--bg); color:var(--text); font-size:15px; line-height:1.55; min-height:100%; -webkit-font-smoothing:antialiased; }
 button,input,select,textarea{ font:inherit; color:inherit; }
 button{ cursor:pointer; }
@@ -56,7 +56,7 @@ body.is-auth-screen .main-area{ width:100%; min-width:0; }
 body.is-auth-screen .wrap{ max-width:none; padding:0; }
 
 /* Sidebar izquierdo */
-.sidebar{ width:264px; flex:none; background:#fff; border-right:1px solid var(--line); display:flex; flex-direction:column; position:sticky; top:env(safe-area-inset-top,0px); height:calc(100vh - env(safe-area-inset-top,0px)); z-index:45; transition:width .22s ease, transform .24s ease; }
+.sidebar{ width:264px; flex:none; align-self:flex-start; background:#fff; border-right:1px solid var(--line); display:flex; flex-direction:column; position:sticky; top:env(safe-area-inset-top,0px); height:calc(100vh - env(safe-area-inset-top,0px)); height:calc(100dvh - env(safe-area-inset-top,0px)); z-index:45; transition:width .22s ease, transform .24s ease; }
 .sb-brand{ padding:16px 18px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:11px; min-height:70px; }
 .sb-brand img{ height:36px; width:auto; display:block; flex:none; }
 .sb-brand-txt{ min-width:0; flex:1; }
@@ -885,15 +885,36 @@ button.step:hover .dot{ border-color:var(--orange); }
             state.isSuperAdmin = (state.role === "admin");
             state.isAdmin = (state.role === "admin" || state.role === "asesor");
             if (state.isSuperAdmin) { loadAsesores(); loadVitrina(); }
-            if (state.isAdmin && !location.hash.startsWith("#propietario-") && location.hash !== "#admin") {
-              state.view = "asesor";
-              if (location.hash !== "#asesor") history.replaceState(null, "", "#asesor");
+            if (state.isAdmin && !location.hash.startsWith("#propietario-")) {
+              let savedPage = "";
+              try { savedPage = sessionStorage.getItem("cw_portal_page") || ""; } catch {}
+              if (state.isSuperAdmin && savedPage.startsWith("admin-")) {
+                state.view = "admin";
+                state.page = savedPage;
+              } else if (savedPage.startsWith("asesor-")) {
+                state.view = "asesor";
+                state.page = savedPage;
+              } else if (location.hash === "#admin" && state.isSuperAdmin) {
+                state.view = "admin";
+              } else {
+                state.view = "asesor";
+                if (location.hash !== "#asesor") history.replaceState(null, "", "#asesor");
+              }
+            } else if (!state.isAdmin) {
+              let savedPage = "";
+              try { savedPage = sessionStorage.getItem("cw_portal_page") || ""; } catch {}
+              if (savedPage.startsWith("client-")) state.page = savedPage;
             }
+            try {
+              const savedSel = sessionStorage.getItem("cw_portal_selected");
+              if (savedSel && !state.selected) state.selected = savedSel;
+            } catch {}
           } else {
             state.role = null;
             state.isSuperAdmin = false;
             state.isAdmin = false;
             state.asesores = [];
+            try { sessionStorage.removeItem("cw_portal_page"); sessionStorage.removeItem("cw_portal_selected"); } catch {}
           }
           state.authChecked = true;
           startData();
@@ -1471,6 +1492,12 @@ button.step:hover .dot{ border-color:var(--orange); }
     if (state.view === "cliente" && (!state.page || !state.page.startsWith("client-"))) state.page = "client-resumen";
     if (state.view === "asesor" && (!state.page || !state.page.startsWith("asesor-"))) state.page = "asesor-general";
     if (state.view === "admin" && (!state.page || !state.page.startsWith("admin-"))) state.page = "admin-accesos";
+    if (state.user && state.page) {
+      try {
+        sessionStorage.setItem("cw_portal_page", state.page);
+        if (state.selected) sessionStorage.setItem("cw_portal_selected", state.selected);
+      } catch {}
+    }
 
     if (brandSub) {
       brandSub.textContent = (state.view === "admin" || state.view === "asesor") ? "Panel del asesor" : "Portal del propietario";
