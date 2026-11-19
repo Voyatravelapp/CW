@@ -3,6 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script async src="https://www.googletagmanager.com/gtm.js?id=GTM-MFHXT8LZ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+</script>
 <title>Portal del propietario · CW Inmobiliaria</title>
 <link rel="icon" href="assets/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
@@ -1046,7 +1052,7 @@ button.step:hover .dot{ border-color:var(--orange); }
   async function createProp(demo){
     if (!state.db) return;
     const id = newId("p");
-    try { await state.db.doc("propiedades/" + id).set(demo ? demoProp() : blankProp()); state.selected = id; state.dirty = false; state.draft = null; render(); }
+    try { await state.db.doc("propiedades/" + id).set(demo ? demoProp() : blankProp()); state.selected = id; state.dirty = false; state.draft = null; state.view = "asesor"; state.page = "asesor-general"; render(); }
     catch(e){ handleWriteError(e); }
   }
   async function saveDraft(){
@@ -1333,9 +1339,8 @@ button.step:hover .dot{ border-color:var(--orange); }
         if (sel) sel.onchange = () => {
           if (state.dirty && !confirm("Tienes cambios sin guardar. ¿Deseas descartarlos?")) { sel.value = state.selected; return; }
           state.selected = sel.value; state.draft = null; state.dirty = false; state.status = "";
-          if (state.isSuperAdmin) {
+          if (state.isSuperAdmin && state.page && state.page.startsWith("admin-")) {
             state.view = "admin";
-            if (!state.page || !state.page.startsWith("admin-")) state.page = "admin-accesos";
           } else {
             if (state.view !== "asesor") state.view = "asesor";
             if (!state.page || state.page.startsWith("admin-")) state.page = "asesor-general";
@@ -1350,6 +1355,17 @@ button.step:hover .dot{ border-color:var(--orange); }
       const vCount = d ? (d.visitas || []).length : 0;
       const docCount = d ? (d.documentos || []).length : 0;
       let html = "";
+      const asesorItems = [
+        { id:"asesor-lista", label:"Propiedades", icon:ICONS.list, badge:state.props.length },
+        { id:"asesor-general", label:"General y Etapa", icon:ICONS.edit },
+        { id:"asesor-visitas", label:"Visitas", icon:ICONS.visits, badge:vCount },
+        { id:"asesor-docs", label:"Documentos", icon:ICONS.docs, badge:docCount },
+        { id:"asesor-mensajes", label:"Mensajes", icon:ICONS.chat, badge:state.messages.length, badgeId:"sb-msg-badge" },
+        { id:"asesor-link", label:"Enlace de acceso", icon:ICONS.link }
+      ];
+      html += '<div class="sb-group">Gestión de inmuebles</div>' +
+        asesorItems.map(it => '<button type="button" class="sb-link" title="' + it.label + '" data-page="' + it.id + '" aria-current="' + (state.page === it.id ? "page" : "false") + '">' +
+          it.icon + '<span>' + it.label + '</span>' + (it.badge !== undefined ? '<span class="sb-badge"' + (it.badgeId ? ' id="' + it.badgeId + '"' : '') + '>' + it.badge + '</span>' : '') + '</button>').join("");
       if (state.isSuperAdmin) {
         const adminItems = [
           { id:"admin-accesos", label:"Accesos por inmueble", icon:ICONS.shield },
@@ -1357,30 +1373,16 @@ button.step:hover .dot{ border-color:var(--orange); }
           { id:"admin-equipo", label:"Equipo Asesor / Admin", icon:ICONS.users },
           { id:"admin-vitrina", label:"Vitrina Web", icon:ICONS.home, badge:state.vitrina.length }
         ];
-        html += '<div class="sb-group">Administración</div>' +
+        html += '<div class="sb-group" style="margin-top:14px">Administración</div>' +
           adminItems.map(it => '<button type="button" class="sb-link" title="' + it.label + '" data-page="' + it.id + '" aria-current="' + (state.page === it.id ? "page" : "false") + '">' +
             it.icon + '<span>' + it.label + '</span>' + (it.badge !== undefined ? '<span class="sb-badge">' + it.badge + '</span>' : '') + '</button>').join("");
-        navEl.innerHTML = html;
-        footEl.innerHTML = "";
-      } else {
-        const asesorItems = [
-          { id:"asesor-lista", label:"Propiedades", icon:ICONS.list, badge:state.props.length },
-          { id:"asesor-general", label:"General y Etapa", icon:ICONS.edit },
-          { id:"asesor-visitas", label:"Visitas", icon:ICONS.visits, badge:vCount },
-          { id:"asesor-docs", label:"Documentos", icon:ICONS.docs, badge:docCount },
-          { id:"asesor-mensajes", label:"Mensajes", icon:ICONS.chat, badge:state.messages.length, badgeId:"sb-msg-badge" },
-          { id:"asesor-link", label:"Enlace de acceso", icon:ICONS.link }
-        ];
-        html += '<div class="sb-group">Gestión de inmuebles</div>' +
-          asesorItems.map(it => '<button type="button" class="sb-link" title="' + it.label + '" data-page="' + it.id + '" aria-current="' + (state.page === it.id ? "page" : "false") + '">' +
-            it.icon + '<span>' + it.label + '</span>' + (it.badge !== undefined ? '<span class="sb-badge"' + (it.badgeId ? ' id="' + it.badgeId + '"' : '') + '>' + it.badge + '</span>' : '') + '</button>').join("");
-        navEl.innerHTML = html;
-        footEl.innerHTML = (state.isAdmin && state.canWrite !== false)
-          ? '<button type="button" class="btn btn-primary" id="sb-new-prop" title="Nueva propiedad"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span class="sb-btn-lbl">Nueva propiedad</span></button>'
-          : '';
-        const sbNew = document.getElementById("sb-new-prop");
-        if (sbNew) sbNew.onclick = () => { closeDrawer(); createProp(false); };
       }
+      navEl.innerHTML = html;
+      footEl.innerHTML = (state.isAdmin && state.canWrite !== false)
+        ? '<button type="button" class="btn btn-primary" id="sb-new-prop" title="Nueva propiedad"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span class="sb-btn-lbl">Nueva propiedad</span></button>'
+        : '';
+      const sbNew = document.getElementById("sb-new-prop");
+      if (sbNew) sbNew.onclick = () => { closeDrawer(); createProp(false); };
     }
 
     navEl.querySelectorAll("[data-page]").forEach(btn => {
@@ -1461,7 +1463,7 @@ button.step:hover .dot{ border-color:var(--orange); }
         state.view = "cliente";
       } else if (!state.isSuperAdmin) {
         state.view = "asesor";
-      } else {
+      } else if (state.view !== "asesor" && state.view !== "admin") {
         state.view = "admin";
       }
     }
